@@ -7,7 +7,7 @@ It is designed to help students access all the necessary academic resources in o
 
 1. SDA – Software Design and Analysis
 
-2. DA – Design and Analysis of Algorithms
+2. DAA – Design and Analysis of Algorithms
 
 3. DBS – Database Systems
 
