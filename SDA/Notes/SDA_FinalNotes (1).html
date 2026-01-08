@@ -1,0 +1,2948 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Design & Architecture - Complete Exam Notes</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #333;
+            --border: #dee2e6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: var(--text);
+            background: var(--bg);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--primary);
+            border-bottom: 4px solid var(--secondary);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        h2 {
+            color: var(--secondary);
+            margin: 40px 0 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+        }
+
+        h3 {
+            color: var(--primary);
+            margin: 25px 0 15px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        h4 {
+            color: #555;
+            margin: 20px 0 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        ul,
+        ol {
+            margin: 15px 0 15px 30px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: var(--card-bg);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border);
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+
+        .exam-tip {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .exam-tip::before {
+            content: "📝 EXAM TIP: ";
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .important {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-left: 5px solid var(--accent);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .important::before {
+            content: "⚠️ IMPORTANT: ";
+            font-weight: bold;
+            color: #721c24;
+        }
+
+        .definition {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            border-left: 5px solid #17a2b8;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .diagram-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        .diagram-title {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+
+        .scenario {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-left: 5px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .scenario::before {
+            content: "🎯 SCENARIO: ";
+            font-weight: bold;
+            color: #155724;
+        }
+
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+        }
+
+        .toc {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .toc h2 {
+            background: var(--primary);
+            margin: -25px -25px 20px -25px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .toc li {
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .toc a {
+            color: var(--secondary);
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            color: var(--accent);
+        }
+
+        svg {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .legend {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <h1>📚 Software Design & Architecture - Complete Final Exam Notes</h1>
+
+        <div class="toc">
+            <h2>📋 Table of Contents</h2>
+            <ul>
+                <li><a href="#design-patterns">1. Design Patterns</a></li>
+                <li><a href="#uml-diagrams">2. UML Diagrams</a></li>
+                <li><a href="#process-models">3. Software Process Models</a></li>
+                <li><a href="#four-plus-one">4. 4+1 View Model</a></li>
+                <li><a href="#architecture-views">5. System Architecture Views</a></li>
+            </ul>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- SECTION 1: DESIGN PATTERNS -->
+        <!-- ============================================== -->
+
+        <section id="design-patterns">
+            <h2>1. Design Patterns</h2>
+
+            <div class="card">
+                <h3>1.1 Purpose of Design Patterns</h3>
+
+                <div class="definition">
+                    <strong>Definition:</strong> A design pattern is a general, reusable solution to a commonly
+                    occurring problem within a given context in software design. It is not a finished design that can be
+                    transformed directly into code but rather a template or description for how to solve a problem.
+                </div>
+
+                <h4>Why Do We Need Design Patterns?</h4>
+                <p>Design patterns serve as proven solutions that experienced developers have used to solve recurring
+                    problems. They provide a shared vocabulary for developers, making it easier to communicate complex
+                    design concepts. The key purposes include:</p>
+
+                <ol>
+                    <li><strong>Reusability:</strong> Patterns provide tested, proven development paradigms that can be
+                        reused across multiple projects, reducing development time and effort.</li>
+                    <li><strong>Common Vocabulary:</strong> They establish a standard terminology that all developers
+                        understand, facilitating better team communication.</li>
+                    <li><strong>Best Practices:</strong> Patterns capture best practices that have evolved over time,
+                        helping developers avoid common pitfalls.</li>
+                    <li><strong>Abstraction:</strong> They provide a higher level of abstraction, allowing developers to
+                        think about the solution rather than low-level implementation details.</li>
+                    <li><strong>Maintainability:</strong> Well-applied patterns make code more maintainable and easier
+                        to understand for future developers.</li>
+                    <li><strong>Flexibility:</strong> Patterns often promote loose coupling and high cohesion, making
+                        systems more flexible and adaptable to change.</li>
+                </ol>
+
+                <div class="exam-tip">
+                    Design patterns are NOT algorithms. An algorithm solves a computational problem, while a design
+                    pattern solves a design problem. Be prepared to distinguish between these in MCQs.
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>1.2 Categories of Design Patterns (Gang of Four)</h3>
+
+                <p>The Gang of Four (GoF) - Erich Gamma, Richard Helm, Ralph Johnson, and John Vlissides - categorized
+                    23 classic design patterns into three main categories:</p>
+
+                <table>
+                    <tr>
+                        <th>Category</th>
+                        <th>Purpose</th>
+                        <th>Patterns</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Creational</strong></td>
+                        <td>Deal with object creation mechanisms, trying to create objects in a manner suitable to the
+                            situation</td>
+                        <td>Singleton, Factory Method, Abstract Factory, Builder, Prototype</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Structural</strong></td>
+                        <td>Deal with object composition, forming larger structures from individual objects and classes
+                        </td>
+                        <td>Adapter, Bridge, Composite, Decorator, Facade, Flyweight, Proxy</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Behavioral</strong></td>
+                        <td>Deal with object collaboration and responsibility distribution among objects</td>
+                        <td>Chain of Responsibility, Command, Iterator, Mediator, Memento, Observer, State, Strategy,
+                            Template Method, Visitor</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>1.3 Detailed Study of Common Design Patterns</h3>
+
+                <!-- SINGLETON PATTERN -->
+                <h4>1.3.1 Singleton Pattern (Creational)</h4>
+
+                <div class="definition">
+                    <strong>Intent:</strong> Ensure a class has only one instance and provide a global point of access
+                    to it.
+                </div>
+
+                <p><strong>Structure:</strong></p>
+                <div class="diagram-container">
+                    <div class="diagram-title">Singleton Pattern Structure</div>
+                    <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                            </marker>
+                        </defs>
+                        <rect x="100" y="20" width="200" height="150" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"
+                            rx="5" />
+                        <line x1="100" y1="50" x2="300" y2="50" stroke="#1976d2" stroke-width="1" />
+                        <line x1="100" y1="100" x2="300" y2="100" stroke="#1976d2" stroke-width="1" />
+                        <text x="200" y="40" text-anchor="middle" font-weight="bold" font-size="14">Singleton</text>
+                        <text x="110" y="70" font-size="11">- instance: Singleton</text>
+                        <text x="110" y="85" font-size="11">- data: Object</text>
+                        <text x="110" y="120" font-size="11">- Singleton()</text>
+                        <text x="110" y="140" font-size="11">+ getInstance(): Singleton</text>
+                        <text x="110" y="160" font-size="11">+ getData(): Object</text>
+                    </svg>
+                    <div class="legend">
+                        <strong>Legend:</strong>
+                        - (minus) = private member |
+                        + (plus) = public member |
+                        Underlined = static member
+                    </div>
+                </div>
+
+                <p><strong>When to Use:</strong></p>
+                <ul>
+                    <li>When exactly one instance of a class is needed (e.g., database connection pool, logger,
+                        configuration manager)</li>
+                    <li>When the single instance should be extensible by subclassing</li>
+                    <li>When clients should be able to use an extended instance without modifying their code</li>
+                </ul>
+
+                <p><strong>Advantages:</strong></p>
+                <ul>
+                    <li>Controlled access to sole instance</li>
+                    <li>Reduced namespace pollution (avoids global variables)</li>
+                    <li>Permits refinement of operations and representation</li>
+                    <li>Permits a variable number of instances (can be modified)</li>
+                </ul>
+
+                <p><strong>Disadvantages:</strong></p>
+                <ul>
+                    <li>Difficult to unit test due to global state</li>
+                    <li>Violates Single Responsibility Principle (handles own creation)</li>
+                    <li>Can mask bad design (hiding dependencies)</li>
+                    <li>Thread-safety issues in multi-threaded environments</li>
+                </ul>
+
+                <div class="exam-tip">
+                    A common exam question asks about thread-safe Singleton implementation. Remember: use double-checked
+                    locking, synchronized method, or static inner class approach.
+                </div>
+
+                <!-- FACTORY METHOD PATTERN -->
+                <h4>1.3.2 Factory Method Pattern (Creational)</h4>
+
+                <div class="definition">
+                    <strong>Intent:</strong> Define an interface for creating an object, but let subclasses decide which
+                    class to instantiate. Factory Method lets a class defer instantiation to subclasses.
+                </div>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Factory Method Pattern Structure</div>
+                    <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                            </marker>
+                            <marker id="hollow-arrow" markerWidth="12" markerHeight="12" refX="12" refY="6"
+                                orient="auto">
+                                <path d="M0,0 L12,6 L0,12 Z" fill="white" stroke="#333" stroke-width="1" />
+                            </marker>
+                        </defs>
+                        <!-- Product Interface -->
+                        <rect x="400" y="20" width="150" height="60" fill="#fff3e0" stroke="#ff9800" stroke-width="2"
+                            rx="5" stroke-dasharray="5,3" />
+                        <text x="475" y="45" text-anchor="middle" font-style="italic" font-size="12">«interface»</text>
+                        <text x="475" y="65" text-anchor="middle" font-weight="bold" font-size="14">Product</text>
+
+                        <!-- Concrete Product -->
+                        <rect x="400" y="150" width="150" height="60" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="5" />
+                        <text x="475" y="185" text-anchor="middle" font-weight="bold"
+                            font-size="14">ConcreteProduct</text>
+
+                        <!-- Creator Abstract -->
+                        <rect x="50" y="20" width="180" height="80" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"
+                            rx="5" />
+                        <text x="140" y="45" text-anchor="middle" font-style="italic" font-size="12">«abstract»</text>
+                        <text x="140" y="65" text-anchor="middle" font-weight="bold" font-size="14">Creator</text>
+                        <line x1="50" y1="75" x2="230" y2="75" stroke="#1976d2" />
+                        <text x="60" y="92" font-size="11">+ factoryMethod(): Product</text>
+
+                        <!-- Concrete Creator -->
+                        <rect x="50" y="150" width="180" height="80" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="5" />
+                        <text x="140" y="185" text-anchor="middle" font-weight="bold"
+                            font-size="14">ConcreteCreator</text>
+                        <line x1="50" y1="195" x2="230" y2="195" stroke="#4caf50" />
+                        <text x="60" y="215" font-size="11">+ factoryMethod(): Product</text>
+
+                        <!-- Arrows -->
+                        <line x1="140" y1="150" x2="140" y2="105" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#hollow-arrow)" />
+                        <line x1="475" y1="150" x2="475" y2="85" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#hollow-arrow)" />
+                        <line x1="230" y1="190" x2="395" y2="180" stroke="#333" stroke-width="1.5"
+                            stroke-dasharray="5,3" marker-end="url(#arrow)" />
+                        <text x="300" y="175" font-size="10">«creates»</text>
+                    </svg>
+                    <div class="legend">
+                        <strong>Legend:</strong>
+                        Dashed border = Interface |
+                        Solid border = Class |
+                        Hollow arrow = Inheritance |
+                        Dashed line with arrow = Dependency
+                    </div>
+                </div>
+
+                <p><strong>When to Use:</strong></p>
+                <ul>
+                    <li>When a class can't anticipate the class of objects it must create</li>
+                    <li>When a class wants its subclasses to specify the objects it creates</li>
+                    <li>When you want to localize the knowledge of which helper class is the delegate</li>
+                </ul>
+
+                <p><strong>Advantages:</strong></p>
+                <ul>
+                    <li>Eliminates the need to bind application-specific classes into the code</li>
+                    <li>Provides hooks for subclasses (more flexible than direct object creation)</li>
+                    <li>Connects parallel class hierarchies</li>
+                </ul>
+
+                <p><strong>Disadvantages:</strong></p>
+                <ul>
+                    <li>May lead to many subclasses just to implement the factory method</li>
+                    <li>Clients might have to subclass the Creator class just to create a particular ConcreteProduct
+                    </li>
+                </ul>
+
+                <!-- OBSERVER PATTERN -->
+                <h4>1.3.3 Observer Pattern (Behavioral)</h4>
+
+                <div class="definition">
+                    <strong>Intent:</strong> Define a one-to-many dependency between objects so that when one object
+                    changes state, all its dependents are notified and updated automatically.
+                </div>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Observer Pattern Structure</div>
+                    <svg viewBox="0 0 650 280" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Subject Interface -->
+                        <rect x="20" y="20" width="180" height="100" fill="#fff3e0" stroke="#ff9800" stroke-width="2"
+                            rx="5" stroke-dasharray="5,3" />
+                        <text x="110" y="40" text-anchor="middle" font-style="italic" font-size="11">«interface»</text>
+                        <text x="110" y="58" text-anchor="middle" font-weight="bold" font-size="13">Subject</text>
+                        <line x1="20" y1="65" x2="200" y2="65" stroke="#ff9800" />
+                        <text x="30" y="82" font-size="10">+ attach(Observer)</text>
+                        <text x="30" y="96" font-size="10">+ detach(Observer)</text>
+                        <text x="30" y="110" font-size="10">+ notify()</text>
+
+                        <!-- Observer Interface -->
+                        <rect x="450" y="20" width="180" height="70" fill="#fff3e0" stroke="#ff9800" stroke-width="2"
+                            rx="5" stroke-dasharray="5,3" />
+                        <text x="540" y="40" text-anchor="middle" font-style="italic" font-size="11">«interface»</text>
+                        <text x="540" y="58" text-anchor="middle" font-weight="bold" font-size="13">Observer</text>
+                        <line x1="450" y1="65" x2="630" y2="65" stroke="#ff9800" />
+                        <text x="460" y="82" font-size="10">+ update()</text>
+
+                        <!-- Concrete Subject -->
+                        <rect x="20" y="160" width="180" height="100" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="5" />
+                        <text x="110" y="185" text-anchor="middle" font-weight="bold"
+                            font-size="13">ConcreteSubject</text>
+                        <line x1="20" y1="195" x2="200" y2="195" stroke="#4caf50" />
+                        <text x="30" y="212" font-size="10">- state: State</text>
+                        <line x1="20" y1="220" x2="200" y2="220" stroke="#4caf50" />
+                        <text x="30" y="237" font-size="10">+ getState(): State</text>
+                        <text x="30" y="251" font-size="10">+ setState(State)</text>
+
+                        <!-- Concrete Observer -->
+                        <rect x="450" y="160" width="180" height="100" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="5" />
+                        <text x="540" y="185" text-anchor="middle" font-weight="bold"
+                            font-size="13">ConcreteObserver</text>
+                        <line x1="450" y1="195" x2="630" y2="195" stroke="#4caf50" />
+                        <text x="460" y="212" font-size="10">- observerState: State</text>
+                        <line x1="450" y1="220" x2="630" y2="220" stroke="#4caf50" />
+                        <text x="460" y="237" font-size="10">+ update()</text>
+
+                        <!-- Arrows -->
+                        <line x1="110" y1="160" x2="110" y2="125" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#hollow-arrow)" />
+                        <line x1="540" y1="160" x2="540" y2="95" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#hollow-arrow)" />
+                        <line x1="200" y1="70" x2="445" y2="55" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#arrow)" />
+                        <text x="300" y="50" font-size="10">observers *</text>
+                        <line x1="450" y1="210" x2="205" y2="210" stroke="#333" stroke-width="1.5"
+                            stroke-dasharray="5,3" marker-end="url(#arrow)" />
+                        <text x="300" y="200" font-size="10">subject</text>
+                    </svg>
+                    <div class="legend">
+                        <strong>Legend:</strong>
+                        * = many (multiplicity) |
+                        Hollow arrow = Implements |
+                        Solid arrow = Association |
+                        Dashed arrow = Dependency
+                    </div>
+                </div>
+
+                <p><strong>Real-World Example:</strong> News subscription service where multiple subscribers receive
+                    updates when new articles are published.</p>
+
+                <p><strong>When to Use:</strong></p>
+                <ul>
+                    <li>When a change to one object requires changing others, and you don't know how many objects need
+                        to change</li>
+                    <li>When an object should be able to notify other objects without making assumptions about who these
+                        objects are</li>
+                    <li>Implementation of event handling systems</li>
+                </ul>
+
+                <p><strong>Advantages:</strong></p>
+                <ul>
+                    <li>Abstract coupling between Subject and Observer</li>
+                    <li>Support for broadcast communication</li>
+                    <li>Supports the Open/Closed Principle</li>
+                </ul>
+
+                <p><strong>Disadvantages:</strong></p>
+                <ul>
+                    <li>Unexpected updates (observers don't know about each other)</li>
+                    <li>Memory leaks if observers are not properly detached</li>
+                    <li>Order of notification is not guaranteed</li>
+                </ul>
+
+                <!-- STRATEGY PATTERN -->
+                <h4>1.3.4 Strategy Pattern (Behavioral)</h4>
+
+                <div class="definition">
+                    <strong>Intent:</strong> Define a family of algorithms, encapsulate each one, and make them
+                    interchangeable. Strategy lets the algorithm vary independently from clients that use it.
+                </div>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Strategy Pattern Structure</div>
+                    <svg viewBox="0 0 600 250" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Context -->
+                        <rect x="20" y="80" width="180" height="90" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"
+                            rx="5" />
+                        <text x="110" y="105" text-anchor="middle" font-weight="bold" font-size="13">Context</text>
+                        <line x1="20" y1="115" x2="200" y2="115" stroke="#1976d2" />
+                        <text x="30" y="135" font-size="10">- strategy: Strategy</text>
+                        <line x1="20" y1="145" x2="200" y2="145" stroke="#1976d2" />
+                        <text x="30" y="162" font-size="10">+ executeStrategy()</text>
+
+                        <!-- Strategy Interface -->
+                        <rect x="350" y="20" width="180" height="70" fill="#fff3e0" stroke="#ff9800" stroke-width="2"
+                            rx="5" stroke-dasharray="5,3" />
+                        <text x="440" y="40" text-anchor="middle" font-style="italic" font-size="11">«interface»</text>
+                        <text x="440" y="58" text-anchor="middle" font-weight="bold" font-size="13">Strategy</text>
+                        <line x1="350" y1="65" x2="530" y2="65" stroke="#ff9800" />
+                        <text x="360" y="82" font-size="10">+ algorithm()</text>
+
+                        <!-- Concrete Strategies -->
+                        <rect x="250" y="160" width="140" height="60" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="5" />
+                        <text x="320" y="185" text-anchor="middle" font-weight="bold"
+                            font-size="12">ConcreteStrategyA</text>
+                        <line x1="250" y1="195" x2="390" y2="195" stroke="#4caf50" />
+                        <text x="260" y="212" font-size="10">+ algorithm()</text>
+
+                        <rect x="430" y="160" width="140" height="60" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="5" />
+                        <text x="500" y="185" text-anchor="middle" font-weight="bold"
+                            font-size="12">ConcreteStrategyB</text>
+                        <line x1="430" y1="195" x2="570" y2="195" stroke="#4caf50" />
+                        <text x="440" y="212" font-size="10">+ algorithm()</text>
+
+                        <!-- Arrows -->
+                        <line x1="200" y1="120" x2="345" y2="55" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#arrow)" />
+                        <text x="255" y="75" font-size="10">strategy</text>
+                        <line x1="320" y1="160" x2="400" y2="95" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#hollow-arrow)" />
+                        <line x1="500" y1="160" x2="470" y2="95" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#hollow-arrow)" />
+                    </svg>
+                    <div class="legend">
+                        <strong>Legend:</strong>
+                        Dashed border = Interface |
+                        Hollow arrow = Implements |
+                        Solid arrow = Has-a (Composition)
+                    </div>
+                </div>
+
+                <p><strong>When to Use:</strong></p>
+                <ul>
+                    <li>When many related classes differ only in their behavior</li>
+                    <li>When you need different variants of an algorithm</li>
+                    <li>When an algorithm uses data that clients shouldn't know about</li>
+                    <li>When a class defines many behaviors as conditional statements</li>
+                </ul>
+
+                <div class="exam-tip">
+                    Strategy pattern is often confused with State pattern. Key difference: In Strategy, the client
+                    chooses the strategy; in State, the context changes state internally based on conditions.
+                </div>
+
+                <!-- DECORATOR PATTERN -->
+                <h4>1.3.5 Decorator Pattern (Structural)</h4>
+
+                <div class="definition">
+                    <strong>Intent:</strong> Attach additional responsibilities to an object dynamically. Decorators
+                    provide a flexible alternative to subclassing for extending functionality.
+                </div>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Decorator Pattern Structure</div>
+                    <svg viewBox="0 0 650 320" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Component Interface -->
+                        <rect x="250" y="10" width="150" height="60" fill="#fff3e0" stroke="#ff9800" stroke-width="2"
+                            rx="5" stroke-dasharray="5,3" />
+                        <text x="325" y="30" text-anchor="middle" font-style="italic" font-size="11">«interface»</text>
+                        <text x="325" y="48" text-anchor="middle" font-weight="bold" font-size="13">Component</text>
+                        <line x1="250" y1="55" x2="400" y2="55" stroke="#ff9800" />
+                        <text x="260" y="68" font-size="10">+ operation()</text>
+
+                        <!-- Concrete Component -->
+                        <rect x="50" y="120" width="150" height="60" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="5" />
+                        <text x="125" y="145" text-anchor="middle" font-weight="bold"
+                            font-size="12">ConcreteComponent</text>
+                        <line x1="50" y1="155" x2="200" y2="155" stroke="#4caf50" />
+                        <text x="60" y="172" font-size="10">+ operation()</text>
+
+                        <!-- Decorator (Abstract) -->
+                        <rect x="400" y="120" width="180" height="80" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"
+                            rx="5" />
+                        <text x="490" y="140" text-anchor="middle" font-style="italic" font-size="11">«abstract»</text>
+                        <text x="490" y="158" text-anchor="middle" font-weight="bold" font-size="12">Decorator</text>
+                        <line x1="400" y1="165" x2="580" y2="165" stroke="#1976d2" />
+                        <text x="410" y="182" font-size="10">- component: Component</text>
+                        <line x1="400" y1="190" x2="580" y2="190" stroke="#1976d2" />
+
+                        <!-- Concrete Decorators -->
+                        <rect x="320" y="250" width="150" height="60" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="5" />
+                        <text x="395" y="275" text-anchor="middle" font-weight="bold"
+                            font-size="11">ConcreteDecoratorA</text>
+                        <line x1="320" y1="285" x2="470" y2="285" stroke="#4caf50" />
+                        <text x="330" y="302" font-size="10">+ operation()</text>
+
+                        <rect x="490" y="250" width="150" height="60" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="5" />
+                        <text x="565" y="275" text-anchor="middle" font-weight="bold"
+                            font-size="11">ConcreteDecoratorB</text>
+                        <line x1="490" y1="285" x2="640" y2="285" stroke="#4caf50" />
+                        <text x="500" y="302" font-size="10">+ operation()</text>
+
+                        <!-- Arrows -->
+                        <line x1="125" y1="120" x2="280" y2="75" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#hollow-arrow)" />
+                        <line x1="490" y1="120" x2="360" y2="75" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#hollow-arrow)" />
+                        <line x1="395" y1="250" x2="450" y2="205" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#hollow-arrow)" />
+                        <line x1="565" y1="250" x2="520" y2="205" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#hollow-arrow)" />
+                        <path d="M580 160 Q620 160 620 60 Q620 40 400 40" stroke="#333" stroke-width="1.5" fill="none"
+                            marker-end="url(#arrow)" />
+                        <text x="610" y="100" font-size="10">component</text>
+                    </svg>
+                    <div class="legend">
+                        <strong>Legend:</strong>
+                        Hollow arrow = Inheritance/Implements |
+                        Solid curved arrow = Has-a relationship (wraps component)
+                    </div>
+                </div>
+
+                <p><strong>Real-World Example:</strong> Coffee shop where you can add toppings (milk, sugar, whipped
+                    cream) to a base coffee, each adding to the cost and description.</p>
+
+                <p><strong>Advantages:</strong></p>
+                <ul>
+                    <li>More flexibility than static inheritance</li>
+                    <li>Avoids feature-laden classes high up in the hierarchy</li>
+                    <li>Follows Open/Closed Principle</li>
+                    <li>Can add or remove responsibilities at runtime</li>
+                </ul>
+
+                <p><strong>Disadvantages:</strong></p>
+                <ul>
+                    <li>Can result in many small objects</li>
+                    <li>Can be confusing to understand the structure</li>
+                    <li>Identity issues (a decorated component is not identical to the component itself)</li>
+                </ul>
+
+                <!-- ADAPTER PATTERN -->
+                <h4>1.3.6 Adapter Pattern (Structural)</h4>
+
+                <div class="definition">
+                    <strong>Intent:</strong> Convert the interface of a class into another interface clients expect.
+                    Adapter lets classes work together that couldn't otherwise because of incompatible interfaces.
+                </div>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Adapter Pattern Structure (Object Adapter)</div>
+                    <svg viewBox="0 0 650 200" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Client -->
+                        <rect x="20" y="70" width="120" height="50" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"
+                            rx="5" />
+                        <text x="80" y="100" text-anchor="middle" font-weight="bold" font-size="13">Client</text>
+
+                        <!-- Target Interface -->
+                        <rect x="200" y="20" width="150" height="60" fill="#fff3e0" stroke="#ff9800" stroke-width="2"
+                            rx="5" stroke-dasharray="5,3" />
+                        <text x="275" y="40" text-anchor="middle" font-style="italic" font-size="11">«interface»</text>
+                        <text x="275" y="58" text-anchor="middle" font-weight="bold" font-size="13">Target</text>
+                        <line x1="200" y1="65" x2="350" y2="65" stroke="#ff9800" />
+                        <text x="210" y="78" font-size="10">+ request()</text>
+
+                        <!-- Adapter -->
+                        <rect x="200" y="120" width="150" height="60" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="5" />
+                        <text x="275" y="145" text-anchor="middle" font-weight="bold" font-size="13">Adapter</text>
+                        <line x1="200" y1="155" x2="350" y2="155" stroke="#4caf50" />
+                        <text x="210" y="172" font-size="10">+ request()</text>
+
+                        <!-- Adaptee -->
+                        <rect x="450" y="120" width="150" height="60" fill="#fce4ec" stroke="#e91e63" stroke-width="2"
+                            rx="5" />
+                        <text x="525" y="145" text-anchor="middle" font-weight="bold" font-size="13">Adaptee</text>
+                        <line x1="450" y1="155" x2="600" y2="155" stroke="#e91e63" />
+                        <text x="460" y="172" font-size="10">+ specificRequest()</text>
+
+                        <!-- Arrows -->
+                        <line x1="140" y1="95" x2="195" y2="55" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#arrow)" />
+                        <line x1="275" y1="120" x2="275" y2="85" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#hollow-arrow)" />
+                        <line x1="350" y1="150" x2="445" y2="150" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#arrow)" />
+                        <text x="390" y="142" font-size="10">adaptee</text>
+                    </svg>
+                    <div class="legend">
+                        <strong>Legend:</strong>
+                        Client uses Target interface |
+                        Adapter implements Target and wraps Adaptee |
+                        Adaptee has incompatible interface
+                    </div>
+                </div>
+
+                <p><strong>When to Use:</strong></p>
+                <ul>
+                    <li>When you want to use an existing class but its interface doesn't match what you need</li>
+                    <li>When you want to create a reusable class that cooperates with unrelated or unforeseen classes
+                    </li>
+                    <li>When integrating legacy code with new systems</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>1.4 Homogenization of Classes</h3>
+
+                <p>Homogenization refers to the process of making different classes conform to a common interface or
+                    structure, allowing them to be treated uniformly. This is a key principle in object-oriented design
+                    that enables polymorphism and loose coupling.</p>
+
+                <h4>Key Concepts:</h4>
+                <ul>
+                    <li><strong>Interface Standardization:</strong> Different classes implement the same interface,
+                        allowing clients to interact with them uniformly without knowing their concrete types.</li>
+                    <li><strong>Abstraction Layer:</strong> Creating abstract base classes or interfaces that define
+                        common behavior expected from all conforming classes.</li>
+                    <li><strong>Polymorphic Behavior:</strong> Enables treating objects of different classes through a
+                        common interface, supporting runtime binding.</li>
+                </ul>
+
+                <h4>Benefits:</h4>
+                <ul>
+                    <li>Reduces coupling between components</li>
+                    <li>Increases code reusability</li>
+                    <li>Simplifies client code (works with abstractions, not implementations)</li>
+                    <li>Supports the Dependency Inversion Principle</li>
+                </ul>
+
+                <div class="exam-tip">
+                    Homogenization is closely related to the Liskov Substitution Principle (LSP) - objects of a
+                    superclass should be replaceable with objects of subclasses without affecting program correctness.
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>1.5 Pattern Summary Table (Exam Quick Reference)</h3>
+
+                <table>
+                    <tr>
+                        <th>Pattern</th>
+                        <th>Category</th>
+                        <th>Intent (One-liner)</th>
+                        <th>Key Participants</th>
+                    </tr>
+                    <tr>
+                        <td>Singleton</td>
+                        <td>Creational</td>
+                        <td>Ensure single instance with global access</td>
+                        <td>Singleton class with private constructor</td>
+                    </tr>
+                    <tr>
+                        <td>Factory Method</td>
+                        <td>Creational</td>
+                        <td>Defer instantiation to subclasses</td>
+                        <td>Creator, ConcreteCreator, Product</td>
+                    </tr>
+                    <tr>
+                        <td>Abstract Factory</td>
+                        <td>Creational</td>
+                        <td>Create families of related objects</td>
+                        <td>AbstractFactory, ConcreteFactory, Products</td>
+                    </tr>
+                    <tr>
+                        <td>Observer</td>
+                        <td>Behavioral</td>
+                        <td>One-to-many notification on state change</td>
+                        <td>Subject, Observer, ConcreteSubject</td>
+                    </tr>
+                    <tr>
+                        <td>Strategy</td>
+                        <td>Behavioral</td>
+                        <td>Encapsulate interchangeable algorithms</td>
+                        <td>Context, Strategy, ConcreteStrategies</td>
+                    </tr>
+                    <tr>
+                        <td>Decorator</td>
+                        <td>Structural</td>
+                        <td>Add responsibilities dynamically</td>
+                        <td>Component, Decorator, ConcreteDecorator</td>
+                    </tr>
+                    <tr>
+                        <td>Adapter</td>
+                        <td>Structural</td>
+                        <td>Convert incompatible interfaces</td>
+                        <td>Target, Adapter, Adaptee</td>
+                    </tr>
+                    <tr>
+                        <td>Facade</td>
+                        <td>Structural</td>
+                        <td>Simplified interface to subsystem</td>
+                        <td>Facade, Subsystem classes</td>
+                    </tr>
+                    <tr>
+                        <td>Command</td>
+                        <td>Behavioral</td>
+                        <td>Encapsulate request as object</td>
+                        <td>Command, Invoker, Receiver</td>
+                    </tr>
+                    <tr>
+                        <td>Template Method</td>
+                        <td>Behavioral</td>
+                        <td>Define skeleton, defer steps to subclasses</td>
+                        <td>AbstractClass, ConcreteClass</td>
+                    </tr>
+                </table>
+            </div>
+
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SECTION 2: UML DIAGRAMS -->
+        <!-- ============================================== -->
+
+        <section id="uml-diagrams">
+            <h2>2. UML Diagrams</h2>
+
+            <div class="card">
+                <h3>Introduction to UML</h3>
+                <div class="definition">
+                    <strong>Unified Modeling Language (UML)</strong> is a standardized general-purpose modeling language
+                    in software engineering. It provides a set of graphic notation techniques to create visual models of
+                    object-oriented software systems.
+                </div>
+                <p>UML diagrams are divided into two main categories:</p>
+                <ol>
+                    <li><strong>Structural Diagrams:</strong> Depict the static structure of a system (Class, Component,
+                        Deployment, Object diagrams)</li>
+                    <li><strong>Behavioral Diagrams:</strong> Depict the dynamic behavior of a system (Use Case,
+                        Activity, State, Sequence, Collaboration diagrams)</li>
+                </ol>
+            </div>
+
+            <!-- STATE DIAGRAM -->
+            <div class="card">
+                <h3>2.1 State Diagram (State Machine Diagram)</h3>
+                <div class="definition">
+                    <strong>Purpose:</strong> A State Diagram describes the states an object can be in during its
+                    lifetime and the events/transitions that cause state changes. It models the dynamic behavior of a
+                    single object in response to a series of events.
+                </div>
+
+                <h4>Key Elements:</h4>
+                <ul>
+                    <li><strong>State:</strong> A condition during the life of an object (represented by rounded
+                        rectangle)</li>
+                    <li><strong>Initial State:</strong> Starting point (filled black circle)</li>
+                    <li><strong>Final State:</strong> Ending point (filled circle within a circle - "bull's eye")</li>
+                    <li><strong>Transition:</strong> Movement from one state to another, triggered by an event</li>
+                    <li><strong>Guard Condition:</strong> Boolean condition [in brackets] that must be true for
+                        transition</li>
+                    <li><strong>Action:</strong> Activity performed during transition (after /)</li>
+                </ul>
+
+                <div class="scenario">
+                    <strong>ATM Transaction System:</strong> An ATM machine goes through various states from being idle,
+                    to authenticating the user, processing transactions, and finally returning to idle.
+                </div>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">State Diagram: ATM Transaction System</div>
+                    <svg viewBox="0 0 700 400" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="state-arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5"
+                                orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                            </marker>
+                        </defs>
+
+                        <!-- Initial State -->
+                        <circle cx="50" cy="80" r="12" fill="#333" />
+
+                        <!-- Idle State -->
+                        <rect x="100" y="55" width="100" height="50" rx="12" fill="#e3f2fd" stroke="#1976d2"
+                            stroke-width="2" />
+                        <text x="150" y="85" text-anchor="middle" font-weight="bold" font-size="12">Idle</text>
+
+                        <!-- Card Inserted State -->
+                        <rect x="250" y="55" width="120" height="50" rx="12" fill="#e8f5e9" stroke="#4caf50"
+                            stroke-width="2" />
+                        <text x="310" y="78" text-anchor="middle" font-weight="bold" font-size="11">Card Inserted</text>
+                        <text x="310" y="92" text-anchor="middle" font-size="9">entry/ Read Card</text>
+
+                        <!-- PIN Entry State -->
+                        <rect x="420" y="55" width="120" height="50" rx="12" fill="#fff3e0" stroke="#ff9800"
+                            stroke-width="2" />
+                        <text x="480" y="78" text-anchor="middle" font-weight="bold" font-size="11">PIN Entry</text>
+                        <text x="480" y="92" text-anchor="middle" font-size="9">do/ Await PIN</text>
+
+                        <!-- Validating State -->
+                        <rect x="580" y="55" width="100" height="50" rx="12" fill="#fce4ec" stroke="#e91e63"
+                            stroke-width="2" />
+                        <text x="630" y="78" text-anchor="middle" font-weight="bold" font-size="11">Validating</text>
+                        <text x="630" y="92" text-anchor="middle" font-size="9">do/ Verify PIN</text>
+
+                        <!-- Transaction Selection -->
+                        <rect x="480" y="160" width="140" height="50" rx="12" fill="#e1f5fe" stroke="#03a9f4"
+                            stroke-width="2" />
+                        <text x="550" y="183" text-anchor="middle" font-weight="bold" font-size="11">Transaction
+                            Select</text>
+                        <text x="550" y="197" text-anchor="middle" font-size="9">do/ Display Menu</text>
+
+                        <!-- Processing -->
+                        <rect x="480" y="260" width="140" height="50" rx="12" fill="#f3e5f5" stroke="#9c27b0"
+                            stroke-width="2" />
+                        <text x="550" y="283" text-anchor="middle" font-weight="bold" font-size="11">Processing</text>
+                        <text x="550" y="297" text-anchor="middle" font-size="9">do/ Execute</text>
+
+                        <!-- Ejecting Card -->
+                        <rect x="100" y="260" width="120" height="50" rx="12" fill="#ffebee" stroke="#f44336"
+                            stroke-width="2" />
+                        <text x="160" y="283" text-anchor="middle" font-weight="bold" font-size="11">Ejecting
+                            Card</text>
+                        <text x="160" y="297" text-anchor="middle" font-size="9">exit/ Print Receipt</text>
+
+                        <!-- Final State -->
+                        <circle cx="50" cy="285" r="15" fill="none" stroke="#333" stroke-width="2" />
+                        <circle cx="50" cy="285" r="10" fill="#333" />
+
+                        <!-- Transitions -->
+                        <line x1="62" y1="80" x2="95" y2="80" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#state-arrow)" />
+                        <line x1="200" y1="80" x2="245" y2="80" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#state-arrow)" />
+                        <text x="222" y="72" font-size="9">cardInserted</text>
+                        <line x1="370" y1="80" x2="415" y2="80" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#state-arrow)" />
+                        <text x="392" y="72" font-size="9">cardValid</text>
+                        <line x1="540" y1="80" x2="575" y2="80" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#state-arrow)" />
+                        <text x="557" y="72" font-size="9">pinEntered</text>
+                        <path d="M630 105 Q630 135 550 155" fill="none" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#state-arrow)" />
+                        <text x="610" y="135" font-size="9">[pinValid]</text>
+                        <line x1="550" y1="210" x2="550" y2="255" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#state-arrow)" />
+                        <text x="560" y="235" font-size="9">selected</text>
+                        <line x1="480" y1="285" x2="225" y2="285" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#state-arrow)" />
+                        <text x="350" y="277" font-size="9">completed</text>
+                        <line x1="100" y1="285" x2="68" y2="285" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#state-arrow)" />
+                        <text x="84" y="277" font-size="9">ejected</text>
+
+                        <!-- Legend -->
+                        <rect x="250" y="340" width="400" height="50" fill="#f5f5f5" stroke="#ccc" rx="5" />
+                        <text x="260" y="360" font-weight="bold" font-size="11">Legend:</text>
+                        <circle cx="320" cy="365" r="8" fill="#333" />
+                        <text x="335" y="369" font-size="10">Initial</text>
+                        <circle cx="390" cy="365" r="10" fill="none" stroke="#333" stroke-width="2" />
+                        <circle cx="390" cy="365" r="6" fill="#333" />
+                        <text x="405" y="369" font-size="10">Final</text>
+                        <rect x="460" y="355" width="50" height="20" rx="6" fill="#e3f2fd" stroke="#1976d2" />
+                        <text x="520" y="369" font-size="10">State</text>
+                        <line x1="570" y1="365" x2="610" y2="365" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#state-arrow)" />
+                        <text x="620" y="369" font-size="10">Transition</text>
+                    </svg>
+                </div>
+
+                <h4>How to Draw in Exam:</h4>
+                <ol>
+                    <li>Identify all possible states of the object</li>
+                    <li>Draw initial state (filled circle) at the starting point</li>
+                    <li>Draw each state as a rounded rectangle with state name</li>
+                    <li>Add internal activities (entry/, do/, exit/) where applicable</li>
+                    <li>Draw transitions as arrows between states with event labels</li>
+                    <li>Add guard conditions [in brackets] on transitions</li>
+                    <li>Draw final state(s) where the object lifecycle ends</li>
+                </ol>
+
+                <div class="exam-tip">
+                    In exams, always label transitions clearly with events. Remember: entry/ runs when entering state,
+                    do/ runs while in state, exit/ runs when leaving state.
+                </div>
+            </div>
+
+            <!-- DEPLOYMENT DIAGRAM -->
+            <div class="card">
+                <h3>2.2 Deployment Diagram</h3>
+                <div class="definition">
+                    <strong>Purpose:</strong> A Deployment Diagram shows the physical architecture of a system,
+                    depicting how software artifacts are deployed on hardware nodes.
+                </div>
+
+                <h4>Key Elements:</h4>
+                <ul>
+                    <li><strong>Node:</strong> A physical computing resource (3D box) - servers, workstations, devices
+                    </li>
+                    <li><strong>Artifact:</strong> A physical piece of software deployed on a node (rectangle with
+                        «artifact»)</li>
+                    <li><strong>Communication Path:</strong> Connection between nodes showing network/communication</li>
+                    <li><strong>Device:</strong> A physical machine (stereotyped as «device»)</li>
+                    <li><strong>Execution Environment:</strong> Software environment needed to run artifacts</li>
+                </ul>
+
+                <div class="scenario">
+                    <strong>Online Shopping System:</strong> A typical e-commerce platform with web servers, application
+                    servers, database servers, and client browsers.
+                </div>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Deployment Diagram: Online Shopping System</div>
+                    <svg viewBox="0 0 750 450" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Client Browser Node -->
+                        <g transform="translate(20, 30)">
+                            <path d="M0,15 L0,80 L130,80 L130,15 L115,0 L0,0 Z" fill="#e3f2fd" stroke="#1976d2"
+                                stroke-width="2" />
+                            <path d="M130,15 L115,0 L115,65 L130,80 Z" fill="#bbdefb" stroke="#1976d2"
+                                stroke-width="2" />
+                            <path d="M0,0 L15,15 L130,15 L115,0 Z" fill="#90caf9" stroke="#1976d2" stroke-width="2" />
+                            <text x="65" y="-8" text-anchor="middle" font-size="10">«device»</text>
+                            <text x="65" y="35" text-anchor="middle" font-weight="bold" font-size="11">Client PC</text>
+                            <rect x="15" y="45" width="100" height="28" fill="#fff" stroke="#666" rx="3" />
+                            <text x="65" y="58" text-anchor="middle" font-size="9">«artifact»</text>
+                            <text x="65" y="69" text-anchor="middle" font-size="10">Browser</text>
+                        </g>
+
+                        <!-- Load Balancer -->
+                        <g transform="translate(220, 50)">
+                            <path d="M0,15 L0,60 L100,60 L100,15 L88,0 L0,0 Z" fill="#fff3e0" stroke="#ff9800"
+                                stroke-width="2" />
+                            <path d="M100,15 L88,0 L88,45 L100,60 Z" fill="#ffe0b2" stroke="#ff9800" stroke-width="2" />
+                            <path d="M0,0 L12,15 L100,15 L88,0 Z" fill="#ffcc80" stroke="#ff9800" stroke-width="2" />
+                            <text x="50" y="-8" text-anchor="middle" font-size="10">«device»</text>
+                            <text x="50" y="30" text-anchor="middle" font-weight="bold" font-size="10">Load
+                                Balancer</text>
+                            <text x="50" y="45" text-anchor="middle" font-size="9">Nginx</text>
+                        </g>
+
+                        <!-- Web Server 1 -->
+                        <g transform="translate(400, 20)">
+                            <path d="M0,15 L0,90 L140,90 L140,15 L125,0 L0,0 Z" fill="#e1f5fe" stroke="#03a9f4"
+                                stroke-width="2" />
+                            <path d="M140,15 L125,0 L125,75 L140,90 Z" fill="#b3e5fc" stroke="#03a9f4"
+                                stroke-width="2" />
+                            <path d="M0,0 L15,15 L140,15 L125,0 Z" fill="#81d4fa" stroke="#03a9f4" stroke-width="2" />
+                            <text x="70" y="-8" text-anchor="middle" font-size="10">«executionEnvironment»</text>
+                            <text x="70" y="35" text-anchor="middle" font-weight="bold" font-size="11">Web Server</text>
+                            <text x="70" y="50" text-anchor="middle" font-size="10">Apache Tomcat</text>
+                            <rect x="15" y="58" width="110" height="25" fill="#fff" stroke="#666" rx="3" />
+                            <text x="70" y="70" text-anchor="middle" font-size="9">«artifact»</text>
+                            <text x="70" y="80" text-anchor="middle" font-size="9">ShoppingApp.war</text>
+                        </g>
+
+                        <!-- Database Server -->
+                        <g transform="translate(580, 50)">
+                            <path d="M0,15 L0,100 L140,100 L140,15 L125,0 L0,0 Z" fill="#fce4ec" stroke="#e91e63"
+                                stroke-width="2" />
+                            <path d="M140,15 L125,0 L125,85 L140,100 Z" fill="#f8bbd9" stroke="#e91e63"
+                                stroke-width="2" />
+                            <path d="M0,0 L15,15 L140,15 L125,0 Z" fill="#f48fb1" stroke="#e91e63" stroke-width="2" />
+                            <text x="70" y="-8" text-anchor="middle" font-size="10">«device»</text>
+                            <text x="70" y="35" text-anchor="middle" font-weight="bold" font-size="11">Database
+                                Server</text>
+                            <rect x="15" y="48" width="110" height="45" fill="#fff" stroke="#666" rx="3" />
+                            <text x="70" y="62" text-anchor="middle" font-size="9">«artifact»</text>
+                            <text x="70" y="75" text-anchor="middle" font-size="10">MySQL</text>
+                            <text x="70" y="88" text-anchor="middle" font-size="9">shopping_db</text>
+                        </g>
+
+                        <!-- Mobile Device -->
+                        <g transform="translate(20, 180)">
+                            <path d="M0,15 L0,80 L130,80 L130,15 L115,0 L0,0 Z" fill="#e8f5e9" stroke="#4caf50"
+                                stroke-width="2" />
+                            <path d="M130,15 L115,0 L115,65 L130,80 Z" fill="#c8e6c9" stroke="#4caf50"
+                                stroke-width="2" />
+                            <path d="M0,0 L15,15 L130,15 L115,0 Z" fill="#a5d6a7" stroke="#4caf50" stroke-width="2" />
+                            <text x="65" y="-8" text-anchor="middle" font-size="10">«device»</text>
+                            <text x="65" y="35" text-anchor="middle" font-weight="bold" font-size="11">Mobile
+                                Device</text>
+                            <rect x="15" y="45" width="100" height="28" fill="#fff" stroke="#666" rx="3" />
+                            <text x="65" y="58" text-anchor="middle" font-size="9">«artifact»</text>
+                            <text x="65" y="69" text-anchor="middle" font-size="10">Mobile App</text>
+                        </g>
+
+                        <!-- Payment Gateway -->
+                        <g transform="translate(400, 200)">
+                            <path d="M0,15 L0,80 L140,80 L140,15 L125,0 L0,0 Z" fill="#f3e5f5" stroke="#9c27b0"
+                                stroke-width="2" />
+                            <path d="M140,15 L125,0 L125,65 L140,80 Z" fill="#e1bee7" stroke="#9c27b0"
+                                stroke-width="2" />
+                            <path d="M0,0 L15,15 L140,15 L125,0 Z" fill="#ce93d8" stroke="#9c27b0" stroke-width="2" />
+                            <text x="70" y="-8" text-anchor="middle" font-size="10">«external»</text>
+                            <text x="70" y="35" text-anchor="middle" font-weight="bold" font-size="11">Payment
+                                Gateway</text>
+                            <rect x="15" y="45" width="110" height="28" fill="#fff" stroke="#666" rx="3" />
+                            <text x="70" y="58" text-anchor="middle" font-size="9">«service»</text>
+                            <text x="70" y="69" text-anchor="middle" font-size="10">Stripe API</text>
+                        </g>
+
+                        <!-- Communication Paths -->
+                        <line x1="150" y1="70" x2="220" y2="80" stroke="#333" stroke-width="2" />
+                        <text x="175" y="65" font-size="9">«HTTPS»</text>
+                        <line x1="150" y1="220" x2="220" y2="100" stroke="#333" stroke-width="2" />
+                        <text x="175" y="175" font-size="9">«HTTPS»</text>
+                        <line x1="320" y1="80" x2="400" y2="70" stroke="#333" stroke-width="2" />
+                        <line x1="540" y1="70" x2="580" y2="100" stroke="#333" stroke-width="2" />
+                        <text x="550" y="80" font-size="9">«TCP/IP»</text>
+                        <line x1="470" y1="115" x2="470" y2="195" stroke="#333" stroke-width="2" />
+                        <text x="480" y="160" font-size="9">«HTTPS»</text>
+
+                        <!-- Legend -->
+                        <rect x="20" y="320" width="700" height="60" fill="#f5f5f5" stroke="#ccc" rx="5" />
+                        <text x="30" y="345" font-weight="bold" font-size="11">Legend:</text>
+                        <g transform="translate(90, 335)">
+                            <path d="M0,8 L0,28 L35,28 L35,8 L30,0 L0,0 Z" fill="#e3f2fd" stroke="#1976d2"
+                                stroke-width="1.5" />
+                            <path d="M35,8 L30,0 L30,20 L35,28 Z" fill="#bbdefb" stroke="#1976d2" stroke-width="1" />
+                        </g>
+                        <text x="135" y="360" font-size="10">Node</text>
+                        <rect x="180" y="340" width="50" height="22" fill="#fff" stroke="#666" rx="3" />
+                        <text x="240" y="355" font-size="10">Artifact</text>
+                        <line x1="290" y1="350" x2="350" y2="350" stroke="#333" stroke-width="2" />
+                        <text x="360" y="355" font-size="10">Communication Path</text>
+                        <text x="500" y="355" font-size="10">«stereotype» = Type label</text>
+                    </svg>
+                </div>
+
+                <h4>How to Draw in Exam:</h4>
+                <ol>
+                    <li>Identify all hardware nodes (servers, devices, external systems)</li>
+                    <li>Draw nodes as 3D boxes with appropriate stereotypes</li>
+                    <li>Place artifacts inside nodes showing what software runs where</li>
+                    <li>Draw communication paths between nodes</li>
+                    <li>Label paths with protocol/connection type (HTTP, TCP/IP, etc.)</li>
+                </ol>
+
+                <div class="exam-tip">
+                    Deployment diagrams frequently appear in exams for enterprise application questions. Always show the
+                    physical separation between client, server, and database tiers.
+                </div>
+            </div>
+
+            <!-- COLLABORATION DIAGRAM -->
+            <div class="card">
+                <h3>2.3 Collaboration Diagram (Communication Diagram)</h3>
+                <div class="definition">
+                    <strong>Purpose:</strong> A Collaboration Diagram shows how objects interact to perform a specific
+                    task, emphasizing the structural organization of objects and the messages passed between them.
+                    Unlike sequence diagrams, it focuses on object relationships rather than time ordering.
+                </div>
+
+                <h4>Key Elements:</h4>
+                <ul>
+                    <li><strong>Object:</strong> An instance of a class (rectangle with underlined name:
+                        objectName:ClassName)</li>
+                    <li><strong>Link:</strong> Connection between objects showing relationship (solid line)</li>
+                    <li><strong>Message:</strong> Communication between objects, numbered to show order</li>
+                    <li><strong>Sequence Number:</strong> Indicates the order of message execution (1, 1.1, 1.2, 2,
+                        etc.)</li>
+                </ul>
+
+                <div class="scenario">
+                    <strong>University Course Registration System:</strong> A student registers for a course through the
+                    portal. The system validates prerequisites and confirms enrollment.
+                </div>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Collaboration Diagram: Course Registration</div>
+                    <svg viewBox="0 0 700 350" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="collab-arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                                <polygon points="0 0, 8 3, 0 6" fill="#333" />
+                            </marker>
+                        </defs>
+
+                        <!-- Student Actor -->
+                        <circle cx="60" cy="80" r="18" fill="#e3f2fd" stroke="#1976d2" stroke-width="2" />
+                        <line x1="60" y1="98" x2="60" y2="140" stroke="#1976d2" stroke-width="2" />
+                        <line x1="60" y1="115" x2="35" y2="130" stroke="#1976d2" stroke-width="2" />
+                        <line x1="60" y1="115" x2="85" y2="130" stroke="#1976d2" stroke-width="2" />
+                        <line x1="60" y1="140" x2="40" y2="165" stroke="#1976d2" stroke-width="2" />
+                        <line x1="60" y1="140" x2="80" y2="165" stroke="#1976d2" stroke-width="2" />
+                        <text x="60" y="185" text-anchor="middle" font-size="11">:Student</text>
+
+                        <!-- Registration Form Object -->
+                        <rect x="140" y="65" width="130" height="40" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="5" />
+                        <text x="205" y="90" text-anchor="middle" font-size="10"
+                            text-decoration="underline">regForm:RegistrationForm</text>
+
+                        <!-- Registration Controller Object -->
+                        <rect x="320" y="65" width="150" height="40" fill="#fff3e0" stroke="#ff9800" stroke-width="2"
+                            rx="5" />
+                        <text x="395" y="90" text-anchor="middle" font-size="10"
+                            text-decoration="underline">ctrl:RegistrationController</text>
+
+                        <!-- Course Object -->
+                        <rect x="520" y="65" width="130" height="40" fill="#fce4ec" stroke="#e91e63" stroke-width="2"
+                            rx="5" />
+                        <text x="585" y="90" text-anchor="middle" font-size="10"
+                            text-decoration="underline">course:Course</text>
+
+                        <!-- Student Record Object -->
+                        <rect x="320" y="180" width="150" height="40" fill="#e1f5fe" stroke="#03a9f4" stroke-width="2"
+                            rx="5" />
+                        <text x="395" y="205" text-anchor="middle" font-size="10"
+                            text-decoration="underline">record:StudentRecord</text>
+
+                        <!-- Enrollment Object -->
+                        <rect x="520" y="180" width="130" height="40" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"
+                            rx="5" />
+                        <text x="585" y="205" text-anchor="middle" font-size="10"
+                            text-decoration="underline">enroll:Enrollment</text>
+
+                        <!-- Links and Messages -->
+                        <line x1="90" y1="85" x2="140" y2="85" stroke="#333" stroke-width="1.5" />
+                        <line x1="100" y1="75" x2="135" y2="75" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#collab-arrow)" />
+                        <text x="100" y="65" font-size="9" fill="#c62828">1: selectCourse()</text>
+
+                        <line x1="270" y1="85" x2="320" y2="85" stroke="#333" stroke-width="1.5" />
+                        <line x1="280" y1="75" x2="315" y2="75" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#collab-arrow)" />
+                        <text x="280" y="65" font-size="9" fill="#c62828">2: register()</text>
+
+                        <line x1="470" y1="85" x2="520" y2="85" stroke="#333" stroke-width="1.5" />
+                        <line x1="480" y1="75" x2="515" y2="75" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#collab-arrow)" />
+                        <text x="480" y="65" font-size="9" fill="#c62828">3: checkAvailability()</text>
+
+                        <line x1="395" y1="105" x2="395" y2="180" stroke="#333" stroke-width="1.5" />
+                        <line x1="405" y1="120" x2="405" y2="175" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#collab-arrow)" />
+                        <text x="410" y="150" font-size="9" fill="#c62828">4: validatePrereqs()</text>
+
+                        <line x1="470" y1="200" x2="520" y2="200" stroke="#333" stroke-width="1.5" />
+                        <line x1="480" y1="190" x2="515" y2="190" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#collab-arrow)" />
+                        <text x="480" y="180" font-size="9" fill="#c62828">5: createEnrollment()</text>
+
+                        <!-- Legend -->
+                        <rect x="140" y="270" width="420" height="50" fill="#f5f5f5" stroke="#ccc" rx="5" />
+                        <text x="150" y="290" font-weight="bold" font-size="11">Legend:</text>
+                        <rect x="220" y="280" width="60" height="25" fill="#e8f5e9" stroke="#4caf50" rx="3" />
+                        <text x="290" y="297" font-size="10" text-decoration="underline">Object</text>
+                        <line x1="350" y1="292" x2="400" y2="292" stroke="#333" stroke-width="1.5" />
+                        <text x="410" y="297" font-size="10">Link</text>
+                        <text x="450" y="297" font-size="10" fill="#c62828">N: msg()</text>
+                        <text x="510" y="297" font-size="10">= Numbered Message</text>
+                    </svg>
+                </div>
+
+                <h4>Message Numbering Scheme:</h4>
+                <ul>
+                    <li><strong>Sequential (1, 2, 3...):</strong> Messages at the same level</li>
+                    <li><strong>Nested (1.1, 1.2, 2.1...):</strong> Messages triggered as part of processing another
+                        message</li>
+                    <li><strong>Concurrent (1a, 1b):</strong> Messages happening in parallel (asynchronous)</li>
+                </ul>
+
+                <div class="exam-tip">
+                    Collaboration diagrams are equivalent to Sequence diagrams in information but differ in emphasis.
+                    Collaboration shows object structure; Sequence shows time ordering.
+                </div>
+            </div>
+
+            <!-- TIMING DIAGRAM -->
+            <div class="card">
+                <h3>2.4 Timing Diagram</h3>
+                <div class="definition">
+                    <strong>Purpose:</strong> A Timing Diagram shows behavior of objects over a specific time period. It
+                    focuses on timing constraints and how states change along a timeline, making it ideal for real-time
+                    and embedded systems.
+                </div>
+
+                <h4>Key Elements:</h4>
+                <ul>
+                    <li><strong>Lifeline:</strong> Horizontal line representing an object over time</li>
+                    <li><strong>State/Condition Timeline:</strong> Shows different states an object goes through</li>
+                    <li><strong>Time Axis:</strong> Horizontal axis showing progression of time</li>
+                    <li><strong>State Changes:</strong> Vertical transitions between states</li>
+                    <li><strong>Duration Constraint:</strong> Time duration for a state {min..max}</li>
+                    <li><strong>Message:</strong> Arrow showing communication between lifelines</li>
+                </ul>
+
+                <div class="scenario">
+                    <strong>Traffic Light System:</strong> A traffic light cycles through Red, Yellow, and Green states
+                    with specific timing constraints for each phase.
+                </div>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Timing Diagram: Traffic Light Controller</div>
+                    <svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="timing-arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                                <polygon points="0 0, 8 3, 0 6" fill="#333" />
+                            </marker>
+                        </defs>
+
+                        <!-- Time Axis Labels -->
+                        <text x="120" y="260" font-size="10">0s</text>
+                        <text x="220" y="260" font-size="10">30s</text>
+                        <text x="320" y="260" font-size="10">35s</text>
+                        <text x="450" y="260" font-size="10">65s</text>
+                        <text x="550" y="260" font-size="10">70s</text>
+                        <text x="620" y="260" font-size="10">100s</text>
+
+                        <!-- Time Axis -->
+                        <line x1="110" y1="245" x2="650" y2="245" stroke="#333" stroke-width="2"
+                            marker-end="url(#timing-arrow)" />
+                        <text x="660" y="250" font-size="11">Time</text>
+
+                        <!-- Traffic Light Lifeline -->
+                        <text x="20" y="80" font-weight="bold" font-size="11">TrafficLight</text>
+
+                        <!-- State labels on Y-axis -->
+                        <text x="70" y="100" font-size="10" fill="#f44336">Red</text>
+                        <text x="70" y="150" font-size="10" fill="#ff9800">Yellow</text>
+                        <text x="70" y="200" font-size="10" fill="#4caf50">Green</text>
+
+                        <!-- State Timeline for Traffic Light -->
+                        <!-- Red state 0-30s -->
+                        <line x1="120" y1="95" x2="220" y2="95" stroke="#f44336" stroke-width="3" />
+                        <text x="155" y="85" font-size="9">{30s}</text>
+
+                        <!-- Transition to Yellow -->
+                        <line x1="220" y1="95" x2="220" y2="145" stroke="#333" stroke-width="2" />
+
+                        <!-- Yellow state 30-35s -->
+                        <line x1="220" y1="145" x2="320" y2="145" stroke="#ff9800" stroke-width="3" />
+                        <text x="255" y="135" font-size="9">{5s}</text>
+
+                        <!-- Transition to Green -->
+                        <line x1="320" y1="145" x2="320" y2="195" stroke="#333" stroke-width="2" />
+
+                        <!-- Green state 35-65s -->
+                        <line x1="320" y1="195" x2="450" y2="195" stroke="#4caf50" stroke-width="3" />
+                        <text x="370" y="185" font-size="9">{30s}</text>
+
+                        <!-- Transition to Yellow -->
+                        <line x1="450" y1="195" x2="450" y2="145" stroke="#333" stroke-width="2" />
+
+                        <!-- Yellow state 65-70s -->
+                        <line x1="450" y1="145" x2="550" y2="145" stroke="#ff9800" stroke-width="3" />
+                        <text x="485" y="135" font-size="9">{5s}</text>
+
+                        <!-- Transition to Red -->
+                        <line x1="550" y1="145" x2="550" y2="95" stroke="#333" stroke-width="2" />
+
+                        <!-- Red state 70-100s -->
+                        <line x1="550" y1="95" x2="630" y2="95" stroke="#f44336" stroke-width="3" />
+                        <text x="580" y="85" font-size="9">{30s}</text>
+
+                        <!-- Cycle indicator -->
+                        <path d="M630 95 Q650 95 650 150 Q650 220 120 220 Q110 220 110 200" fill="none" stroke="#666"
+                            stroke-width="1" stroke-dasharray="4,2" />
+                        <text x="370" y="230" font-size="9" fill="#666">Cycle Repeats</text>
+
+                        <!-- Legend -->
+                        <rect x="120" y="270" width="530" height="40" fill="#f5f5f5" stroke="#ccc" rx="5" />
+                        <text x="130" y="290" font-weight="bold" font-size="11">Legend:</text>
+                        <line x1="200" y1="285" x2="250" y2="285" stroke="#f44336" stroke-width="3" />
+                        <text x="260" y="290" font-size="10">State Line</text>
+                        <line x1="340" y1="280" x2="340" y2="295" stroke="#333" stroke-width="2" />
+                        <text x="350" y="290" font-size="10">Transition</text>
+                        <text x="430" y="290" font-size="10">{time} = Duration Constraint</text>
+                    </svg>
+                </div>
+
+                <h4>How to Draw in Exam:</h4>
+                <ol>
+                    <li>Draw horizontal time axis at the bottom</li>
+                    <li>List objects/lifelines vertically on the left</li>
+                    <li>Draw state lines horizontally for each state duration</li>
+                    <li>Show state changes as vertical lines</li>
+                    <li>Add duration constraints in curly braces</li>
+                    <li>Add timing marks on the time axis</li>
+                </ol>
+
+                <div class="exam-tip">
+                    Timing diagrams are essential for real-time systems. Focus on duration constraints and state
+                    transitions when answering questions about embedded or time-critical systems.
+                </div>
+            </div>
+
+            <!-- ACTIVITY DIAGRAM -->
+            <div class="card">
+                <h3>2.5 Activity Diagram</h3>
+                <div class="definition">
+                    <strong>Purpose:</strong> An Activity Diagram describes the workflow or business process of a
+                    system. It shows the sequence of activities, decision points, parallel activities, and
+                    synchronization, similar to a flowchart but with support for concurrent behavior.
+                </div>
+
+                <h4>Key Elements:</h4>
+                <ul>
+                    <li><strong>Activity:</strong> A task or action (rounded rectangle)</li>
+                    <li><strong>Initial Node:</strong> Starting point (filled circle)</li>
+                    <li><strong>Final Node:</strong> Ending point (circle with inner filled circle)</li>
+                    <li><strong>Decision Node:</strong> Branch point with conditions (diamond)</li>
+                    <li><strong>Merge Node:</strong> Combines alternative flows (diamond)</li>
+                    <li><strong>Fork:</strong> Splits flow into parallel activities (thick bar)</li>
+                    <li><strong>Join:</strong> Synchronizes parallel activities (thick bar)</li>
+                    <li><strong>Swimlane:</strong> Partition showing responsibility (vertical/horizontal lane)</li>
+                </ul>
+
+                <div class="scenario">
+                    <strong>Hospital Patient Admission System:</strong> When a patient arrives, they go through
+                    registration, triage, examination, and either treatment or admission based on severity.
+                </div>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Activity Diagram: Hospital Patient Admission</div>
+                    <svg viewBox="0 0 700 500" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="activity-arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5"
+                                orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                            </marker>
+                        </defs>
+
+                        <!-- Swimlanes -->
+                        <rect x="20" y="50" width="200" height="400" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"
+                            fill-opacity="0.3" />
+                        <text x="120" y="40" text-anchor="middle" font-weight="bold" font-size="12">Reception</text>
+
+                        <rect x="220" y="50" width="200" height="400" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            fill-opacity="0.3" />
+                        <text x="320" y="40" text-anchor="middle" font-weight="bold" font-size="12">Nurse</text>
+
+                        <rect x="420" y="50" width="200" height="400" fill="#fff3e0" stroke="#ff9800" stroke-width="2"
+                            fill-opacity="0.3" />
+                        <text x="520" y="40" text-anchor="middle" font-weight="bold" font-size="12">Doctor</text>
+
+                        <!-- Initial Node -->
+                        <circle cx="120" cy="80" r="10" fill="#333" />
+
+                        <!-- Register Patient -->
+                        <rect x="60" y="110" width="120" height="40" rx="10" fill="#e3f2fd" stroke="#1976d2"
+                            stroke-width="2" />
+                        <text x="120" y="135" text-anchor="middle" font-size="11">Register Patient</text>
+
+                        <!-- Collect Insurance -->
+                        <rect x="60" y="170" width="120" height="40" rx="10" fill="#e3f2fd" stroke="#1976d2"
+                            stroke-width="2" />
+                        <text x="120" y="195" text-anchor="middle" font-size="11">Collect Insurance</text>
+
+                        <!-- Triage Assessment -->
+                        <rect x="260" y="170" width="120" height="40" rx="10" fill="#e8f5e9" stroke="#4caf50"
+                            stroke-width="2" />
+                        <text x="320" y="195" text-anchor="middle" font-size="11">Triage Assessment</text>
+
+                        <!-- Decision Node -->
+                        <polygon points="320,250 350,280 320,310 290,280" fill="#fff" stroke="#333" stroke-width="2" />
+                        <text x="320" y="285" text-anchor="middle" font-size="10">?</text>
+
+                        <!-- Emergency Path -->
+                        <rect x="460" y="260" width="120" height="40" rx="10" fill="#ffebee" stroke="#f44336"
+                            stroke-width="2" />
+                        <text x="520" y="285" text-anchor="middle" font-size="11">Emergency Care</text>
+
+                        <!-- Non-Emergency Path -->
+                        <rect x="260" y="340" width="120" height="40" rx="10" fill="#e8f5e9" stroke="#4caf50"
+                            stroke-width="2" />
+                        <text x="320" y="365" text-anchor="middle" font-size="11">Schedule Exam</text>
+
+                        <!-- Doctor Examination -->
+                        <rect x="460" y="340" width="120" height="40" rx="10" fill="#fff3e0" stroke="#ff9800"
+                            stroke-width="2" />
+                        <text x="520" y="365" text-anchor="middle" font-size="11">Examination</text>
+
+                        <!-- Merge Node -->
+                        <polygon points="520,410 550,430 520,450 490,430" fill="#fff" stroke="#333" stroke-width="2" />
+
+                        <!-- Final Node -->
+                        <circle cx="520" cy="490" r="15" fill="none" stroke="#333" stroke-width="2" />
+                        <circle cx="520" cy="490" r="10" fill="#333" />
+
+                        <!-- Arrows -->
+                        <line x1="120" y1="90" x2="120" y2="105" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#activity-arrow)" />
+                        <line x1="120" y1="150" x2="120" y2="165" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#activity-arrow)" />
+                        <line x1="180" y1="190" x2="255" y2="190" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#activity-arrow)" />
+                        <line x1="320" y1="210" x2="320" y2="245" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#activity-arrow)" />
+
+                        <!-- Decision branches -->
+                        <line x1="350" y1="280" x2="455" y2="280" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#activity-arrow)" />
+                        <text x="385" y="270" font-size="9">[Emergency]</text>
+
+                        <line x1="320" y1="310" x2="320" y2="335" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#activity-arrow)" />
+                        <text x="330" y="325" font-size="9">[Non-Emergency]</text>
+
+                        <line x1="380" y1="360" x2="455" y2="360" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#activity-arrow)" />
+
+                        <!-- To merge -->
+                        <line x1="520" y1="300" x2="520" y2="405" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#activity-arrow)" />
+                        <line x1="520" y1="380" x2="520" y2="405" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#activity-arrow)" />
+
+                        <line x1="520" y1="450" x2="520" y2="472" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#activity-arrow)" />
+
+                        <!-- Legend -->
+                        <rect x="50" y="460" width="360" height="35" fill="#f5f5f5" stroke="#ccc" rx="5" />
+                        <text x="60" y="480" font-weight="bold" font-size="10">Legend:</text>
+                        <circle cx="120" cy="477" r="6" fill="#333" />
+                        <text x="130" y="481" font-size="9">Initial</text>
+                        <circle cx="170" cy="477" r="8" fill="none" stroke="#333" stroke-width="1.5" />
+                        <circle cx="170" cy="477" r="5" fill="#333" />
+                        <text x="182" y="481" font-size="9">Final</text>
+                        <rect x="220" y="470" width="40" height="15" rx="4" fill="#e3f2fd" stroke="#1976d2" />
+                        <text x="265" y="481" font-size="9">Activity</text>
+                        <polygon points="310,477 320,485 310,493 300,485" fill="#fff" stroke="#333" stroke-width="1" />
+                        <text x="330" y="485" font-size="9">Decision</text>
+                    </svg>
+                </div>
+
+                <h4>How to Draw in Exam:</h4>
+                <ol>
+                    <li>Identify swimlanes (actors/departments responsible)</li>
+                    <li>Start with initial node (filled circle)</li>
+                    <li>Draw activities as rounded rectangles</li>
+                    <li>Use diamonds for decision/merge nodes with conditions</li>
+                    <li>Use thick bars for fork/join (parallel activities)</li>
+                    <li>End with final node</li>
+                    <li>Connect with arrows showing flow direction</li>
+                </ol>
+
+                <div class="exam-tip">
+                    Activity diagrams are frequently asked for business process modeling. Always use swimlanes when
+                    multiple actors are involved. Label decision branches with guard conditions.
+                </div>
+            </div>
+
+            <!-- CLASS DIAGRAM -->
+            <div class="card">
+                <h3>2.6 Class Diagram</h3>
+                <div class="definition">
+                    <strong>Purpose:</strong> A Class Diagram is the most important structural diagram showing the
+                    static structure of a system by depicting classes, their attributes, methods, and relationships
+                    between classes.
+                </div>
+
+                <h4>Key Elements:</h4>
+                <ul>
+                    <li><strong>Class:</strong> Rectangle divided into three compartments (name, attributes, methods)
+                    </li>
+                    <li><strong>Visibility:</strong> + (public), - (private), # (protected), ~ (package)</li>
+                    <li><strong>Attributes:</strong> visibility name: type [= default value]</li>
+                    <li><strong>Methods:</strong> visibility name(parameters): returnType</li>
+                    <li><strong>Abstract Class/Method:</strong> Written in italics or with «abstract»</li>
+                    <li><strong>Interface:</strong> Marked with «interface» stereotype</li>
+                </ul>
+
+                <div class="scenario">
+                    <strong>Online Shopping System:</strong> An e-commerce application with customers, orders, products,
+                    and payment processing.
+                </div>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Class Diagram: Online Shopping System</div>
+                    <svg viewBox="0 0 750 450" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="class-arrow" markerWidth="12" markerHeight="12" refX="12" refY="6"
+                                orient="auto">
+                                <path d="M0,0 L12,6 L0,12 Z" fill="white" stroke="#333" stroke-width="1" />
+                            </marker>
+                            <marker id="filled-diamond" markerWidth="12" markerHeight="12" refX="0" refY="6"
+                                orient="auto">
+                                <path d="M0,6 L6,0 L12,6 L6,12 Z" fill="#333" />
+                            </marker>
+                            <marker id="hollow-diamond" markerWidth="12" markerHeight="12" refX="0" refY="6"
+                                orient="auto">
+                                <path d="M0,6 L6,0 L12,6 L6,12 Z" fill="white" stroke="#333" stroke-width="1" />
+                            </marker>
+                        </defs>
+
+                        <!-- Customer Class -->
+                        <rect x="20" y="20" width="160" height="120" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"
+                            rx="3" />
+                        <line x1="20" y1="50" x2="180" y2="50" stroke="#1976d2" />
+                        <line x1="20" y1="95" x2="180" y2="95" stroke="#1976d2" />
+                        <text x="100" y="40" text-anchor="middle" font-weight="bold" font-size="12">Customer</text>
+                        <text x="30" y="68" font-size="10">- customerId: int</text>
+                        <text x="30" y="82" font-size="10">- name: String</text>
+                        <text x="30" y="110" font-size="10">+ register(): void</text>
+                        <text x="30" y="125" font-size="10">+ placeOrder(): Order</text>
+
+                        <!-- Order Class -->
+                        <rect x="280" y="20" width="180" height="140" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="3" />
+                        <line x1="280" y1="50" x2="460" y2="50" stroke="#4caf50" />
+                        <line x1="280" y1="100" x2="460" y2="100" stroke="#4caf50" />
+                        <text x="370" y="40" text-anchor="middle" font-weight="bold" font-size="12">Order</text>
+                        <text x="290" y="68" font-size="10">- orderId: int</text>
+                        <text x="290" y="82" font-size="10">- orderDate: Date</text>
+                        <text x="290" y="96" font-size="10">- status: String</text>
+                        <text x="290" y="118" font-size="10">+ calculateTotal(): double</text>
+                        <text x="290" y="133" font-size="10">+ updateStatus(): void</text>
+                        <text x="290" y="148" font-size="10">+ addItem(): void</text>
+
+                        <!-- Product Class -->
+                        <rect x="540" y="20" width="160" height="120" fill="#fff3e0" stroke="#ff9800" stroke-width="2"
+                            rx="3" />
+                        <line x1="540" y1="50" x2="700" y2="50" stroke="#ff9800" />
+                        <line x1="540" y1="95" x2="700" y2="95" stroke="#ff9800" />
+                        <text x="620" y="40" text-anchor="middle" font-weight="bold" font-size="12">Product</text>
+                        <text x="550" y="68" font-size="10">- productId: int</text>
+                        <text x="550" y="82" font-size="10">- price: double</text>
+                        <text x="550" y="110" font-size="10">+ getDetails(): String</text>
+                        <text x="550" y="125" font-size="10">+ updateStock(): void</text>
+
+                        <!-- OrderItem Class -->
+                        <rect x="280" y="220" width="180" height="100" fill="#fce4ec" stroke="#e91e63" stroke-width="2"
+                            rx="3" />
+                        <line x1="280" y1="250" x2="460" y2="250" stroke="#e91e63" />
+                        <line x1="280" y1="285" x2="460" y2="285" stroke="#e91e63" />
+                        <text x="370" y="240" text-anchor="middle" font-weight="bold" font-size="12">OrderItem</text>
+                        <text x="290" y="268" font-size="10">- quantity: int</text>
+                        <text x="290" y="282" font-size="10">- unitPrice: double</text>
+                        <text x="290" y="305" font-size="10">+ getSubtotal(): double</text>
+
+                        <!-- Payment Interface -->
+                        <rect x="540" y="220" width="160" height="80" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"
+                            rx="3" stroke-dasharray="5,3" />
+                        <line x1="540" y1="260" x2="700" y2="260" stroke="#9c27b0" />
+                        <text x="620" y="240" text-anchor="middle" font-style="italic" font-size="10">«interface»</text>
+                        <text x="620" y="255" text-anchor="middle" font-weight="bold" font-size="12">Payment</text>
+                        <text x="550" y="280" font-size="10">+ processPayment(): bool</text>
+                        <text x="550" y="295" font-size="10">+ refund(): void</text>
+
+                        <!-- CreditCardPayment Class -->
+                        <rect x="560" y="340" width="150" height="70" fill="#e1f5fe" stroke="#03a9f4" stroke-width="2"
+                            rx="3" />
+                        <line x1="560" y1="370" x2="710" y2="370" stroke="#03a9f4" />
+                        <text x="635" y="360" text-anchor="middle" font-weight="bold"
+                            font-size="11">CreditCardPayment</text>
+                        <text x="570" y="390" font-size="10">+ processPayment(): bool</text>
+
+                        <!-- Relationships -->
+                        <!-- Customer - Order (Association 1..*) -->
+                        <line x1="180" y1="80" x2="280" y2="80" stroke="#333" stroke-width="1.5" />
+                        <text x="200" y="70" font-size="9">1</text>
+                        <text x="260" y="70" font-size="9">*</text>
+                        <text x="225" y="95" font-size="9">places</text>
+
+                        <!-- Order - OrderItem (Composition) -->
+                        <line x1="370" y1="160" x2="370" y2="220" stroke="#333" stroke-width="1.5"
+                            marker-start="url(#filled-diamond)" />
+                        <text x="355" y="175" font-size="9">1</text>
+                        <text x="355" y="215" font-size="9">*</text>
+
+                        <!-- OrderItem - Product (Association) -->
+                        <line x1="460" y1="270" x2="540" y2="100" stroke="#333" stroke-width="1.5" />
+                        <text x="495" y="200" font-size="9">*</text>
+                        <text x="530" y="120" font-size="9">1</text>
+
+                        <!-- Order - Payment (Dependency) -->
+                        <line x1="460" y1="100" x2="540" y2="250" stroke="#333" stroke-width="1.5"
+                            stroke-dasharray="5,3" />
+                        <text x="490" y="180" font-size="9">«uses»</text>
+
+                        <!-- CreditCardPayment implements Payment -->
+                        <line x1="635" y1="340" x2="635" y2="305" stroke="#333" stroke-width="1.5"
+                            stroke-dasharray="5,3" marker-end="url(#class-arrow)" />
+
+                        <!-- Legend -->
+                        <rect x="20" y="370" width="350" height="70" fill="#f5f5f5" stroke="#ccc" rx="5" />
+                        <text x="30" y="390" font-weight="bold" font-size="11">Legend:</text>
+                        <line x1="90" y1="385" x2="130" y2="385" stroke="#333" stroke-width="1.5" />
+                        <text x="135" y="390" font-size="9">Association</text>
+                        <line x1="90" y1="405" x2="130" y2="405" stroke="#333" stroke-width="1.5"
+                            marker-start="url(#filled-diamond)" />
+                        <text x="135" y="410" font-size="9">Composition</text>
+                        <line x1="200" y1="385" x2="240" y2="385" stroke="#333" stroke-width="1.5"
+                            marker-start="url(#hollow-diamond)" />
+                        <text x="245" y="390" font-size="9">Aggregation</text>
+                        <line x1="200" y1="405" x2="240" y2="405" stroke="#333" stroke-width="1.5"
+                            stroke-dasharray="5,3" marker-end="url(#class-arrow)" />
+                        <text x="245" y="410" font-size="9">Implements</text>
+                        <line x1="200" y1="425" x2="240" y2="425" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#class-arrow)" />
+                        <text x="245" y="430" font-size="9">Inheritance</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- UML RELATIONSHIPS -->
+            <div class="card">
+                <h3>2.7 UML Relationships (Very Important)</h3>
+
+                <table>
+                    <tr>
+                        <th>Relationship</th>
+                        <th>Symbol</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Association</strong></td>
+                        <td>Solid line</td>
+                        <td>General relationship between classes. Objects of one class use/interact with objects of
+                            another.</td>
+                        <td>Student enrolls in Course</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Aggregation</strong></td>
+                        <td>Hollow diamond →</td>
+                        <td>Weak "has-a" relationship. Part can exist independently of the whole (shared ownership).
+                        </td>
+                        <td>Department has Professors (professors can exist without department)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Composition</strong></td>
+                        <td>Filled diamond →</td>
+                        <td>Strong "has-a" relationship. Part cannot exist without the whole (exclusive ownership). If
+                            whole is deleted, parts are deleted.</td>
+                        <td>Order has OrderItems (items don't exist without order)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Inheritance</strong></td>
+                        <td>Hollow arrow →</td>
+                        <td>"Is-a" relationship. Subclass inherits from superclass. Arrow points to parent.</td>
+                        <td>Car extends Vehicle</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dependency</strong></td>
+                        <td>Dashed arrow →</td>
+                        <td>Weaker relationship where one class temporarily uses another (method parameter, local
+                            variable).</td>
+                        <td>Order uses PaymentProcessor</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Realization</strong></td>
+                        <td>Dashed hollow arrow →</td>
+                        <td>Class implements an interface. Shows contract implementation.</td>
+                        <td>CreditCardPayment implements Payment</td>
+                    </tr>
+                </table>
+
+                <div class="important">
+                    Key Difference: <strong>Aggregation vs Composition</strong><br>
+                    • Aggregation (hollow diamond): Parts can survive without the whole. Example: Team and Players
+                    (players exist without team).<br>
+                    • Composition (filled diamond): Parts cannot survive without the whole. Example: House and Rooms
+                    (rooms are destroyed with house).
+                </div>
+            </div>
+
+            <!-- BCE CLASSES -->
+            <div class="card">
+                <h3>2.8 Boundary, Control, and Entity Classes (BCE Pattern)</h3>
+                <div class="definition">
+                    The BCE pattern (also called Robustness Diagram or ECB) is an analysis pattern that categorizes
+                    classes based on their responsibilities in the system architecture.
+                </div>
+
+                <table>
+                    <tr>
+                        <th>Class Type</th>
+                        <th>Symbol</th>
+                        <th>Responsibility</th>
+                        <th>Examples</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Boundary</strong></td>
+                        <td>Circle with vertical line on left</td>
+                        <td>Interface between system and external actors. Handles input/output. UI screens, API
+                            endpoints, hardware interfaces.</td>
+                        <td>LoginScreen, PaymentForm, PrinterInterface</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Control</strong></td>
+                        <td>Circle with arrow</td>
+                        <td>Business logic and coordination. Controls the flow between boundary and entity classes.
+                            Contains use case logic.</td>
+                        <td>LoginController, OrderProcessor, PaymentHandler</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Entity</strong></td>
+                        <td>Circle with underline</td>
+                        <td>Data and business rules. Persistent objects representing domain concepts. Usually maps to
+                            database tables.</td>
+                        <td>Customer, Order, Product, Account</td>
+                    </tr>
+                </table>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">BCE Pattern: Login Use Case</div>
+                    <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Actor -->
+                        <circle cx="50" cy="60" r="15" fill="#e3f2fd" stroke="#1976d2" stroke-width="2" />
+                        <line x1="50" y1="75" x2="50" y2="110" stroke="#1976d2" stroke-width="2" />
+                        <line x1="50" y1="90" x2="30" y2="100" stroke="#1976d2" stroke-width="2" />
+                        <line x1="50" y1="90" x2="70" y2="100" stroke="#1976d2" stroke-width="2" />
+                        <line x1="50" y1="110" x2="35" y2="135" stroke="#1976d2" stroke-width="2" />
+                        <line x1="50" y1="110" x2="65" y2="135" stroke="#1976d2" stroke-width="2" />
+                        <text x="50" y="155" text-anchor="middle" font-size="11">User</text>
+
+                        <!-- Boundary Class -->
+                        <circle cx="170" cy="80" r="30" fill="#fff3e0" stroke="#ff9800" stroke-width="2" />
+                        <line x1="140" y1="50" x2="140" y2="110" stroke="#ff9800" stroke-width="3" />
+                        <text x="170" y="85" text-anchor="middle" font-size="10">LoginForm</text>
+                        <text x="170" y="130" text-anchor="middle" font-size="9">«boundary»</text>
+
+                        <!-- Control Class -->
+                        <circle cx="320" cy="80" r="30" fill="#e8f5e9" stroke="#4caf50" stroke-width="2" />
+                        <path d="M300 65 L340 95" stroke="#4caf50" stroke-width="3" fill="none" />
+                        <polygon points="340,95 330,92 337,85" fill="#4caf50" />
+                        <text x="320" y="85" text-anchor="middle" font-size="10">LoginCtrl</text>
+                        <text x="320" y="130" text-anchor="middle" font-size="9">«control»</text>
+
+                        <!-- Entity Class -->
+                        <circle cx="470" cy="80" r="30" fill="#e3f2fd" stroke="#1976d2" stroke-width="2" />
+                        <line x1="440" y1="110" x2="500" y2="110" stroke="#1976d2" stroke-width="3" />
+                        <text x="470" y="85" text-anchor="middle" font-size="10">User</text>
+                        <text x="470" y="130" text-anchor="middle" font-size="9">«entity»</text>
+
+                        <!-- Arrows -->
+                        <line x1="80" y1="80" x2="135" y2="80" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#activity-arrow)" />
+                        <line x1="200" y1="80" x2="285" y2="80" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#activity-arrow)" />
+                        <line x1="350" y1="80" x2="435" y2="80" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#activity-arrow)" />
+
+                        <!-- Legend -->
+                        <rect x="100" y="160" width="400" height="35" fill="#f5f5f5" stroke="#ccc" rx="5" />
+                        <text x="110" y="180" font-weight="bold" font-size="10">Flow: Actor → Boundary → Control →
+                            Entity → (back)</text>
+                    </svg>
+                </div>
+
+                <div class="exam-tip">
+                    BCE is essential for Robustness Diagrams. Remember: Actors only interact with Boundary classes.
+                    Boundary talks to Control. Control coordinates with Entity. Entity stores data.
+                </div>
+            </div>
+
+            <!-- USE CASE DIAGRAM -->
+            <div class="card">
+                <h3>2.9 Use Case Diagram</h3>
+                <div class="definition">
+                    <strong>Purpose:</strong> A Use Case Diagram captures the functional requirements of a system,
+                    showing actors (users/external systems) and the use cases (functionality) they can perform. It
+                    defines the system boundary.
+                </div>
+
+                <h4>Key Elements:</h4>
+                <ul>
+                    <li><strong>Actor:</strong> External entity interacting with the system (stick figure)</li>
+                    <li><strong>Use Case:</strong> A piece of functionality (oval/ellipse)</li>
+                    <li><strong>System Boundary:</strong> Rectangle enclosing use cases</li>
+                    <li><strong>Association:</strong> Line connecting actor to use case</li>
+                    <li><strong>Include:</strong> Mandatory inclusion of another use case «include»</li>
+                    <li><strong>Extend:</strong> Optional extension of functionality «extend»</li>
+                    <li><strong>Generalization:</strong> Inheritance between actors or use cases</li>
+                </ul>
+
+                <div class="scenario">
+                    <strong>University Portal System:</strong> Students, professors, and administrators interact with
+                    the system for registration, grading, and course management.
+                </div>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Use Case Diagram: University Portal</div>
+                    <svg viewBox="0 0 700 420" xmlns="http://www.w3.org/2000/svg">
+                        <!-- System Boundary -->
+                        <rect x="150" y="30" width="400" height="350" fill="none" stroke="#333" stroke-width="2"
+                            rx="10" />
+                        <text x="350" y="55" text-anchor="middle" font-weight="bold" font-size="14">University Portal
+                            System</text>
+
+                        <!-- Student Actor -->
+                        <circle cx="60" cy="120" r="18" fill="#e3f2fd" stroke="#1976d2" stroke-width="2" />
+                        <line x1="60" y1="138" x2="60" y2="180" stroke="#1976d2" stroke-width="2" />
+                        <line x1="60" y1="155" x2="35" y2="170" stroke="#1976d2" stroke-width="2" />
+                        <line x1="60" y1="155" x2="85" y2="170" stroke="#1976d2" stroke-width="2" />
+                        <line x1="60" y1="180" x2="40" y2="210" stroke="#1976d2" stroke-width="2" />
+                        <line x1="60" y1="180" x2="80" y2="210" stroke="#1976d2" stroke-width="2" />
+                        <text x="60" y="230" text-anchor="middle" font-size="11">Student</text>
+
+                        <!-- Professor Actor -->
+                        <circle cx="650" cy="150" r="18" fill="#e8f5e9" stroke="#4caf50" stroke-width="2" />
+                        <line x1="650" y1="168" x2="650" y2="210" stroke="#4caf50" stroke-width="2" />
+                        <line x1="650" y1="185" x2="625" y2="200" stroke="#4caf50" stroke-width="2" />
+                        <line x1="650" y1="185" x2="675" y2="200" stroke="#4caf50" stroke-width="2" />
+                        <line x1="650" y1="210" x2="630" y2="240" stroke="#4caf50" stroke-width="2" />
+                        <line x1="650" y1="210" x2="670" y2="240" stroke="#4caf50" stroke-width="2" />
+                        <text x="650" y="260" text-anchor="middle" font-size="11">Professor</text>
+
+                        <!-- Admin Actor -->
+                        <circle cx="650" cy="320" r="18" fill="#fff3e0" stroke="#ff9800" stroke-width="2" />
+                        <line x1="650" y1="338" x2="650" y2="370" stroke="#ff9800" stroke-width="2" />
+                        <line x1="650" y1="350" x2="625" y2="360" stroke="#ff9800" stroke-width="2" />
+                        <line x1="650" y1="350" x2="675" y2="360" stroke="#ff9800" stroke-width="2" />
+                        <line x1="650" y1="370" x2="630" y2="395" stroke="#ff9800" stroke-width="2" />
+                        <line x1="650" y1="370" x2="670" y2="395" stroke="#ff9800" stroke-width="2" />
+                        <text x="650" y="410" text-anchor="middle" font-size="11">Admin</text>
+
+                        <!-- Use Cases -->
+                        <!-- Login -->
+                        <ellipse cx="280" cy="90" rx="70" ry="25" fill="#e1f5fe" stroke="#03a9f4" stroke-width="2" />
+                        <text x="280" y="95" text-anchor="middle" font-size="11">Login</text>
+
+                        <!-- Register for Course -->
+                        <ellipse cx="280" cy="160" rx="80" ry="25" fill="#e1f5fe" stroke="#03a9f4" stroke-width="2" />
+                        <text x="280" y="165" text-anchor="middle" font-size="11">Register for Course</text>
+
+                        <!-- View Grades -->
+                        <ellipse cx="280" cy="230" rx="70" ry="25" fill="#e1f5fe" stroke="#03a9f4" stroke-width="2" />
+                        <text x="280" y="235" text-anchor="middle" font-size="11">View Grades</text>
+
+                        <!-- Submit Grades -->
+                        <ellipse cx="420" cy="160" rx="70" ry="25" fill="#e8f5e9" stroke="#4caf50" stroke-width="2" />
+                        <text x="420" y="165" text-anchor="middle" font-size="11">Submit Grades</text>
+
+                        <!-- Manage Courses -->
+                        <ellipse cx="420" cy="320" rx="80" ry="25" fill="#fff3e0" stroke="#ff9800" stroke-width="2" />
+                        <text x="420" y="325" text-anchor="middle" font-size="11">Manage Courses</text>
+
+                        <!-- Validate Prerequisites (included) -->
+                        <ellipse cx="280" cy="300" rx="85" ry="25" fill="#fce4ec" stroke="#e91e63" stroke-width="2" />
+                        <text x="280" y="305" text-anchor="middle" font-size="10">Validate Prerequisites</text>
+
+                        <!-- Associations -->
+                        <line x1="90" y1="120" x2="205" y2="95" stroke="#333" stroke-width="1.5" />
+                        <line x1="90" y1="140" x2="195" y2="155" stroke="#333" stroke-width="1.5" />
+                        <line x1="90" y1="160" x2="205" y2="220" stroke="#333" stroke-width="1.5" />
+                        <line x1="620" y1="170" x2="495" y2="165" stroke="#333" stroke-width="1.5" />
+                        <line x1="620" y1="320" x2="505" y2="320" stroke="#333" stroke-width="1.5" />
+
+                        <!-- Include relationship -->
+                        <line x1="280" y1="185" x2="280" y2="270" stroke="#333" stroke-width="1.5"
+                            stroke-dasharray="5,3" />
+                        <text x="290" y="230" font-size="9">«include»</text>
+
+                        <!-- Legend -->
+                        <rect x="170" y="350" width="360" height="25" fill="#f5f5f5" stroke="#ccc" rx="3" />
+                        <text x="180" y="367" font-size="9">
+                            <tspan font-weight="bold">Legend:</tspan> «include» = mandatory | «extend» = optional
+                        </text>
+                    </svg>
+                </div>
+
+                <h4>Asynchronous Communication in Use Cases:</h4>
+                <p>In some scenarios, use cases involve <strong>asynchronous communication</strong> where the actor
+                    doesn't wait for an immediate response:</p>
+                <ul>
+                    <li><strong>Notification patterns:</strong> System sends email/SMS after completing an action</li>
+                    <li><strong>Background processing:</strong> Long-running tasks like report generation</li>
+                    <li><strong>Event-driven interactions:</strong> System reacts to events (sensor triggers, time-based
+                        jobs)</li>
+                    <li>Represented with notes or stereotypes like «async» on the association</li>
+                </ul>
+
+                <div class="exam-tip">
+                    «include» means the base use case ALWAYS includes the included use case. «extend» means the
+                    extension SOMETIMES happens based on a condition. Arrow direction: include arrow points TO included;
+                    extend arrow points TO base.
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SECTION 3: SOFTWARE PROCESS MODELS -->
+        <!-- ============================================== -->
+
+        <section id="process-models">
+            <h2>3. Software Process Models</h2>
+
+            <div class="card">
+                <h3>3.1 Introduction to Process Models</h3>
+                <div class="definition">
+                    A <strong>Software Process Model</strong> (also called Software Development Life Cycle - SDLC) is a
+                    structured approach defining the phases, activities, and deliverables in software development. It
+                    provides a roadmap from initial requirements to final deployment and maintenance.
+                </div>
+            </div>
+
+            <!-- WATERFALL MODEL -->
+            <div class="card">
+                <h3>3.2 Waterfall Model</h3>
+                <div class="definition">
+                    The Waterfall Model is a linear, sequential approach where each phase must be completed before the
+                    next begins. Progress flows downward like a waterfall through phases.
+                </div>
+
+                <h4>Phases:</h4>
+                <ol>
+                    <li><strong>Requirements Analysis:</strong> Gather and document all requirements</li>
+                    <li><strong>System Design:</strong> Create architecture and design specifications</li>
+                    <li><strong>Implementation:</strong> Write code based on design</li>
+                    <li><strong>Testing:</strong> Verify the system works correctly</li>
+                    <li><strong>Deployment:</strong> Release to production</li>
+                    <li><strong>Maintenance:</strong> Fix bugs and add enhancements</li>
+                </ol>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Waterfall Model</div>
+                    <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="wf-arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                            </marker>
+                        </defs>
+
+                        <!-- Phases -->
+                        <rect x="20" y="20" width="140" height="40" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"
+                            rx="5" />
+                        <text x="90" y="45" text-anchor="middle" font-size="11">Requirements</text>
+
+                        <rect x="100" y="70" width="140" height="40" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="5" />
+                        <text x="170" y="95" text-anchor="middle" font-size="11">Design</text>
+
+                        <rect x="180" y="120" width="140" height="40" fill="#fff3e0" stroke="#ff9800" stroke-width="2"
+                            rx="5" />
+                        <text x="250" y="145" text-anchor="middle" font-size="11">Implementation</text>
+
+                        <rect x="260" y="170" width="140" height="40" fill="#fce4ec" stroke="#e91e63" stroke-width="2"
+                            rx="5" />
+                        <text x="330" y="195" text-anchor="middle" font-size="11">Testing</text>
+
+                        <rect x="340" y="220" width="140" height="40" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"
+                            rx="5" />
+                        <text x="410" y="245" text-anchor="middle" font-size="11">Deployment</text>
+
+                        <rect x="420" y="270" width="140" height="40" fill="#e1f5fe" stroke="#03a9f4" stroke-width="2"
+                            rx="5" />
+                        <text x="490" y="295" text-anchor="middle" font-size="11">Maintenance</text>
+
+                        <!-- Arrows -->
+                        <line x1="90" y1="60" x2="170" y2="65" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#wf-arrow)" />
+                        <line x1="170" y1="110" x2="250" y2="115" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#wf-arrow)" />
+                        <line x1="250" y1="160" x2="330" y2="165" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#wf-arrow)" />
+                        <line x1="330" y1="210" x2="410" y2="215" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#wf-arrow)" />
+                        <line x1="410" y1="260" x2="490" y2="265" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#wf-arrow)" />
+                    </svg>
+                </div>
+
+                <h4>Advantages:</h4>
+                <ul>
+                    <li>Simple and easy to understand and manage</li>
+                    <li>Well-documented process with clear milestones</li>
+                    <li>Works well for small projects with clear requirements</li>
+                    <li>Phases don't overlap, reducing confusion</li>
+                </ul>
+
+                <h4>Disadvantages:</h4>
+                <ul>
+                    <li>No flexibility to go back to previous phases</li>
+                    <li>Late discovery of problems (testing is late)</li>
+                    <li>Not suitable for complex or long projects</li>
+                    <li>Customer sees product only at the end</li>
+                    <li>High risk of failure if requirements change</li>
+                </ul>
+
+                <p><strong>When to Use:</strong> Small projects, well-understood requirements, stable technology,
+                    fixed-price contracts.</p>
+            </div>
+
+            <!-- INCREMENTAL MODEL -->
+            <div class="card">
+                <h3>3.3 Incremental Model</h3>
+                <div class="definition">
+                    The Incremental Model delivers the product in small, usable increments. Each increment adds
+                    functionality to the previous version, building up the complete system over time.
+                </div>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Incremental Model</div>
+                    <svg viewBox="0 0 650 200" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Increment 1 -->
+                        <rect x="20" y="40" width="180" height="120" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"
+                            rx="5" />
+                        <text x="110" y="60" text-anchor="middle" font-weight="bold" font-size="12">Increment 1</text>
+                        <text x="110" y="85" text-anchor="middle" font-size="10">Core Features</text>
+                        <rect x="30" y="95" width="160" height="55" fill="#bbdefb" rx="3" />
+                        <text x="110" y="115" text-anchor="middle" font-size="9">Req→Design→Code→Test</text>
+                        <text x="110" y="135" text-anchor="middle" font-size="9">→Deploy</text>
+
+                        <!-- Increment 2 -->
+                        <rect x="230" y="40" width="180" height="120" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="5" />
+                        <text x="320" y="60" text-anchor="middle" font-weight="bold" font-size="12">Increment 2</text>
+                        <text x="320" y="85" text-anchor="middle" font-size="10">+ More Features</text>
+                        <rect x="240" y="95" width="160" height="55" fill="#c8e6c9" rx="3" />
+                        <text x="320" y="115" text-anchor="middle" font-size="9">Req→Design→Code→Test</text>
+                        <text x="320" y="135" text-anchor="middle" font-size="9">→Deploy</text>
+
+                        <!-- Increment 3 -->
+                        <rect x="440" y="40" width="180" height="120" fill="#fff3e0" stroke="#ff9800" stroke-width="2"
+                            rx="5" />
+                        <text x="530" y="60" text-anchor="middle" font-weight="bold" font-size="12">Increment 3</text>
+                        <text x="530" y="85" text-anchor="middle" font-size="10">+ Complete System</text>
+                        <rect x="450" y="95" width="160" height="55" fill="#ffe0b2" rx="3" />
+                        <text x="530" y="115" text-anchor="middle" font-size="9">Req→Design→Code→Test</text>
+                        <text x="530" y="135" text-anchor="middle" font-size="9">→Deploy</text>
+
+                        <!-- Arrows -->
+                        <line x1="200" y1="100" x2="225" y2="100" stroke="#333" stroke-width="2"
+                            marker-end="url(#wf-arrow)" />
+                        <line x1="410" y1="100" x2="435" y2="100" stroke="#333" stroke-width="2"
+                            marker-end="url(#wf-arrow)" />
+                    </svg>
+                </div>
+
+                <h4>Advantages:</h4>
+                <ul>
+                    <li>Working software delivered early</li>
+                    <li>Easier to test and debug smaller increments</li>
+                    <li>Customer can provide feedback on early versions</li>
+                    <li>Lower initial cost; funds can be allocated per increment</li>
+                </ul>
+
+                <h4>Disadvantages:</h4>
+                <ul>
+                    <li>Requires good planning and design from start</li>
+                    <li>Total cost may be higher than waterfall</li>
+                    <li>Integration issues between increments possible</li>
+                </ul>
+
+                <p><strong>When to Use:</strong> When core features are well-understood but additional features can
+                    evolve, large systems that can be divided into parts.</p>
+            </div>
+
+            <!-- SPIRAL MODEL -->
+            <div class="card">
+                <h3>3.4 Spiral Model</h3>
+                <div class="definition">
+                    The Spiral Model combines iterative development with systematic risk management. Each loop of the
+                    spiral represents a phase, with risk analysis at each iteration.
+                </div>
+
+                <h4>Four Quadrants (per iteration):</h4>
+                <ol>
+                    <li><strong>Planning:</strong> Determine objectives, alternatives, constraints</li>
+                    <li><strong>Risk Analysis:</strong> Identify and resolve risks</li>
+                    <li><strong>Engineering:</strong> Develop and verify the product</li>
+                    <li><strong>Evaluation:</strong> Customer evaluation and planning next iteration</li>
+                </ol>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Spiral Model</div>
+                    <svg viewBox="0 0 450 400" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Quadrant labels -->
+                        <text x="100" y="30" text-anchor="middle" font-weight="bold" font-size="11">Planning</text>
+                        <text x="350" y="30" text-anchor="middle" font-weight="bold" font-size="11">Risk Analysis</text>
+                        <text x="350" y="390" text-anchor="middle" font-weight="bold" font-size="11">Engineering</text>
+                        <text x="100" y="390" text-anchor="middle" font-weight="bold" font-size="11">Evaluation</text>
+
+                        <!-- Axes -->
+                        <line x1="225" y1="40" x2="225" y2="360" stroke="#ccc" stroke-width="1" />
+                        <line x1="30" y1="200" x2="420" y2="200" stroke="#ccc" stroke-width="1" />
+
+                        <!-- Spiral loops -->
+                        <path d="M225,200 Q225,180 245,180 Q265,180 265,200 Q265,220 245,220 Q225,220 225,240"
+                            fill="none" stroke="#1976d2" stroke-width="2" />
+                        <path
+                            d="M225,240 Q225,260 265,260 Q305,260 305,200 Q305,140 245,140 Q185,140 185,200 Q185,260 225,280"
+                            fill="none" stroke="#4caf50" stroke-width="2" />
+                        <path
+                            d="M225,280 Q225,320 305,320 Q385,320 385,200 Q385,80 225,80 Q65,80 65,200 Q65,320 145,320 Q185,320 225,300"
+                            fill="none" stroke="#ff9800" stroke-width="2" />
+
+                        <!-- Labels on spiral -->
+                        <text x="270" y="175" font-size="9" fill="#1976d2">Prototype 1</text>
+                        <text x="320" y="145" font-size="9" fill="#4caf50">Prototype 2</text>
+                        <text x="380" y="100" font-size="9" fill="#ff9800">Final Product</text>
+
+                        <!-- Center point -->
+                        <circle cx="225" cy="200" r="5" fill="#333" />
+                        <text x="225" y="215" text-anchor="middle" font-size="8">Start</text>
+                    </svg>
+                </div>
+
+                <h4>Advantages:</h4>
+                <ul>
+                    <li>Strong emphasis on risk management</li>
+                    <li>Good for large, complex, high-risk projects</li>
+                    <li>Flexible; requirements can evolve</li>
+                    <li>Customer involvement at each iteration</li>
+                </ul>
+
+                <h4>Disadvantages:</h4>
+                <ul>
+                    <li>Complex and requires expertise in risk assessment</li>
+                    <li>Expensive due to multiple iterations</li>
+                    <li>Not suitable for small projects</li>
+                    <li>Success depends on risk analysis accuracy</li>
+                </ul>
+
+                <p><strong>When to Use:</strong> Large-scale, high-risk, mission-critical systems (aerospace, military,
+                    healthcare).</p>
+            </div>
+
+            <!-- AGILE MODEL -->
+            <div class="card">
+                <h3>3.5 Agile Model</h3>
+                <div class="definition">
+                    Agile is an iterative and incremental approach emphasizing flexibility, customer collaboration, and
+                    rapid delivery of working software. It values individuals, working software, customer collaboration,
+                    and responding to change.
+                </div>
+
+                <h4>Agile Manifesto Values:</h4>
+                <ul>
+                    <li>Individuals and interactions over processes and tools</li>
+                    <li>Working software over comprehensive documentation</li>
+                    <li>Customer collaboration over contract negotiation</li>
+                    <li>Responding to change over following a plan</li>
+                </ul>
+
+                <h4>Common Agile Frameworks:</h4>
+                <ul>
+                    <li><strong>Scrum:</strong> Sprints (2-4 weeks), daily standups, product backlog, sprint reviews
+                    </li>
+                    <li><strong>Kanban:</strong> Visual workflow, WIP limits, continuous delivery</li>
+                    <li><strong>XP (Extreme Programming):</strong> Pair programming, TDD, continuous integration</li>
+                </ul>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">Agile/Scrum Process</div>
+                    <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Product Backlog -->
+                        <rect x="20" y="50" width="100" height="100" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"
+                            rx="5" />
+                        <text x="70" y="75" text-anchor="middle" font-weight="bold" font-size="10">Product</text>
+                        <text x="70" y="90" text-anchor="middle" font-weight="bold" font-size="10">Backlog</text>
+                        <rect x="30" y="100" width="80" height="10" fill="#90caf9" rx="2" />
+                        <rect x="30" y="115" width="80" height="10" fill="#90caf9" rx="2" />
+                        <rect x="30" y="130" width="80" height="10" fill="#90caf9" rx="2" />
+
+                        <!-- Sprint -->
+                        <circle cx="280" cy="100" r="60" fill="none" stroke="#4caf50" stroke-width="3" />
+                        <text x="280" y="95" text-anchor="middle" font-weight="bold" font-size="11">Sprint</text>
+                        <text x="280" y="110" text-anchor="middle" font-size="10">(2-4 weeks)</text>
+                        <path d="M230 65 A60 60 0 0 1 330 65" fill="none" stroke="#66bb6a" stroke-width="6"
+                            marker-end="url(#wf-arrow)" />
+
+                        <!-- Sprint Backlog -->
+                        <rect x="150" y="60" width="60" height="80" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="3" />
+                        <text x="180" y="80" text-anchor="middle" font-size="9">Sprint</text>
+                        <text x="180" y="92" text-anchor="middle" font-size="9">Backlog</text>
+
+                        <!-- Daily Scrum -->
+                        <ellipse cx="280" cy="100" rx="25" ry="20" fill="#c8e6c9" />
+                        <text x="280" y="100" text-anchor="middle" font-size="8">Daily</text>
+                        <text x="280" y="110" text-anchor="middle" font-size="8">Standup</text>
+
+                        <!-- Working Increment -->
+                        <rect x="400" y="50" width="100" height="100" fill="#fff3e0" stroke="#ff9800" stroke-width="2"
+                            rx="5" />
+                        <text x="450" y="85" text-anchor="middle" font-weight="bold" font-size="10">Working</text>
+                        <text x="450" y="100" text-anchor="middle" font-weight="bold" font-size="10">Increment</text>
+                        <text x="450" y="120" text-anchor="middle" font-size="9">(Shippable)</text>
+
+                        <!-- Sprint Review & Retro -->
+                        <rect x="550" y="50" width="120" height="100" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"
+                            rx="5" />
+                        <text x="610" y="80" text-anchor="middle" font-weight="bold" font-size="10">Sprint Review</text>
+                        <text x="610" y="100" text-anchor="middle" font-size="9">+ Retrospective</text>
+                        <text x="610" y="120" text-anchor="middle" font-size="9">(Feedback)</text>
+
+                        <!-- Arrows -->
+                        <line x1="120" y1="100" x2="145" y2="100" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#wf-arrow)" />
+                        <line x1="340" y1="100" x2="395" y2="100" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#wf-arrow)" />
+                        <line x1="500" y1="100" x2="545" y2="100" stroke="#333" stroke-width="1.5"
+                            marker-end="url(#wf-arrow)" />
+
+                        <!-- Feedback loop -->
+                        <path d="M610 150 Q610 180 70 180 Q20 180 20 150" fill="none" stroke="#666" stroke-width="1.5"
+                            stroke-dasharray="5,3" marker-end="url(#wf-arrow)" />
+                        <text x="350" y="175" text-anchor="middle" font-size="9" fill="#666">Feedback to Backlog</text>
+                    </svg>
+                </div>
+
+                <h4>Advantages:</h4>
+                <ul>
+                    <li>Highly adaptive to changing requirements</li>
+                    <li>Continuous customer involvement and feedback</li>
+                    <li>Early and frequent delivery of working software</li>
+                    <li>Team collaboration and self-organization</li>
+                    <li>Reduced risk through short iterations</li>
+                </ul>
+
+                <h4>Disadvantages:</h4>
+                <ul>
+                    <li>Less predictable scope, timeline, and budget</li>
+                    <li>Requires experienced and committed team</li>
+                    <li>Documentation may be insufficient</li>
+                    <li>Customer must be available and engaged</li>
+                    <li>Difficult for fixed-price contracts</li>
+                </ul>
+
+                <p><strong>When to Use:</strong> Uncertain or evolving requirements, need for fast delivery, small to
+                    medium teams, customer can be closely involved.</p>
+            </div>
+
+            <!-- COMPARISON TABLE -->
+            <div class="card">
+                <h3>3.6 Process Model Comparison (Exam Reference)</h3>
+                <table>
+                    <tr>
+                        <th>Aspect</th>
+                        <th>Waterfall</th>
+                        <th>Incremental</th>
+                        <th>Spiral</th>
+                        <th>Agile</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Approach</strong></td>
+                        <td>Linear, sequential</td>
+                        <td>Iterative, additive</td>
+                        <td>Iterative, risk-driven</td>
+                        <td>Iterative, adaptive</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Flexibility</strong></td>
+                        <td>Low</td>
+                        <td>Medium</td>
+                        <td>High</td>
+                        <td>Very High</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Risk Management</strong></td>
+                        <td>Low</td>
+                        <td>Medium</td>
+                        <td>Very High</td>
+                        <td>High</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Customer Involvement</strong></td>
+                        <td>Beginning & End</td>
+                        <td>Each increment</td>
+                        <td>Each iteration</td>
+                        <td>Continuous</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Documentation</strong></td>
+                        <td>Heavy</td>
+                        <td>Moderate</td>
+                        <td>Moderate</td>
+                        <td>Light</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Best For</strong></td>
+                        <td>Small, clear projects</td>
+                        <td>Modular systems</td>
+                        <td>Large, risky projects</td>
+                        <td>Evolving requirements</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Team Size</strong></td>
+                        <td>Any</td>
+                        <td>Medium-Large</td>
+                        <td>Large</td>
+                        <td>Small-Medium</td>
+                    </tr>
+                </table>
+
+                <div class="exam-tip">
+                    When asked "which model to use", consider: (1) Are requirements clear and stable? (2) Is risk high?
+                    (3) How involved can the customer be? (4) What's the project size and timeline?
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SECTION 4: 4+1 VIEW MODEL -->
+        <!-- ============================================== -->
+
+        <section id="four-plus-one">
+            <h2>4. The 4+1 View Model</h2>
+
+            <div class="card">
+                <h3>4.1 Introduction</h3>
+                <div class="definition">
+                    The <strong>4+1 View Model</strong>, introduced by Philippe Kruchten, is an architectural framework
+                    that describes software architecture using five concurrent views. Each view addresses specific
+                    concerns of different stakeholders (end users, developers, system integrators, project managers).
+                </div>
+
+                <p>The model is called "4+1" because it consists of 4 views plus the Use Case View (Scenarios) that ties
+                    them all together:</p>
+                <ol>
+                    <li><strong>Logical View</strong> - The functionality</li>
+                    <li><strong>Process View</strong> - The concurrency</li>
+                    <li><strong>Development View</strong> - The implementation</li>
+                    <li><strong>Physical View</strong> - The deployment</li>
+                    <li><strong>Use Case View</strong> - The scenarios (+1)</li>
+                </ol>
+
+                <div class="diagram-container">
+                    <div class="diagram-title">4+1 View Model Architecture</div>
+                    <svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Central Use Case View -->
+                        <ellipse cx="300" cy="200" rx="80" ry="50" fill="#fff3e0" stroke="#ff9800" stroke-width="3" />
+                        <text x="300" y="195" text-anchor="middle" font-weight="bold" font-size="12">Use Case
+                            View</text>
+                        <text x="300" y="215" text-anchor="middle" font-size="10">(Scenarios)</text>
+
+                        <!-- Logical View -->
+                        <rect x="220" y="30" width="160" height="70" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"
+                            rx="10" />
+                        <text x="300" y="60" text-anchor="middle" font-weight="bold" font-size="12">Logical View</text>
+                        <text x="300" y="80" text-anchor="middle" font-size="10">End-user functionality</text>
+
+                        <!-- Development View -->
+                        <rect x="420" y="130" width="160" height="70" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"
+                            rx="10" />
+                        <text x="500" y="160" text-anchor="middle" font-weight="bold" font-size="12">Development
+                            View</text>
+                        <text x="500" y="180" text-anchor="middle" font-size="10">Programmer perspective</text>
+
+                        <!-- Physical View -->
+                        <rect x="420" y="230" width="160" height="70" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"
+                            rx="10" />
+                        <text x="500" y="260" text-anchor="middle" font-weight="bold" font-size="12">Physical
+                            View</text>
+                        <text x="500" y="280" text-anchor="middle" font-size="10">Deployment topology</text>
+
+                        <!-- Process View -->
+                        <rect x="20" y="180" width="160" height="70" fill="#fce4ec" stroke="#e91e63" stroke-width="2"
+                            rx="10" />
+                        <text x="100" y="210" text-anchor="middle" font-weight="bold" font-size="12">Process View</text>
+                        <text x="100" y="230" text-anchor="middle" font-size="10">Runtime behavior</text>
+
+                        <!-- Connecting lines -->
+                        <line x1="300" y1="100" x2="300" y2="150" stroke="#333" stroke-width="1.5"
+                            stroke-dasharray="5,3" />
+                        <line x1="180" y1="200" x2="220" y2="200" stroke="#333" stroke-width="1.5"
+                            stroke-dasharray="5,3" />
+                        <line x1="380" y1="175" x2="420" y2="165" stroke="#333" stroke-width="1.5"
+                            stroke-dasharray="5,3" />
+                        <line x1="380" y1="225" x2="420" y2="265" stroke="#333" stroke-width="1.5"
+                            stroke-dasharray="5,3" />
+
+                        <!-- Stakeholder labels -->
+                        <text x="300" y="20" text-anchor="middle" font-size="9" fill="#1976d2">End Users,
+                            Analysts</text>
+                        <text x="580" y="145" text-anchor="middle" font-size="9" fill="#4caf50">Developers</text>
+                        <text x="580" y="245" text-anchor="middle" font-size="9" fill="#9c27b0">System Engineers</text>
+                        <text x="20" y="260" font-size="9" fill="#e91e63">Integrators</text>
+
+                        <!-- Legend -->
+                        <rect x="150" y="330" width="300" height="55" fill="#f5f5f5" stroke="#ccc" rx="5" />
+                        <text x="160" y="350" font-weight="bold" font-size="11">Legend:</text>
+                        <text x="160" y="370" font-size="10">Each view addresses concerns of specific
+                            stakeholders</text>
+                        <text x="160" y="385" font-size="10">Use Case View validates and drives other views</text>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>4.2 Logical View</h3>
+                <div class="definition">
+                    The Logical View describes the <strong>functionality</strong> that the system provides to end-users.
+                    It focuses on the object model of the design, showing how the system is decomposed into objects or
+                    classes.
+                </div>
+
+                <h4>Key Aspects:</h4>
+                <ul>
+                    <li><strong>Stakeholders:</strong> End users, domain experts, business analysts</li>
+                    <li><strong>Concerns:</strong> Functionality, features, domain concepts</li>
+                    <li><strong>UML Diagrams:</strong> Class diagrams, Object diagrams, State diagrams</li>
+                    <li><strong>Elements:</strong> Classes, interfaces, packages, relationships</li>
+                </ul>
+
+                <h4>Example Application:</h4>
+                <p>For an e-commerce system, the Logical View would show classes like Customer, Product, Order,
+                    ShoppingCart, and their relationships, representing the domain model that supports the shopping
+                    experience.</p>
+            </div>
+
+            <div class="card">
+                <h3>4.3 Process View</h3>
+                <div class="definition">
+                    The Process View addresses the <strong>dynamic aspects</strong> of the system, explaining the
+                    system's processes and how they communicate. It focuses on runtime behavior, concurrency,
+                    synchronization, and performance.
+                </div>
+
+                <h4>Key Aspects:</h4>
+                <ul>
+                    <li><strong>Stakeholders:</strong> System integrators, performance engineers</li>
+                    <li><strong>Concerns:</strong> Concurrency, distribution, performance, scalability, fault tolerance
+                    </li>
+                    <li><strong>UML Diagrams:</strong> Activity diagrams, Sequence diagrams, Communication diagrams</li>
+                    <li><strong>Elements:</strong> Processes, threads, tasks, interactions</li>
+                </ul>
+
+                <h4>Example Application:</h4>
+                <p>For an e-commerce system, the Process View would show how web request handling processes work, how
+                    background tasks process orders, and how different services communicate asynchronously.</p>
+            </div>
+
+            <div class="card">
+                <h3>4.4 Development View</h3>
+                <div class="definition">
+                    The Development View (also called Implementation View) describes the <strong>static organization of
+                        the software</strong> in its development environment. It shows how the software is decomposed
+                    for development purposes.
+                </div>
+
+                <h4>Key Aspects:</h4>
+                <ul>
+                    <li><strong>Stakeholders:</strong> Programmers, software managers, build engineers</li>
+                    <li><strong>Concerns:</strong> Software module organization, team structure, reuse, build management
+                    </li>
+                    <li><strong>UML Diagrams:</strong> Component diagrams, Package diagrams</li>
+                    <li><strong>Elements:</strong> Modules, components, packages, layers, libraries</li>
+                </ul>
+
+                <h4>Example Application:</h4>
+                <p>For an e-commerce system, the Development View would show the package structure (com.shop.cart,
+                    com.shop.payment), component dependencies, and how modules are organized for different development
+                    teams.</p>
+            </div>
+
+            <div class="card">
+                <h3>4.5 Physical View</h3>
+                <div class="definition">
+                    The Physical View (also called Deployment View) describes the <strong>mapping of software onto
+                        hardware</strong> and the physical architecture. It shows how the software elements are
+                    distributed across the infrastructure.
+                </div>
+
+                <h4>Key Aspects:</h4>
+                <ul>
+                    <li><strong>Stakeholders:</strong> System engineers, deployment engineers, DevOps</li>
+                    <li><strong>Concerns:</strong> Hardware topology, installation, network configuration, scalability
+                    </li>
+                    <li><strong>UML Diagrams:</strong> Deployment diagrams</li>
+                    <li><strong>Elements:</strong> Nodes, devices, connections, artifacts</li>
+                </ul>
+
+                <h4>Example Application:</h4>
+                <p>For an e-commerce system, the Physical View would show web servers, application servers, database
+                    servers, load balancers, and how they are connected in the network topology.</p>
+            </div>
+
+            <div class="card">
+                <h3>4.6 Use Case View (Scenarios - The +1)</h3>
+                <div class="definition">
+                    The Use Case View captures the <strong>key scenarios</strong> that drive the architecture. It serves
+                    as both validation and illustration for other views, showing how the architecture realizes important
+                    use cases.
+                </div>
+
+                <h4>Key Aspects:</h4>
+                <ul>
+                    <li><strong>Stakeholders:</strong> All stakeholders (common ground)</li>
+                    <li><strong>Concerns:</strong> Understanding requirements, validating architecture</li>
+                    <li><strong>UML Diagrams:</strong> Use Case diagrams, Sequence diagrams for scenarios</li>
+                    <li><strong>Purpose:</strong> Ties other views together, drives and validates architecture</li>
+                </ul>
+
+                <h4>Why "+1"?</h4>
+                <p>The Use Case View is special because it's not a standalone architectural view but rather a
+                    <strong>validation mechanism</strong>. Key scenarios are used to test if the architecture supports
+                    the required functionality. Each scenario walks through multiple views.</p>
+            </div>
+
+            <div class="card">
+                <h3>4.7 How Views Relate in Real Systems</h3>
+                <table>
+                    <tr>
+                        <th>View</th>
+                        <th>Answers</th>
+                        <th>Diagrams</th>
+                        <th>Real System Example</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Logical</strong></td>
+                        <td>What does the system do?</td>
+                        <td>Class, Object</td>
+                        <td>Domain classes: Order, Product, Customer</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Process</strong></td>
+                        <td>How does it execute at runtime?</td>
+                        <td>Activity, Sequence</td>
+                        <td>Order processing thread, async payment handler</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Development</strong></td>
+                        <td>How is code organized?</td>
+                        <td>Component, Package</td>
+                        <td>com.shop.web, com.shop.service, com.shop.data</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Physical</strong></td>
+                        <td>Where does it run?</td>
+                        <td>Deployment</td>
+                        <td>AWS EC2, RDS, Load Balancer configuration</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Use Case</strong></td>
+                        <td>What are key scenarios?</td>
+                        <td>Use Case, Sequence</td>
+                        <td>Checkout process, User registration</td>
+                    </tr>
+                </table>
+
+                <div class="exam-tip">
+                    The 4+1 View Model is frequently asked in exams. Remember: Logical (WHAT), Process (HOW at runtime),
+                    Development (HOW organized for coding), Physical (WHERE deployed), Use Case (WHY - validates all).
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ============================================== -->
+        <!-- SECTION 5: SYSTEM ARCHITECTURE VIEWS -->
+        <!-- ============================================== -->
+
+        <section id="architecture-views">
+            <h2>5. System Architecture Views</h2>
+
+            <div class="card">
+                <h3>5.1 Why Are Views Needed?</h3>
+                <div class="definition">
+                    An <strong>Architectural View</strong> is a representation of a system's architecture that focuses
+                    on a particular set of concerns. No single view can capture all aspects of a complex system.
+                </div>
+
+                <h4>Reasons for Multiple Views:</h4>
+                <ol>
+                    <li><strong>Complexity Management:</strong> Large systems are too complex to understand in a single
+                        representation. Views decompose complexity.</li>
+                    <li><strong>Stakeholder Separation:</strong> Different stakeholders have different concerns. A
+                        developer cares about code structure; an operator cares about deployment.</li>
+                    <li><strong>Separation of Concerns:</strong> Each view focuses on specific quality attributes
+                        (performance, security, modifiability).</li>
+                    <li><strong>Communication:</strong> Views provide a common vocabulary for discussing architecture
+                        with specific audiences.</li>
+                    <li><strong>Documentation:</strong> Complete architecture documentation requires multiple views to
+                        be comprehensive.</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h3>5.2 Common Architectural Views</h3>
+
+                <h4>5.2.1 Module View (Static Structure)</h4>
+                <p>Shows the static code structure of the system. Elements are modules (classes, packages, layers).
+                    Relationships are "uses", "inherits", "belongs to".</p>
+                <ul>
+                    <li><strong>Decomposition Style:</strong> Shows how system is divided into modules</li>
+                    <li><strong>Uses Style:</strong> Shows dependencies between modules</li>
+                    <li><strong>Layered Style:</strong> Shows organization into layers</li>
+                </ul>
+
+                <h4>5.2.2 Component-and-Connector View (Runtime)</h4>
+                <p>Shows the runtime structure. Elements are components (processing units) and connectors (communication
+                    pathways). Shows how the system behaves when running.</p>
+                <ul>
+                    <li><strong>Client-Server Style:</strong> Clients request services from servers</li>
+                    <li><strong>Pipe-and-Filter Style:</strong> Data flows through processing filters</li>
+                    <li><strong>Publish-Subscribe Style:</strong> Components publish events; subscribers react</li>
+                </ul>
+
+                <h4>5.2.3 Allocation View (Environment Mapping)</h4>
+                <p>Shows how software elements are mapped to non-software elements in the environment.</p>
+                <ul>
+                    <li><strong>Deployment Style:</strong> Software to hardware mapping</li>
+                    <li><strong>Work Assignment Style:</strong> Modules to development teams</li>
+                    <li><strong>Implementation Style:</strong> Modules to file/directory structure</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>5.3 Architectural Styles (Patterns)</h3>
+
+                <p>An <strong>Architectural Style</strong> is a collection of design decisions that characterize a
+                    family of systems. Common styles include:</p>
+
+                <table>
+                    <tr>
+                        <th>Style</th>
+                        <th>Description</th>
+                        <th>Advantages</th>
+                        <th>Use When</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Layered</strong></td>
+                        <td>System organized into horizontal layers, each providing services to the layer above</td>
+                        <td>Separation of concerns, maintainability, testability</td>
+                        <td>Enterprise applications, web apps (MVC)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Client-Server</strong></td>
+                        <td>Clients request services from centralized servers</td>
+                        <td>Centralized data, easy maintenance</td>
+                        <td>Web applications, databases</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Microservices</strong></td>
+                        <td>Small, independent services with their own databases</td>
+                        <td>Scalability, independent deployment</td>
+                        <td>Large distributed systems, cloud-native</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Event-Driven</strong></td>
+                        <td>Components communicate through events</td>
+                        <td>Loose coupling, asynchronous processing</td>
+                        <td>Real-time systems, IoT, GUIs</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pipe-and-Filter</strong></td>
+                        <td>Data flows through sequence of processing filters</td>
+                        <td>Reusability, parallel processing</td>
+                        <td>Data transformation, compilers, Unix commands</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Repository</strong></td>
+                        <td>Central data store accessed by multiple components</td>
+                        <td>Data consistency, centralized control</td>
+                        <td>IDEs, databases, CASE tools</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>5.4 Applying Views in Real-World Systems</h3>
+
+                <div class="scenario">
+                    <strong>Example: Hospital Management System</strong>
+                </div>
+
+                <h4>Module View:</h4>
+                <p>Shows the static structure with packages:</p>
+                <ul>
+                    <li>com.hospital.patient - Patient registration, records</li>
+                    <li>com.hospital.doctor - Doctor management, schedules</li>
+                    <li>com.hospital.billing - Invoice generation, payments</li>
+                    <li>com.hospital.inventory - Medicine, equipment tracking</li>
+                </ul>
+
+                <h4>Component-and-Connector View:</h4>
+                <p>Shows runtime components:</p>
+                <ul>
+                    <li>Web Application (handles HTTP requests)</li>
+                    <li>Appointment Scheduler Service (manages bookings)</li>
+                    <li>Notification Service (sends SMS/email)</li>
+                    <li>Database Connector (manages data persistence)</li>
+                </ul>
+
+                <h4>Allocation/Deployment View:</h4>
+                <p>Shows hardware mapping:</p>
+                <ul>
+                    <li>Web Server (nginx) on Cloud VM</li>
+                    <li>Application Server (Tomcat) on dedicated server cluster</li>
+                    <li>Database Server (PostgreSQL) on managed cloud service</li>
+                    <li>Redis Cache on memory-optimized instance</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>5.5 View Documentation Best Practices</h3>
+
+                <h4>Each View Document Should Include:</h4>
+                <ol>
+                    <li><strong>Primary Presentation:</strong> The main diagram showing elements and relationships</li>
+                    <li><strong>Element Catalog:</strong> Description of each element in the view</li>
+                    <li><strong>Context Diagram:</strong> Shows how the system relates to its environment</li>
+                    <li><strong>Variability Guide:</strong> Points of flexibility and configuration</li>
+                    <li><strong>Rationale:</strong> Why architectural decisions were made</li>
+                </ol>
+
+                <div class="exam-tip">
+                    When documenting architecture: (1) Choose views based on stakeholders and their concerns, (2)
+                    Document each view consistently, (3) Show relationships between views, (4) Explain rationale for key
+                    decisions.
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>5.6 Exam Quick Reference: Views Summary</h3>
+
+                <table>
+                    <tr>
+                        <th>Concept</th>
+                        <th>Key Points</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Why Multiple Views?</strong></td>
+                        <td>Complexity management, stakeholder separation, separation of concerns</td>
+                    </tr>
+                    <tr>
+                        <td><strong>4+1 Views</strong></td>
+                        <td>Logical, Process, Development, Physical + Use Cases (validation)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Module View</strong></td>
+                        <td>Static code structure (classes, packages, layers)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>C&C View</strong></td>
+                        <td>Runtime structure (components, connectors, data flow)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Allocation View</strong></td>
+                        <td>Mapping to environment (deployment, teams, files)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Architectural Styles</strong></td>
+                        <td>Layered, Client-Server, Microservices, Event-Driven, Pipe-Filter, Repository</td>
+                    </tr>
+                </table>
+
+                <div class="important">
+                    Architecture is about making the right trade-offs. No single view or style is "best" – the right
+                    choice depends on quality attribute requirements (performance, security, modifiability, etc.) and
+                    project constraints.
+                </div>
+            </div>
+
+        </section>
+
+        <!-- END OF NOTES -->
+
+        <div class="card"
+            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 40px;">
+            <h2 style="color: white; background: none; margin: 0 0 15px 0;">📚 End of SDA Final Exam Notes</h2>
+            <p style="font-size: 1.1em; margin: 0;">You have covered all syllabus topics. Good luck with your exam!</p>
+            <p style="font-size: 0.9em; margin-top: 15px; opacity: 0.9;">Topics Covered: Design Patterns • UML Diagrams
+                • Process Models • 4+1 View • Architecture Views</p>
+        </div>
+
+    </div>
+</body>
+
+</html>
