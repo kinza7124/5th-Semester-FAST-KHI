@@ -15,6 +15,8 @@ It is designed to help students access all the necessary academic resources in o
 
 5. CN – Computer Networks
 
+For CN Lab do visit: https://net-lab-pro.vercel.app/
+
 **🎯 Purpose**
 
 The goal of this repository is to serve as a one-stop resource hub for students of FAST-NUCES KHI CS 5th semester.
