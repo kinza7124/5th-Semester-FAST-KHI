@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KNN & Distance Metrics — Complete Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface2: #1a1e2a;
+    --border: #252a38;
+    --accent: #e8c547;
+    --accent2: #4fc3f7;
+    --accent3: #f06292;
+    --accent4: #81c784;
+    --text: #e8eaf0;
+    --text-dim: #8a93a8;
+    --text-dimmer: #555e72;
+    --formula-bg: #0a0c12;
+    --correct: #4caf50;
+    --wrong: #f44336;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0d0f14 0%, #13161e 50%, #0d1220 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 20px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(232,197,71,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    opacity: 0.85;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 6vw, 56px);
+    font-weight: 900;
+    line-height: 1.1;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  header h1 span { color: var(--accent); }
+  header p {
+    font-size: 15px;
+    color: var(--text-dim);
+    font-style: italic;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ── NAV TOC ── */
+  .toc {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .toc-inner { display: inline-flex; gap: 8px; flex-wrap: wrap; white-space: normal; }
+  .toc a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 5px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .toc a:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 16px 80px;
+  }
+
+  /* ── SECTION ── */
+  section {
+    margin-top: 56px;
+    scroll-margin-top: 20px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(232,197,71,0.08);
+    border: 1px solid rgba(232,197,71,0.25);
+    padding: 4px 10px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(20px, 4vw, 28px);
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* ── SUBSECTION ── */
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--accent2);
+    margin: 28px 0 12px;
+    padding-left: 12px;
+    border-left: 3px solid var(--accent2);
+  }
+  h4 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 20px 0 8px;
+  }
+
+  /* ── TEXT ── */
+  p { margin-bottom: 14px; color: var(--text); }
+  strong { color: var(--accent); font-weight: 600; }
+  em { color: var(--accent2); font-style: italic; }
+
+  /* ── CALLOUT BOXES ── */
+  .box {
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin: 20px 0;
+    border-left: 4px solid;
+  }
+  .box-blue { background: rgba(79,195,247,0.06); border-color: var(--accent2); }
+  .box-yellow { background: rgba(232,197,71,0.06); border-color: var(--accent); }
+  .box-green { background: rgba(129,199,132,0.06); border-color: var(--accent4); }
+  .box-red { background: rgba(240,98,146,0.06); border-color: var(--accent3); }
+  .box-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .box-blue .box-title { color: var(--accent2); }
+  .box-yellow .box-title { color: var(--accent); }
+  .box-green .box-title { color: var(--accent4); }
+  .box-red .box-title { color: var(--accent3); }
+
+  /* ── FORMULA BLOCK ── */
+  .formula {
+    background: var(--formula-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: clamp(13px, 2.5vw, 16px);
+    color: #fff;
+    overflow-x: auto;
+    position: relative;
+  }
+  .formula-label {
+    position: absolute;
+    top: 8px; right: 12px;
+    font-size: 10px;
+    color: var(--text-dimmer);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .formula .big { font-size: clamp(15px, 3vw, 20px); color: var(--accent); }
+  .formula .fraction {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0 4px;
+  }
+  .formula .fraction .num { border-bottom: 1px solid var(--accent2); padding-bottom: 2px; color: var(--accent2); }
+  .formula .fraction .den { padding-top: 2px; color: var(--accent2); }
+
+  /* ── STEP BLOCK ── */
+  .steps { counter-reset: step; }
+  .step {
+    display: flex;
+    gap: 16px;
+    margin: 16px 0;
+    padding: 16px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .step-num {
+    counter-increment: step;
+    min-width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #000;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-content h4 { margin-top: 0; }
+  .step-content p { margin-bottom: 6px; }
+
+  /* ── MATH WORK ── */
+  .math-work {
+    background: var(--formula-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    line-height: 2;
+    overflow-x: auto;
+  }
+  .math-work .line { display: block; }
+  .math-work .highlight { color: var(--accent); font-weight: 600; }
+  .math-work .result { color: var(--accent4); font-weight: 600; font-size: 15px; }
+  .math-work .arrow { color: var(--text-dimmer); }
+  .math-work .label { color: var(--text-dim); font-size: 11px; }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; margin: 16px 0; border-radius: 8px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead tr { background: var(--surface2); }
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(37,42,56,0.7);
+    font-size: 13px;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: rgba(26,30,42,0.4); }
+  .correct { color: var(--correct); font-weight: 600; }
+  .wrong { color: var(--wrong); font-weight: 600; }
+
+  /* ── COMPARISON GRID ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  @media (max-width: 520px) { .compare-grid { grid-template-columns: 1fr; } }
+  .compare-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .compare-card h4 { margin-top: 0; }
+  .compare-card ul { padding-left: 18px; }
+  .compare-card li { font-size: 13px; margin-bottom: 4px; }
+
+  /* ── CONFUSION MATRIX ── */
+  .matrix-container { overflow-x: auto; margin: 16px 0; }
+  .conf-matrix {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    gap: 4px;
+    width: fit-content;
+    margin: 0 auto;
+  }
+  .conf-cell {
+    width: 110px; height: 80px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    border-radius: 6px;
+    font-size: 12px;
+    text-align: center;
+  }
+  @media (max-width: 400px) { .conf-cell { width: 80px; height: 70px; font-size: 11px; } }
+  .conf-cell .val { font-size: 22px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+  .conf-header { background: var(--surface2); color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  .conf-tp { background: rgba(76,175,80,0.15); border: 1px solid rgba(76,175,80,0.3); color: var(--correct); }
+  .conf-tn { background: rgba(79,195,247,0.1); border: 1px solid rgba(79,195,247,0.25); color: var(--accent2); }
+  .conf-fp { background: rgba(240,98,146,0.1); border: 1px solid rgba(240,98,146,0.25); color: var(--accent3); }
+  .conf-fn { background: rgba(255,167,38,0.1); border: 1px solid rgba(255,167,38,0.3); color: #ffa726; }
+
+  /* ── METRIC CARDS ── */
+  .metric-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 12px; margin: 16px 0; }
+  .metric-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+  .metric-card .name { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .metric-card .val { font-size: 24px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+  .metric-card .formula-sm { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dimmer); margin-top: 4px; }
+
+  /* ── QUIZ SECTION ── */
+  .quiz-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+  .quiz-card .q { font-weight: 600; color: var(--accent2); margin-bottom: 10px; }
+  .quiz-card .a { background: var(--surface2); border-radius: 6px; padding: 12px; font-size: 14px; }
+
+  /* ── DIVIDER ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* ── BACK TO TOP ── */
+  .back-top {
+    position: fixed;
+    bottom: 24px; right: 20px;
+    background: var(--accent);
+    color: #000;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 4px;
+    text-decoration: none;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 20px rgba(232,197,71,0.3);
+    z-index: 100;
+  }
+
+  ul.list { padding-left: 20px; margin: 12px 0; }
+  ul.list li { margin-bottom: 6px; font-size: 15px; }
+
+  .tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-right: 6px;
+  }
+  .tag-blue { background: rgba(79,195,247,0.12); color: var(--accent2); border: 1px solid rgba(79,195,247,0.25); }
+  .tag-yellow { background: rgba(232,197,71,0.1); color: var(--accent); border: 1px solid rgba(232,197,71,0.2); }
+  .tag-green { background: rgba(129,199,132,0.1); color: var(--accent4); border: 1px solid rgba(129,199,132,0.2); }
+
+  .highlight-line {
+    background: linear-gradient(90deg, rgba(232,197,71,0.12) 0%, transparent 100%);
+    border-left: 3px solid var(--accent);
+    padding: 8px 14px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0;
+    font-style: italic;
+    color: var(--text);
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="label">Machine Learning · Complete Study Notes</div>
+  <h1>K-Nearest Neighbors &<br><span>Distance Metrics</span></h1>
+  <p>Beginner to Advanced · All Examples Solved Step by Step · Interview Ready</p>
+</header>
+
+<nav class="toc">
+  <div class="toc-inner">
+    <a href="#s1">01 — What is KNN?</a>
+    <a href="#s2">02 — Why Lazy Learning?</a>
+    <a href="#s3">03 — KNN Steps</a>
+    <a href="#s4">04 — Euclidean Distance</a>
+    <a href="#s5">05 — Manhattan Distance</a>
+    <a href="#s6">06 — Minkowski Distance</a>
+    <a href="#s7">07 — Cosine Similarity</a>
+    <a href="#s8">08 — Euclidean vs Cosine</a>
+    <a href="#s9">09 — Full KNN Example</a>
+    <a href="#s10">10 — Choosing K</a>
+    <a href="#s11">11 — Error Rate & K</a>
+    <a href="#s12">12 — Normalization</a>
+    <a href="#s13">13 — Confusion Matrix</a>
+    <a href="#s14">14 — All Metrics</a>
+    <a href="#s15">15 — Interview Q&A</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s1">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2>What is KNN?</h2>
+  </div>
+
+  <p>K-Nearest Neighbors (KNN) is one of the simplest and most intuitive machine learning algorithms. The core idea is beautifully simple:</p>
+
+  <div class="highlight-line">"Tell me who your neighbors are, and I'll tell you who you are."</div>
+
+  <p>KNN is a <strong>supervised learning</strong> algorithm. It can be used for both <em>classification</em> (predicting a category) and <em>regression</em> (predicting a number).</p>
+
+  <div class="box box-blue">
+    <div class="box-title">🦆 The Duck Analogy</div>
+    <p>If something walks like a duck, swims like a duck, and quacks like a duck — it's probably a duck. KNN classifies new data points based on what their <em>closest known neighbors</em> are labeled as.</p>
+  </div>
+
+  <h3>Real-Life Example</h3>
+  <p>Imagine you move to a new city and want to know if a neighborhood is "safe." You look at the 5 nearest neighborhoods. If 4 out of 5 are labeled "safe," you conclude your neighborhood is probably safe too. That's KNN — majority vote among K nearest neighbors.</p>
+
+  <div class="box box-yellow">
+    <div class="box-title">📌 Key Properties</div>
+    <ul class="list">
+      <li><strong>Non-parametric</strong> — makes no assumptions about data distribution</li>
+      <li><strong>Instance-based</strong> — stores all training data</li>
+      <li><strong>Lazy learner</strong> — no training phase (explained next)</li>
+      <li><strong>Works for both classification and regression</strong></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s2">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2>Why is KNN a "Lazy Learner"?</h2>
+  </div>
+
+  <div class="compare-grid">
+    <div class="compare-card">
+      <h4>🤔 Eager Learner (e.g. Decision Tree)</h4>
+      <ul>
+        <li>Learns a model during training</li>
+        <li>Training is slow</li>
+        <li>Prediction is fast</li>
+        <li>Model is stored, not raw data</li>
+      </ul>
+    </div>
+    <div class="compare-card">
+      <h4>😴 Lazy Learner (KNN)</h4>
+      <ul>
+        <li>No model built during training</li>
+        <li>Training is instant</li>
+        <li>Prediction is slow</li>
+        <li>All raw training data is stored</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box box-yellow">
+    <div class="box-title">💡 Why "Lazy"?</div>
+    <p>KNN is called <strong>lazy</strong> because it does <em>zero work</em> during the training phase. It simply stores every training example. All the computation is <em>deferred</em> to prediction time — only when a new test point arrives does KNN compute distances to every stored training point.</p>
+  </div>
+
+  <p>This has consequences:</p>
+  <ul class="list">
+    <li><strong>Fast training:</strong> Just store the data — O(1) time</li>
+    <li><strong>Slow prediction:</strong> Must compare against all N training points — O(N·d) time where d = dimensions</li>
+    <li><strong>High memory:</strong> Must keep all training data in memory</li>
+  </ul>
+
+  <div class="box box-red">
+    <div class="box-title">⚠️ Interview Trap</div>
+    <p>When asked "What is the training time complexity of KNN?" — answer is <strong>O(1)</strong> (trivial, just store data). Test time is <strong>O(N·d)</strong> per query. This is the opposite of most algorithms!</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s3">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2>KNN Working Steps</h2>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h4>Choose K</h4>
+        <p>Decide how many neighbors to consider. K=1 means only the single closest point. K=5 means consider 5 closest and take majority vote.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h4>Compute Distance / Similarity</h4>
+        <p>For every training point, calculate how "close" it is to the test point. Common metrics: Euclidean, Manhattan, Cosine Similarity.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h4>Sort and Select K Nearest</h4>
+        <p>Rank all training points by distance (closest first). Pick the top K.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h4>Majority Vote (Classification)</h4>
+        <p>Count which class appears most among the K neighbors. Assign that class to the test point.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <h4>Average (Regression)</h4>
+        <p>For regression, take the average of the K neighbors' values instead of majority vote.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s4">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2>Euclidean Distance</h2>
+  </div>
+
+  <p>This is the straight-line ("as the crow flies") distance between two points. Think of using a ruler to measure the shortest path between two points on paper.</p>
+
+  <div class="formula">
+    <span class="formula-label">Formula</span>
+    <span class="big">d(A,B) = √[ Σ (Aᵢ − Bᵢ)² ]</span>
+  </div>
+
+  <p>For 2D points (x₁,y₁) and (x₂,y₂) this simplifies to the familiar Pythagorean theorem:</p>
+
+  <div class="formula">
+    <span class="big">d = √[ (x₂−x₁)² + (y₂−y₁)² ]</span>
+  </div>
+
+  <h3>Solved Example 1 — 2D Points</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Given</div>
+    <p>Point A = (1, 5), Point B = (4, 1)</p>
+    <p>Find the Euclidean distance.</p>
+  </div>
+
+  <div class="math-work">
+    <span class="line label">Step 1: Identify coordinates</span>
+    <span class="line">A = (1, 5)  →  x₁=1, y₁=5</span>
+    <span class="line">B = (4, 1)  →  x₂=4, y₂=1</span>
+    <span class="line"> </span>
+    <span class="line label">Step 2: Apply formula</span>
+    <span class="line">d(A,B) = √[ (4−1)² + (1−5)² ]</span>
+    <span class="line">       = √[ (3)² + (−4)² ]</span>
+    <span class="line">       = √[ 9 + 16 ]</span>
+    <span class="line">       = √25</span>
+    <span class="result">       = 5</span>
+  </div>
+
+  <h3>Solved Example 2 — From Lecture (Manhattan Distance Context)</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Given — KNN Training Data</div>
+    <p>Training: F1=1, F2=5, Class=0 &nbsp;|&nbsp; F1=0, F2=8, Class=0</p>
+    <p>F1=0, F2=6, Class=1 &nbsp;|&nbsp; F1=1, F2=2, Class=1</p>
+    <p>Test Sample 1: F1=1, F2=3</p>
+  </div>
+
+  <p>Using <strong>Manhattan distance</strong> (as in the lecture — we'll cover that next), but let's also compute Euclidean:</p>
+
+  <div class="math-work">
+    <span class="line label">Euclidean Distance from Test(1,3) to each training point:</span>
+    <span class="line"> </span>
+    <span class="line label">→ To (1,5): Class 0</span>
+    <span class="line">d = √[(1−1)² + (3−5)²] = √[0 + 4] = √4 = <span class="highlight">2.0</span></span>
+    <span class="line"> </span>
+    <span class="line label">→ To (0,8): Class 0</span>
+    <span class="line">d = √[(1−0)² + (3−8)²] = √[1 + 25] = √26 ≈ <span class="highlight">5.1</span></span>
+    <span class="line"> </span>
+    <span class="line label">→ To (0,6): Class 1</span>
+    <span class="line">d = √[(1−0)² + (3−6)²] = √[1 + 9] = √10 ≈ <span class="highlight">3.16</span></span>
+    <span class="line"> </span>
+    <span class="line label">→ To (1,2): Class 1</span>
+    <span class="line">d = √[(1−1)² + (3−2)²] = √[0 + 1] = √1 = <span class="highlight">1.0</span></span>
+    <span class="line"> </span>
+    <span class="line label">K=1: nearest is (1,2) with d=1.0 → Class 1</span>
+    <span class="result">Prediction: Class 1</span>
+  </div>
+
+  <h3>Solved Example 3 — 3D Vectors</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Given</div>
+    <p>A = (1, 2, 3), B = (4, 0, 1)</p>
+  </div>
+
+  <div class="math-work">
+    <span class="line">d(A,B) = √[(4−1)² + (0−2)² + (1−3)²]</span>
+    <span class="line">       = √[(3)² + (−2)² + (−2)²]</span>
+    <span class="line">       = √[9 + 4 + 4]</span>
+    <span class="line">       = √17</span>
+    <span class="result">       ≈ 4.12</span>
+  </div>
+
+  <div class="box box-red">
+    <div class="box-title">⚠️ Problem with Euclidean Distance for Text</div>
+    <p>Euclidean distance is sensitive to <em>document length</em>. If Doc A = (1,1) and Doc B = (10,10), they represent the same word proportions but Euclidean distance = <strong>√162 ≈ 12.7</strong>. A longer document looks "far" even when content is identical. This is why cosine similarity is preferred for text!</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s5">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2>Manhattan Distance</h2>
+  </div>
+
+  <p>Also called <strong>City Block Distance</strong> or <strong>Taxicab Distance</strong>. Instead of measuring straight-line distance, it measures distance if you can only move horizontally or vertically — like navigating city blocks in a grid (like Manhattan, New York).</p>
+
+  <div class="formula">
+    <span class="formula-label">Formula</span>
+    <span class="big">d(A,B) = Σ |Aᵢ − Bᵢ|</span>
+  </div>
+
+  <p>No squaring, no square root — just the sum of <strong>absolute differences</strong>.</p>
+
+  <h3>Solved Example 1 — From Lecture</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Given</div>
+    <p>Test Sample 1: (F1=1, F2=3)</p>
+    <p>Training Sample 1: (F1=1, F2=5), Class=0</p>
+  </div>
+
+  <div class="math-work">
+    <span class="line">d = |1−1| + |3−5|</span>
+    <span class="line">  = |0| + |−2|</span>
+    <span class="line">  = 0 + 2</span>
+    <span class="result">  = 2</span>
+  </div>
+
+  <h3>All 4 Distances — Full Lecture Example</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Test Point: (1, 3) — find K=1 nearest neighbor</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Training Point</th>
+          <th>Class</th>
+          <th>Calculation</th>
+          <th>Distance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>(1, 5)</td>
+          <td>0</td>
+          <td>|1−1| + |3−5| = 0 + 2</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td>(0, 8)</td>
+          <td>0</td>
+          <td>|1−0| + |3−8| = 1 + 5</td>
+          <td>6</td>
+        </tr>
+        <tr>
+          <td>(0, 6)</td>
+          <td>1</td>
+          <td>|1−0| + |3−6| = 1 + 3</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td>(1, 2)</td>
+          <td>1</td>
+          <td>|1−1| + |3−2| = 0 + 1</td>
+          <td><strong style="color:var(--accent)">1 ← Nearest</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box box-green">
+    <div class="box-title">✅ K=1 Result</div>
+    <p>Nearest neighbor is (1,2) with distance=1 and Class=<strong>1</strong>. So Test Sample 1 is classified as <strong>Class 1</strong>.</p>
+  </div>
+
+  <h3>Solved Example 2 — 3D</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Given</div>
+    <p>A = (3, 6, 2), B = (1, 4, 5)</p>
+  </div>
+
+  <div class="math-work">
+    <span class="line">d = |3−1| + |6−4| + |2−5|</span>
+    <span class="line">  = |2| + |2| + |−3|</span>
+    <span class="line">  = 2 + 2 + 3</span>
+    <span class="result">  = 7</span>
+  </div>
+
+  <div class="compare-grid">
+    <div class="compare-card">
+      <h4>✅ Manhattan Advantages</h4>
+      <ul>
+        <li>More robust to outliers</li>
+        <li>No squaring so large differences don't dominate</li>
+        <li>Better for high-dimensional data</li>
+        <li>Computationally cheaper (no sqrt)</li>
+      </ul>
+    </div>
+    <div class="compare-card">
+      <h4>❌ Manhattan Disadvantages</h4>
+      <ul>
+        <li>Less geometrically natural</li>
+        <li>Doesn't represent actual shortest path</li>
+        <li>Can mislead when data is continuous</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s6">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2>Minkowski Distance</h2>
+  </div>
+
+  <p>Minkowski is the <strong>generalized form</strong> that includes both Euclidean and Manhattan as special cases.</p>
+
+  <div class="formula">
+    <span class="formula-label">General Formula</span>
+    <span class="big">d(A,B) = ( Σ |Aᵢ − Bᵢ|ᵖ )^(1/p)</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>p value</th><th>Name</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>p = 1</td><td>Manhattan Distance</td><td>Sum of absolute differences</td></tr>
+        <tr><td>p = 2</td><td>Euclidean Distance</td><td>Straight-line distance</td></tr>
+        <tr><td>p → ∞</td><td>Chebyshev Distance</td><td>Maximum of absolute differences</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Solved Example</h3>
+  <div class="box box-blue">
+    <div class="box-title">Given</div>
+    <p>A = (1, 2), B = (4, 6). Calculate for p=1, p=2, p=3</p>
+  </div>
+
+  <div class="math-work">
+    <span class="line label">p=1 (Manhattan):</span>
+    <span class="line">d = |1−4| + |2−6| = 3 + 4 = <span class="highlight">7</span></span>
+    <span class="line"> </span>
+    <span class="line label">p=2 (Euclidean):</span>
+    <span class="line">d = (|1−4|² + |2−6|²)^(1/2) = (9+16)^0.5 = √25 = <span class="highlight">5</span></span>
+    <span class="line"> </span>
+    <span class="line label">p=3:</span>
+    <span class="line">d = (|3|³ + |4|³)^(1/3) = (27+64)^(1/3) = (91)^(1/3) ≈ <span class="highlight">4.50</span></span>
+  </div>
+
+  <div class="box box-yellow">
+    <div class="box-title">💡 Key Insight</div>
+    <p>As p increases, the distance becomes more dominated by the <em>largest single dimension difference</em>. For p→∞ (Chebyshev), distance = max(|3|, |4|) = 4.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s7">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2>Cosine Similarity</h2>
+  </div>
+
+  <p>Instead of measuring <em>how far apart</em> two vectors are, cosine similarity measures <em>the angle between them</em>. If two vectors point in the same direction, they are similar — regardless of how long they are.</p>
+
+  <div class="formula">
+    <span class="formula-label">Formula</span>
+    <span class="big">cos(A,B) = (A · B) / (||A|| × ||B||)</span>
+  </div>
+
+  <div class="formula">
+    <span class="big">= Σ(AᵢBᵢ) / [ √(ΣAᵢ²) × √(ΣBᵢ²) ]</span>
+  </div>
+
+  <div class="box box-blue">
+    <div class="box-title">📐 Geometric Intuition</div>
+    <p>Cosine similarity = cos(θ) where θ is the angle between the two vectors.<br>
+    <strong>cos(0°) = 1.0</strong> → vectors are identical (perfectly similar)<br>
+    <strong>cos(90°) = 0.0</strong> → vectors are perpendicular (completely unrelated)<br>
+    <strong>cos(180°) = -1.0</strong> → vectors point in opposite directions</p>
+  </div>
+
+  <h3>Solved Example 1 — Basic (from KNN.pdf)</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Given</div>
+    <p>A = (1, 2, 3), B = (2, 1, 2)</p>
+    <p>Find cosine similarity.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h4>Dot Product A · B</h4>
+        <div class="math-work">
+          <span class="line">A · B = (1×2) + (2×1) + (3×2)</span>
+          <span class="line">     = 2 + 2 + 6</span>
+          <span class="result">     = 10</span>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h4>Magnitude of A (||A||)</h4>
+        <div class="math-work">
+          <span class="line">||A|| = √(1² + 2² + 3²)</span>
+          <span class="line">     = √(1 + 4 + 9)</span>
+          <span class="line">     = √14</span>
+          <span class="result">     ≈ 3.742</span>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h4>Magnitude of B (||B||)</h4>
+        <div class="math-work">
+          <span class="line">||B|| = √(2² + 1² + 2²)</span>
+          <span class="line">     = √(4 + 1 + 4)</span>
+          <span class="line">     = √9</span>
+          <span class="result">     = 3</span>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h4>Cosine Similarity</h4>
+        <div class="math-work">
+          <span class="line">cos(A,B) = 10 / (√14 × 3)</span>
+          <span class="line">        = 10 / (3.742 × 3)</span>
+          <span class="line">        = 10 / 11.22</span>
+          <span class="result">        ≈ 0.89</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="box box-green">
+    <div class="box-title">✅ Interpretation</div>
+    <p>Cosine similarity of <strong>0.89</strong> means the vectors are highly similar (angle ≈ 27°). They point in nearly the same direction.</p>
+  </div>
+
+  <h3>Solved Example 2 — Text Document Vectors</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Vocabulary = {cat, dog}</div>
+    <p>Doc1: "cat cat dog" → (2, 1)<br>
+    Doc2: "cat dog" → (1, 1)<br>
+    Doc3: "dog dog dog dog" → (0, 4)</p>
+  </div>
+
+  <h4>Similarity(Doc1, Doc2)</h4>
+  <div class="math-work">
+    <span class="line label">Step 1: Dot Product</span>
+    <span class="line">(2×1) + (1×1) = 2 + 1 = 3</span>
+    <span class="line"> </span>
+    <span class="line label">Step 2: ||Doc1|| = √(2²+1²) = √(4+1) = √5 ≈ 2.236</span>
+    <span class="line label">Step 3: ||Doc2|| = √(1²+1²) = √2 ≈ 1.414</span>
+    <span class="line"> </span>
+    <span class="line label">Step 4: Cosine Similarity</span>
+    <span class="line">cos = 3 / (√5 × √2) = 3 / √10 = 3 / 3.162</span>
+    <span class="result">    ≈ 0.95  ← Very similar!</span>
+  </div>
+
+  <h4>Similarity(Doc1, Doc3)</h4>
+  <div class="math-work">
+    <span class="line label">Step 1: Dot Product</span>
+    <span class="line">(2×0) + (1×4) = 0 + 4 = 4</span>
+    <span class="line"> </span>
+    <span class="line label">Step 2: ||Doc1|| = √5 ≈ 2.236</span>
+    <span class="line label">Step 3: ||Doc3|| = √(0²+4²) = √16 = 4</span>
+    <span class="line"> </span>
+    <span class="line label">Step 4: Cosine Similarity</span>
+    <span class="line">cos = 4 / (√5 × 4) = 4 / (2.236 × 4) = 4 / 8.944</span>
+    <span class="result">    ≈ 0.45  ← Less similar</span>
+  </div>
+
+  <h4>Length Invariance Demo — Doc2 vs Doc2_long</h4>
+  <div class="math-work">
+    <span class="line label">Doc2 = (1,1),  Doc2_long = (10,10)  ← Same proportions, longer</span>
+    <span class="line"> </span>
+    <span class="line">Dot Product = (1×10) + (1×10) = 20</span>
+    <span class="line">||Doc2||     = √(1+1) = √2 ≈ 1.414</span>
+    <span class="line">||Doc2_long|| = √(100+100) = √200 ≈ 14.14</span>
+    <span class="line"> </span>
+    <span class="line">cos = 20 / (1.414 × 14.14) = 20 / 20.0</span>
+    <span class="result">    = 1.0  ← Perfect similarity! Length doesn't matter</span>
+  </div>
+
+  <h3>Solved Example 3 — KNN Classification with Cosine</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Training Data</div>
+    <p>P1=(1,0,1) Class A &nbsp;|&nbsp; P2=(0,1,1) Class B &nbsp;|&nbsp; P3=(1,1,0) Class A</p>
+    <p>Test T = (1,1,1), K=3</p>
+  </div>
+
+  <div class="math-work">
+    <span class="line label">||T|| = √(1+1+1) = √3 ≈ 1.732</span>
+    <span class="line label">||P1|| = ||P2|| = ||P3|| = √2 ≈ 1.414</span>
+    <span class="line"> </span>
+    <span class="line label">cos(T, P1):</span>
+    <span class="line">T·P1 = (1×1)+(1×0)+(1×1) = 2</span>
+    <span class="line">cos  = 2/(√3×√2) = 2/2.449 ≈ <span class="highlight">0.816</span>  → Class A</span>
+    <span class="line"> </span>
+    <span class="line label">cos(T, P2):</span>
+    <span class="line">T·P2 = (1×0)+(1×1)+(1×1) = 2</span>
+    <span class="line">cos  = 2/(√3×√2) ≈ <span class="highlight">0.816</span>  → Class B</span>
+    <span class="line"> </span>
+    <span class="line label">cos(T, P3):</span>
+    <span class="line">T·P3 = (1×1)+(1×1)+(1×0) = 2</span>
+    <span class="line">cos  = 2/(√3×√2) ≈ <span class="highlight">0.816</span>  → Class A</span>
+    <span class="line"> </span>
+    <span class="line label">K=3 neighbors: {A, B, A}</span>
+    <span class="result">Majority Vote → Class A ✅</span>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s8">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2>Euclidean vs Cosine — Why Use Cosine?</h2>
+  </div>
+
+  <div class="box box-red">
+    <div class="box-title">🚨 The Core Problem with Euclidean for Text</div>
+    <p>Euclidean distance treats longer documents as <em>farther away</em> even if they contain the same words in the same proportions. A short article and its 5-page expanded version would appear "distant" under Euclidean distance.</p>
+  </div>
+
+  <h3>Side-by-Side Comparison</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Setup</div>
+    <p>Doc1="cat cat dog" → (2,1) &nbsp;|&nbsp; Doc2="cat dog" → (1,1) &nbsp;|&nbsp; Doc3="dog dog dog dog" → (0,4)</p>
+  </div>
+
+  <h4>Euclidean Results</h4>
+  <div class="math-work">
+    <span class="line">d(Doc1, Doc2) = √[(2−1)² + (1−1)²] = √[1+0] = <span class="highlight">1.0</span></span>
+    <span class="line">d(Doc1, Doc3) = √[(2−0)² + (1−4)²] = √[4+9] = √13 ≈ <span class="highlight">3.6</span></span>
+    <span class="line"> </span>
+    <span class="line label">Now: Doc2_long = (10,10) — same as Doc2 but longer document</span>
+    <span class="line">d(Doc2, Doc2_long) = √[(1−10)² + (1−10)²] = √[81+81] = √162 ≈ <span class="highlight wrong">12.7</span></span>
+    <span class="line label wrong">❌ Same content, looks very far apart!</span>
+  </div>
+
+  <h4>Cosine Results</h4>
+  <div class="math-work">
+    <span class="line">cos(Doc1, Doc2) ≈ <span class="highlight">0.95</span>  ✅ Very similar (correct!)</span>
+    <span class="line">cos(Doc1, Doc3) ≈ <span class="highlight">0.45</span>  ✅ Less similar (correct!)</span>
+    <span class="line">cos(Doc2, Doc2_long) = <span class="highlight correct">1.0</span>  ✅ Identical content = perfect similarity!</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Euclidean</th>
+          <th>Cosine Similarity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Measures</td><td>Straight-line distance</td><td>Angle between vectors</td></tr>
+        <tr><td>Affected by length?</td><td class="wrong">YES — longer = farther</td><td class="correct">NO — length-independent</td></tr>
+        <tr><td>Range</td><td>0 to ∞</td><td>−1 to +1 (usually 0 to 1)</td></tr>
+        <tr><td>Best for</td><td>Low-dim numeric data</td><td>Text, high-dim data</td></tr>
+        <tr><td>Identical vectors</td><td>0</td><td>1.0</td></tr>
+        <tr><td>Opposite vectors</td><td>Large</td><td>−1.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box box-green">
+    <div class="box-title">✅ Rule of Thumb</div>
+    <ul class="list">
+      <li>Use <strong>Euclidean</strong> when magnitude matters (e.g., house prices, physical measurements)</li>
+      <li>Use <strong>Cosine</strong> when direction matters (e.g., text documents, user preferences, word embeddings)</li>
+      <li>Use <strong>Manhattan</strong> when robustness to outliers matters</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s9">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <h2>Full KNN Classification Example</h2>
+  </div>
+
+  <p>Let's work through the complete lecture example, predicting all 4 test points.</p>
+
+  <h3>Dataset</h3>
+
+  <div class="two-col">
+    <div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>F1</th><th>F2</th><th>Class</th></tr></thead>
+          <tbody>
+            <tr><td>T1</td><td>1</td><td>5</td><td>0</td></tr>
+            <tr><td>T2</td><td>0</td><td>8</td><td>0</td></tr>
+            <tr><td>T3</td><td>0</td><td>6</td><td>1</td></tr>
+            <tr><td>T4</td><td>1</td><td>2</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:var(--text-dim);margin-top:4px;">Training Data</p>
+    </div>
+    <div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>F1</th><th>F2</th><th>True Class</th></tr></thead>
+          <tbody>
+            <tr><td>S1</td><td>1</td><td>3</td><td>0</td></tr>
+            <tr><td>S2</td><td>1</td><td>4</td><td>0</td></tr>
+            <tr><td>S3</td><td>0</td><td>3</td><td>1</td></tr>
+            <tr><td>S4</td><td>0</td><td>4</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:var(--text-dim);margin-top:4px;">Test Data</p>
+    </div>
+  </div>
+
+  <h3>Test Sample 1: (1, 3) — True Class 0</h3>
+  <div class="math-work">
+    <span class="line">To T1(1,5)C=0: |1−1|+|3−5| = 0+2 = 2</span>
+    <span class="line">To T2(0,8)C=0: |1−0|+|3−8| = 1+5 = 6</span>
+    <span class="line">To T3(0,6)C=1: |1−0|+|3−6| = 1+3 = 4</span>
+    <span class="line">To T4(1,2)C=1: |1−1|+|3−2| = 0+1 = 1  ← NEAREST</span>
+    <span class="result">K=1: Predicted = Class 1 (True=0) → WRONG ❌</span>
+  </div>
+
+  <h3>Test Sample 2: (1, 4) — True Class 0</h3>
+  <div class="math-work">
+    <span class="line">To T1(1,5)C=0: |1−1|+|4−5| = 0+1 = 1  ← NEAREST</span>
+    <span class="line">To T2(0,8)C=0: |1−0|+|4−8| = 1+4 = 5</span>
+    <span class="line">To T3(0,6)C=1: |1−0|+|4−6| = 1+2 = 3</span>
+    <span class="line">To T4(1,2)C=1: |1−1|+|4−2| = 0+2 = 2</span>
+    <span class="result">K=1: Predicted = Class 0 (True=0) → CORRECT ✅</span>
+  </div>
+
+  <h3>Test Sample 3: (0, 3) — True Class 1</h3>
+  <div class="math-work">
+    <span class="line">To T1(1,5)C=0: |0−1|+|3−5| = 1+2 = 3</span>
+    <span class="line">To T2(0,8)C=0: |0−0|+|3−8| = 0+5 = 5</span>
+    <span class="line">To T3(0,6)C=1: |0−0|+|3−6| = 0+3 = 3</span>
+    <span class="line">To T4(1,2)C=1: |0−1|+|3−2| = 1+1 = 2  ← NEAREST</span>
+    <span class="result">K=1: Predicted = Class 1 (True=1) → CORRECT ✅</span>
+  </div>
+
+  <h3>Test Sample 4: (0, 4) — True Class 1</h3>
+  <div class="math-work">
+    <span class="line">To T1(1,5)C=0: |0−1|+|4−5| = 1+1 = 2</span>
+    <span class="line">To T2(0,8)C=0: |0−0|+|4−8| = 0+4 = 4</span>
+    <span class="line">To T3(0,6)C=1: |0−0|+|4−6| = 0+2 = 2</span>
+    <span class="line">To T4(1,2)C=1: |0−1|+|4−2| = 1+2 = 3</span>
+    <span class="line">T1 and T3 both at distance 2 → TIE</span>
+    <span class="line">T1=Class 0, T3=Class 1 → depends on tie-break rule</span>
+    <span class="result">K=1: Predicted = 0 or 1 (True=1) → Ambiguous</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Sample</th><th>True Class</th><th>Predicted</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>S1(1,3)</td><td>0</td><td>1</td><td class="wrong">Wrong ❌</td></tr>
+        <tr><td>S2(1,4)</td><td>0</td><td>0</td><td class="correct">Correct ✅</td></tr>
+        <tr><td>S3(0,3)</td><td>1</td><td>1</td><td class="correct">Correct ✅</td></tr>
+        <tr><td>S4(0,4)</td><td>1</td><td>0 or 1</td><td>Tie</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s10">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <h2>How to Select the Value of K</h2>
+  </div>
+
+  <div class="compare-grid">
+    <div class="compare-card">
+      <h4>K too small (e.g. K=1)</h4>
+      <ul>
+        <li>Very sensitive to noise/outliers</li>
+        <li>Decision boundary is jagged</li>
+        <li>High variance, low bias</li>
+        <li>May overfit</li>
+      </ul>
+    </div>
+    <div class="compare-card">
+      <h4>K too large (e.g. K=N)</h4>
+      <ul>
+        <li>Includes points from other classes</li>
+        <li>Decision boundary is over-smoothed</li>
+        <li>Low variance, high bias</li>
+        <li>May underfit</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Methods to Choose K</h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h4>Square Root Rule (Quick Heuristic)</h4>
+        <p>K ≈ √N where N = number of training samples. For N=100, K≈10. Simple but not always optimal.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h4>Cross-Validation (Best Practice)</h4>
+        <p>Try K = 1, 3, 5, 7, ... and measure validation error for each. Pick K with lowest error. This is what the lecture example demonstrates.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h4>Use Odd K for Binary Classification</h4>
+        <p>Using odd K (1, 3, 5, 7...) avoids tie-breaking problems when you have 2 classes.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>Solved Example — Optimal K Selection (from KNN.pdf)</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Dataset</div>
+    <p>x1=2(A), x2=4(A), x3=5(B), x4=7(B), x5=8(B), x6=9(A)</p>
+    <p>Test each point against its neighbors to find error rate per K</p>
+  </div>
+
+  <h4>K = 1</h4>
+  <div class="math-work">
+    <span class="line">x1(2): nearest=x2(4)→A ✅ | x2(4): nearest=x1(2)→A ✅</span>
+    <span class="line">x3(5): nearest=x2(4)→A ❌(true B) | x4(7): nearest=x3(5)→B ✅</span>
+    <span class="line">x5(8): nearest=x4(7)→B ✅ | x6(9): nearest=x5(8)→B ❌(true A)</span>
+    <span class="result">Misclassified: 2 out of 6 → Error = 2/6 ≈ 0.33</span>
+  </div>
+
+  <h4>K = 2</h4>
+  <div class="math-work">
+    <span class="line">x1: neighbors x2(A),x3(B) → tie → A ✅</span>
+    <span class="line">x2: neighbors x1(A),x3(B) → tie → A ✅</span>
+    <span class="line">x3: neighbors x2(A),x4(B) → tie → B ✅</span>
+    <span class="line">x4: neighbors x3(B),x5(B) → B ✅</span>
+    <span class="line">x5: neighbors x4(B),x6(A) → tie → B ✅</span>
+    <span class="line">x6: neighbors x5(B),x4(B) → B ❌ (true A)</span>
+    <span class="result">Misclassified: 1 out of 6 → Error = 1/6 ≈ 0.17 ← OPTIMAL!</span>
+  </div>
+
+  <h4>K = 3</h4>
+  <div class="math-work">
+    <span class="line">x1: x2(A),x3(B),x4(B) → B ❌ | x2: x1(A),x3(B),x4(B) → B ❌</span>
+    <span class="line">x3: x2(A),x4(B),x5(B) → B ✅ | x4: x3(B),x5(B),x6(A) → B ✅</span>
+    <span class="line">x5: x4(B),x6(A),x3(B) → B ✅ | x6: x5(B),x4(B),x3(B) → B ❌</span>
+    <span class="result">Misclassified: 3 out of 6 → Error = 3/6 = 0.33</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>K</th><th>Error Rate</th><th>Best?</th></tr></thead>
+      <tbody>
+        <tr><td>K=1</td><td>0.33</td><td>—</td></tr>
+        <tr><td>K=2</td><td>0.17</td><td class="correct">✅ OPTIMAL</td></tr>
+        <tr><td>K=3</td><td>0.33</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box box-green">
+    <div class="box-title">✅ Conclusion</div>
+    <p>K=2 is optimal for this dataset with error rate ≈ 0.17. This also matches the <strong>Bayes Error</strong> (theoretical minimum possible error ≈ 1/6 ≈ 0.17), confirming K=2 is near-perfect for this data.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s11">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <h2>Error Rate vs K — Bias-Variance Tradeoff</h2>
+  </div>
+
+  <p>As K changes, the classification error follows a characteristic <strong>U-shaped curve</strong>. Understanding this is fundamental.</p>
+
+  <h3>Numerical Example (from KNN.pdf)</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Dataset: 1D Binary Classification</div>
+    <p>P1=1(+), P2=2(+), P3=3(+), P4=6(−), P5=7(−), P6=8(−)</p>
+    <p>Test point: xtest=4, True class=(+)</p>
+    <p>Distance: |xi − xtest|</p>
+  </div>
+
+  <h4>Distance from xtest=4 to each training point</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Point</th><th>Value</th><th>|value − 4|</th><th>Class</th></tr></thead>
+      <tbody>
+        <tr><td>P3</td><td>3</td><td>1</td><td class="correct">+ (nearest)</td></tr>
+        <tr><td>P2</td><td>2</td><td>2</td><td class="correct">+</td></tr>
+        <tr><td>P4</td><td>6</td><td>2</td><td class="wrong">−</td></tr>
+        <tr><td>P1</td><td>1</td><td>3</td><td class="correct">+</td></tr>
+        <tr><td>P5</td><td>7</td><td>3</td><td class="wrong">−</td></tr>
+        <tr><td>P6</td><td>8</td><td>4</td><td class="wrong">−</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Sorted by distance: <strong>(+, +, −, +, −, −)</strong></p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>K</th><th>Neighbors Selected</th><th>Majority</th><th>Predicted</th><th>Error</th></tr></thead>
+      <tbody>
+        <tr><td>K=1</td><td>(+)</td><td>+</td><td class="correct">+</td><td>0</td></tr>
+        <tr><td>K=3</td><td>(+, +, −)</td><td>2+ vs 1−</td><td class="correct">+</td><td>0</td></tr>
+        <tr><td>K=5</td><td>(+, +, −, +, −)</td><td>3+ vs 2−</td><td class="correct">+</td><td>0</td></tr>
+        <tr><td>K=6</td><td>(+, +, −, +, −, −)</td><td>3+ vs 3−</td><td class="wrong">− (tie→−)</td><td>1</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box box-yellow">
+    <div class="box-title">📊 Key Observations</div>
+    <ul class="list">
+      <li><strong>Small K</strong> (K=1): Low bias, high variance. Sensitive to individual noisy points.</li>
+      <li><strong>Moderate K</strong>: Best balance — minimum error.</li>
+      <li><strong>Large K</strong> (K=6, K=N): High bias, low variance. Includes irrelevant far-away points — underfits.</li>
+    </ul>
+  </div>
+
+  <div class="box box-red">
+    <div class="box-title">🎯 The U-Shaped Error Curve</div>
+    <p>Error is high at very small K (noisy), decreases to a minimum at optimal K, then rises again at very large K (underfitting). The optimal K sits at the bottom of this U-curve — found via cross-validation.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s12">
+  <div class="section-header">
+    <span class="section-num">12</span>
+    <h2>Normalization / Feature Scaling</h2>
+  </div>
+
+  <div class="box box-red">
+    <div class="box-title">⚠️ The Scaling Problem</div>
+    <p>Without normalization, features with larger ranges dominate the distance calculation. Example: height (1.5m–1.8m) vs income ($10K–$1M). A tiny income difference will completely overpower height differences in Euclidean distance!</p>
+  </div>
+
+  <h3>Min-Max Normalization (Scale to [0,1])</h3>
+
+  <div class="formula">
+    <span class="big">x_norm = (x − x_min) / (x_max − x_min)</span>
+  </div>
+
+  <h3>Solved Example — Lecture Data</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Original Training Data</div>
+    <p>F1 values: 0, 0, 1, 1 → min=0, max=1</p>
+    <p>F2 values: 2, 5, 6, 8 → min=2, max=8</p>
+  </div>
+
+  <div class="math-work">
+    <span class="line label">Normalizing F2:</span>
+    <span class="line">F2=5: (5−2)/(8−2) = 3/6 = <span class="highlight">0.5</span></span>
+    <span class="line">F2=8: (8−2)/(8−2) = 6/6 = <span class="highlight">1.0</span></span>
+    <span class="line">F2=6: (6−2)/(8−2) = 4/6 = <span class="highlight">0.667</span></span>
+    <span class="line">F2=2: (2−2)/(8−2) = 0/6 = <span class="highlight">0.0</span></span>
+    <span class="line"> </span>
+    <span class="line label">Test points F2:</span>
+    <span class="line">F2=3: (3−2)/(8−2) = 1/6 ≈ <span class="highlight">0.167</span></span>
+    <span class="line">F2=4: (4−2)/(8−2) = 2/6 ≈ <span class="highlight">0.334</span></span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Sample</th><th>True Class</th><th>Without Norm</th><th>With Norm</th></tr></thead>
+      <tbody>
+        <tr><td>S1</td><td>0</td><td class="wrong">1 ❌</td><td class="wrong">1 ❌</td></tr>
+        <tr><td>S2</td><td>0</td><td class="correct">0 ✅</td><td class="correct">0 ✅</td></tr>
+        <tr><td>S3</td><td>1</td><td class="correct">1 ✅</td><td class="correct">1 ✅</td></tr>
+        <tr><td>S4</td><td>1</td><td>0 or 1</td><td class="correct">1 ✅</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box box-green">
+    <div class="box-title">✅ Normalization Fixed S4</div>
+    <p>After normalization, Sample 4 is correctly classified as Class 1. Normalization improved accuracy from 75% to 100% in this example!</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s13">
+  <div class="section-header">
+    <span class="section-num">13</span>
+    <h2>Confusion Matrix & Evaluation Metrics</h2>
+  </div>
+
+  <p>A confusion matrix shows us the full picture of where our classifier is right and where it's making mistakes.</p>
+
+  <div class="matrix-container">
+    <div class="conf-matrix">
+      <div class="conf-cell conf-header"></div>
+      <div class="conf-cell conf-header">Predicted<br>Negative</div>
+      <div class="conf-cell conf-header">Predicted<br>Positive</div>
+      <div class="conf-cell conf-header">Actual<br>Negative</div>
+      <div class="conf-cell conf-tn"><span class="val">TN</span>True Negative</div>
+      <div class="conf-cell conf-fp"><span class="val">FP</span>False Positive</div>
+      <div class="conf-cell conf-header">Actual<br>Positive</div>
+      <div class="conf-cell conf-fn"><span class="val">FN</span>False Negative</div>
+      <div class="conf-cell conf-tp"><span class="val">TP</span>True Positive</div>
+    </div>
+  </div>
+
+  <div class="box box-blue" style="margin-top:20px;">
+    <div class="box-title">Definitions</div>
+    <p><strong>TP</strong> — Predicted Positive, Actually Positive (correct)</p>
+    <p><strong>TN</strong> — Predicted Negative, Actually Negative (correct)</p>
+    <p><strong>FP</strong> — Predicted Positive, Actually Negative (wrong — "False Alarm")</p>
+    <p><strong>FN</strong> — Predicted Negative, Actually Positive (wrong — "Missed It")</p>
+  </div>
+
+  <h3>Example Confusion Matrix — From Lecture</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Predictions (without normalization)</div>
+    <p>ID1: Actual=1, Predicted=1 (TP)</p>
+    <p>ID2: Actual=0, Predicted=0 (TN)</p>
+    <p>ID3: Actual=1, Predicted=1 (TP)</p>
+    <p>ID4: Actual=1, Predicted=0 (FN)</p>
+  </div>
+
+  <div class="matrix-container">
+    <div class="conf-matrix">
+      <div class="conf-cell conf-header"></div>
+      <div class="conf-cell conf-header">Pred Neg</div>
+      <div class="conf-cell conf-header">Pred Pos</div>
+      <div class="conf-cell conf-header">Act Neg</div>
+      <div class="conf-cell conf-tn"><span class="val">1</span>TN</div>
+      <div class="conf-cell conf-fp"><span class="val">0</span>FP</div>
+      <div class="conf-cell conf-header">Act Pos</div>
+      <div class="conf-cell conf-fn"><span class="val">1</span>FN</div>
+      <div class="conf-cell conf-tp"><span class="val">2</span>TP</div>
+    </div>
+  </div>
+
+  <h3>All Metrics — Solved</h3>
+
+  <div class="metric-cards">
+    <div class="metric-card">
+      <div class="name">Accuracy</div>
+      <div class="val" style="color:var(--accent4)">75%</div>
+      <div class="formula-sm">(TP+TN)/(TP+TN+FP+FN)</div>
+      <div style="font-size:12px;margin-top:6px;color:var(--text-dim)">(2+1)/4 = 3/4</div>
+    </div>
+    <div class="metric-card">
+      <div class="name">Recall (TPR)</div>
+      <div class="val" style="color:var(--accent2)">66.7%</div>
+      <div class="formula-sm">TP/(TP+FN)</div>
+      <div style="font-size:12px;margin-top:6px;color:var(--text-dim)">2/(2+1) = 2/3</div>
+    </div>
+    <div class="metric-card">
+      <div class="name">Precision</div>
+      <div class="val" style="color:var(--accent)">100%</div>
+      <div class="formula-sm">TP/(TP+FP)</div>
+      <div style="font-size:12px;margin-top:6px;color:var(--text-dim)">2/(2+0) = 2/2</div>
+    </div>
+    <div class="metric-card">
+      <div class="name">F1 Score</div>
+      <div class="val" style="color:var(--accent3)">0.80</div>
+      <div class="formula-sm">2·P·R/(P+R)</div>
+      <div style="font-size:12px;margin-top:6px;color:var(--text-dim)">2·1·0.667/1.667</div>
+    </div>
+    <div class="metric-card">
+      <div class="name">FPR</div>
+      <div class="val" style="color:var(--accent2)">0%</div>
+      <div class="formula-sm">FP/(FP+TN)</div>
+      <div style="font-size:12px;margin-top:6px;color:var(--text-dim)">0/(0+1) = 0</div>
+    </div>
+    <div class="metric-card">
+      <div class="name">FNR</div>
+      <div class="val" style="color:var(--accent3)">33.3%</div>
+      <div class="formula-sm">FN/(FN+TP)</div>
+      <div style="font-size:12px;margin-top:6px;color:var(--text-dim)">1/(1+2) = 1/3</div>
+    </div>
+    <div class="metric-card">
+      <div class="name">TNR (Specificity)</div>
+      <div class="val" style="color:var(--accent4)">100%</div>
+      <div class="formula-sm">TN/(TN+FP)</div>
+      <div style="font-size:12px;margin-top:6px;color:var(--text-dim)">1/(1+0) = 1</div>
+    </div>
+  </div>
+
+  <h3>Exercise — Lecture Exercise (Solve It!)</h3>
+
+  <div class="box box-yellow">
+    <div class="box-title">Given Confusion Matrix</div>
+    <div class="table-wrap" style="margin-top:10px;">
+      <table>
+        <thead><tr><th></th><th>Pred Negative</th><th>Pred Positive</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Act Negative</strong></td><td>9760</td><td>40</td></tr>
+          <tr><td><strong>Act Positive</strong></td><td>140</td><td>60</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>TN=9760, FP=40, FN=140, TP=60. Total=10000</p>
+  </div>
+
+  <div class="math-work">
+    <span class="line label">Accuracy = (TN+TP)/(Total) = (9760+60)/10000 = 9820/10000</span>
+    <span class="result">         = 98.2%</span>
+    <span class="line"> </span>
+    <span class="line label">Precision = TP/(TP+FP) = 60/(60+40) = 60/100</span>
+    <span class="result">          = 60%</span>
+    <span class="line"> </span>
+    <span class="line label">Recall (TPR) = TP/(TP+FN) = 60/(60+140) = 60/200</span>
+    <span class="result">             = 30%</span>
+    <span class="line"> </span>
+    <span class="line label">F1 = 2 × (0.60×0.30)/(0.60+0.30) = 2×0.18/0.90</span>
+    <span class="result">   = 0.40 (40%)</span>
+    <span class="line"> </span>
+    <span class="line label">FPR = FP/(FP+TN) = 40/(40+9760) = 40/9800</span>
+    <span class="result">    = 0.41%</span>
+    <span class="line"> </span>
+    <span class="line label">FNR = FN/(FN+TP) = 140/(140+60) = 140/200</span>
+    <span class="result">    = 70%  ← High! Many positives are missed</span>
+  </div>
+
+  <div class="box box-red">
+    <div class="box-title">⚠️ High Accuracy Can Be Misleading!</div>
+    <p>Accuracy is 98.2% — looks great! But recall is only 30%, meaning the classifier <em>misses 70% of all positive cases</em>. In a medical diagnosis scenario, this would be catastrophic. This is why we need precision, recall, and F1.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s14">
+  <div class="section-header">
+    <span class="section-num">14</span>
+    <h2>All Distance Metrics — Summary</h2>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Formula</th>
+          <th>When to Use</th>
+          <th>Sensitive to Scale?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Euclidean</strong></td>
+          <td>√[Σ(Aᵢ−Bᵢ)²]</td>
+          <td>Continuous numeric, low-dim</td>
+          <td class="wrong">YES</td>
+        </tr>
+        <tr>
+          <td><strong>Manhattan</strong></td>
+          <td>Σ|Aᵢ−Bᵢ|</td>
+          <td>Robust to outliers, high-dim</td>
+          <td class="wrong">YES</td>
+        </tr>
+        <tr>
+          <td><strong>Minkowski</strong></td>
+          <td>(Σ|Aᵢ−Bᵢ|ᵖ)^(1/p)</td>
+          <td>General case (p=1 or 2)</td>
+          <td class="wrong">YES</td>
+        </tr>
+        <tr>
+          <td><strong>Cosine Similarity</strong></td>
+          <td>A·B / (||A||·||B||)</td>
+          <td>Text, NLP, high-dim sparse</td>
+          <td class="correct">NO (normalized)</td>
+        </tr>
+        <tr>
+          <td><strong>Hamming</strong></td>
+          <td>Count of positions that differ</td>
+          <td>Categorical/binary data, strings</td>
+          <td class="correct">NO</td>
+        </tr>
+        <tr>
+          <td><strong>Chebyshev</strong></td>
+          <td>max(|Aᵢ−Bᵢ|)</td>
+          <td>Chess-like movement, grid problems</td>
+          <td class="wrong">YES</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Quick Comparison Example</h3>
+
+  <div class="box box-blue">
+    <div class="box-title">Given: A=(1,2), B=(4,6)</div>
+  </div>
+
+  <div class="math-work">
+    <span class="line label">Euclidean: √[(4−1)²+(6−2)²] = √[9+16] = √25 = <span class="highlight">5.0</span></span>
+    <span class="line label">Manhattan: |4−1|+|6−2| = 3+4 = <span class="highlight">7.0</span></span>
+    <span class="line label">Minkowski(p=3): (3³+4³)^(1/3) = (27+64)^(1/3) = 91^(1/3) ≈ <span class="highlight">4.50</span></span>
+    <span class="line label">Chebyshev: max(|3|,|4|) = <span class="highlight">4.0</span></span>
+    <span class="line label">Cosine: (1×4+2×6)/(√5×√52) = (4+12)/(2.236×7.211) = 16/16.12 ≈ <span class="highlight">0.992</span></span>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<section id="s15">
+  <div class="section-header">
+    <span class="section-num">15</span>
+    <h2>Interview Questions & Answers</h2>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q">Q1: Why is KNN called a lazy learner?</div>
+    <div class="a">KNN does not build a model during training — it just stores all training data. All computation is deferred to prediction time. Training complexity is O(1). It's "lazy" because it waits until a query arrives to do any work, unlike "eager" learners like Decision Trees that build a model upfront.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q">Q2: What happens when K=1 vs K=N?</div>
+    <div class="a">K=1: Very sensitive to noise — a single mislabeled point can cause wrong predictions. High variance, low bias. K=N (all data): Every test point gets the majority class of the entire dataset — essentially no learning. High bias, low variance. Best K balances these extremes.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q">Q3: Why use cosine similarity over Euclidean for text?</div>
+    <div class="a">Euclidean distance is sensitive to document length — a longer document appears "farther" even if it has the same word distribution as a shorter one. Cosine similarity measures the angle between vectors, ignoring magnitude. Two documents with identical word proportions get cosine=1.0 regardless of length. This makes cosine ideal for text, where we care about topic/content, not document size.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q">Q4: What is the time complexity of KNN?</div>
+    <div class="a">Training: O(1) — just store the data. Prediction (per query): O(N·d) where N=number of training points, d=dimensions. Space complexity: O(N·d). For large datasets, this makes KNN slow at prediction time. Solutions include KD-trees or Ball-trees to speed up neighbor search.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q">Q5: What is the Curse of Dimensionality and how does it affect KNN?</div>
+    <div class="a">As dimensions increase, distances between all points become similar — there's no longer a meaningful "nearest" neighbor. Data becomes increasingly sparse. KNN accuracy degrades severely in high-dimensional spaces. Solution: Use dimensionality reduction (PCA), or switch to cosine similarity which depends on direction rather than magnitude.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q">Q6: How do you choose the optimal K?</div>
+    <div class="a">1) Cross-validation: Try K=1,3,5,7... and pick the one with lowest validation error. 2) Use odd K for binary classification to avoid ties. 3) Heuristic: K ≈ √N. The optimal K is found at the bottom of the U-shaped error curve (bias-variance tradeoff).</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q">Q7: What is the difference between precision and recall?</div>
+    <div class="a">Precision = "Of all predicted positives, how many were actually positive?" (TP/(TP+FP)). Recall = "Of all actual positives, how many did we correctly identify?" (TP/(TP+FN)). A spam filter should have high precision (don't block legitimate emails). A cancer test should have high recall (don't miss cancer cases). F1 is the harmonic mean of both.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q">Q8: What is Bayes Error and why does it matter?</div>
+    <div class="a">Bayes error is the theoretical minimum error any classifier can achieve given the underlying data distribution — it's the irreducible error caused by overlapping classes. If KNN achieves error ≈ Bayes error at some K, that K is near-optimal. In the lecture example, K=2 achieves error=0.17 ≈ Bayes error of 0.17, confirming K=2 is optimal.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q">Q9: What is feature scaling and why is it important for KNN?</div>
+    <div class="a">KNN uses distances, so features with larger numeric ranges dominate the calculation. Without scaling, income ($10K–$1M) would completely overpower height (1.5m–1.8m). Min-max normalization scales all features to [0,1]: x_norm = (x−min)/(max−min). Always normalize before applying KNN!</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="q">Q10: When would you use Manhattan over Euclidean distance?</div>
+    <div class="a">Manhattan is preferred when: (1) Data is high-dimensional (distances become more meaningful), (2) You need robustness to outliers (no squaring, so large differences don't dominate), (3) Movement is restricted to grid-like paths (like city navigation), (4) Features have different units and you want equal contribution from each dimension.</div>
+  </div>
+</section>
+
+</main>
+
+<a href="#" class="back-top">↑ TOP</a>
+
+</body>
+</html>
