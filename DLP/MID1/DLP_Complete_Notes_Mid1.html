@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Learning & Pattern Recognition — Complete Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1208;
+  --paper: #faf7f2;
+  --cream: #f2ede3;
+  --amber: #c8853a;
+  --amber-light: #e8a85a;
+  --amber-dim: #f5dfc0;
+  --teal: #2a6b6e;
+  --teal-light: #4a9b9e;
+  --rose: #b84040;
+  --rose-light: #e06060;
+  --green: #2d6a4f;
+  --green-light: #52b788;
+  --purple: #5a3e7a;
+  --rule: #d4c9b4;
+  --code-bg: #1e1a14;
+  --code-fg: #e8d8b0;
+  --note-bg: #fff8ec;
+  --warn-bg: #fff0f0;
+  --tip-bg: #f0fff4;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Source Serif 4', Georgia, serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+/* ── SIDEBAR NAV ── */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0;
+  width: 260px; height: 100vh;
+  background: var(--ink);
+  overflow-y: auto;
+  z-index: 100;
+  padding: 0 0 2rem;
+  transition: transform 0.3s ease;
+}
+.sidebar-header {
+  padding: 1.5rem 1.2rem 1rem;
+  border-bottom: 1px solid #3a3020;
+}
+.sidebar-header h2 {
+  font-family: 'Playfair Display', serif;
+  color: var(--amber-light);
+  font-size: 1rem;
+  line-height: 1.3;
+}
+.sidebar-header p {
+  color: #9a8a70;
+  font-size: 0.72rem;
+  margin-top: 0.3rem;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.nav-section {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #2a2418;
+}
+.nav-section-title {
+  color: var(--amber);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.5rem 1.2rem 0.3rem;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.nav-section a {
+  display: block;
+  color: #c8baa8;
+  text-decoration: none;
+  padding: 0.28rem 1.2rem 0.28rem 1.6rem;
+  font-size: 0.8rem;
+  font-family: 'Source Serif 4', serif;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+}
+.nav-section a:hover {
+  color: var(--amber-light);
+  background: #2a2418;
+  border-left-color: var(--amber);
+}
+
+/* hamburger */
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 1rem; left: 1rem;
+  z-index: 200;
+  background: var(--ink);
+  border: none;
+  padding: 0.6rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.hamburger span {
+  display: block;
+  width: 22px; height: 2px;
+  background: var(--amber-light);
+  margin: 4px 0;
+  transition: 0.3s;
+}
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 99;
+}
+
+/* ── MAIN CONTENT ── */
+.main {
+  margin-left: 260px;
+  min-height: 100vh;
+}
+
+/* hero */
+.hero {
+  background: var(--ink);
+  padding: 4rem 3rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -10%;
+  width: 60%; height: 200%;
+  background: radial-gradient(ellipse, #3a2810 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--amber);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  color: #f5ead0;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.15;
+  font-weight: 900;
+}
+.hero h1 em {
+  color: var(--amber-light);
+  font-style: normal;
+}
+.hero-meta {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.hero-badge {
+  background: #2a2010;
+  border: 1px solid #4a3820;
+  color: #a89878;
+  padding: 0.3rem 0.8rem;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.hero-badge strong { color: var(--amber-light); }
+
+/* progress bar */
+.toc-bar {
+  background: #f0ebe0;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.5rem 2rem;
+  font-size: 0.72rem;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #8a7a60;
+  display: flex;
+  gap: 2rem;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.toc-bar a {
+  color: #8a7a60;
+  text-decoration: none;
+}
+.toc-bar a:hover { color: var(--amber); }
+
+/* ── CONTENT BLOCKS ── */
+.content { padding: 2rem 3rem 4rem; max-width: 900px; }
+
+/* Chapter heading */
+.chapter {
+  margin-top: 3.5rem;
+  padding-top: 2rem;
+  border-top: 3px solid var(--ink);
+}
+.chapter-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--amber);
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+.chapter h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+/* Section heading */
+h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 2rem 0 0.6rem;
+  color: var(--ink);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.3rem;
+}
+
+h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--teal);
+  margin: 1.5rem 0 0.4rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+p { margin: 0.7rem 0; }
+
+ul, ol { padding-left: 1.4rem; margin: 0.6rem 0; }
+li { margin: 0.25rem 0; }
+
+/* ── CALLOUT BOXES ── */
+.callout {
+  border-left: 4px solid;
+  padding: 1rem 1.2rem;
+  margin: 1.2rem 0;
+  border-radius: 0 6px 6px 0;
+}
+.callout-note   { background: var(--note-bg); border-color: var(--amber); }
+.callout-warn   { background: var(--warn-bg); border-color: var(--rose); }
+.callout-tip    { background: var(--tip-bg);  border-color: var(--green); }
+.callout-key    { background: #f0eeff;         border-color: var(--purple); }
+.callout-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+.callout-note  .callout-title { color: var(--amber); }
+.callout-warn  .callout-title { color: var(--rose); }
+.callout-tip   .callout-title { color: var(--green); }
+.callout-key   .callout-title { color: var(--purple); }
+
+/* ── EQUATIONS ── */
+.eq-block {
+  background: var(--cream);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 1rem 1.4rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+.eq-label {
+  float: right;
+  font-size: 0.72rem;
+  color: #9a8a70;
+}
+.eq-block .big { font-size: 1.3rem; }
+
+/* ── FORMULA CARDS ── */
+.formula-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.formula-card {
+  background: var(--cream);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 1rem;
+}
+.formula-card h5 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+.formula-card .eq {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1rem;
+  color: var(--ink);
+  font-weight: 500;
+}
+.formula-card p {
+  font-size: 0.82rem;
+  color: #6a5a40;
+  margin-top: 0.4rem;
+}
+
+/* ── TABLES ── */
+.tbl-wrap { overflow-x: auto; margin: 1rem 0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+thead tr {
+  background: var(--ink);
+  color: var(--amber-light);
+}
+thead th {
+  padding: 0.6rem 0.8rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-align: left;
+}
+tbody tr:nth-child(odd)  { background: var(--cream); }
+tbody tr:nth-child(even) { background: #f8f3ea; }
+td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--rule); }
+td:first-child { font-weight: 600; }
+
+/* ── CODE BLOCKS ── */
+.code-block {
+  background: var(--code-bg);
+  border-radius: 8px;
+  padding: 1.2rem 1.4rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--code-fg);
+  line-height: 1.65;
+  position: relative;
+}
+.code-block .kw  { color: #f0a060; }
+.code-block .cmt { color: #6a8060; }
+.code-block .num { color: #80c8c0; }
+.code-block .str { color: #c0d880; }
+
+/* ── WORKED EXAMPLE ── */
+.example-box {
+  background: #f5f0e8;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  overflow: hidden;
+}
+.example-header {
+  background: var(--ink);
+  color: var(--amber-light);
+  padding: 0.6rem 1.2rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.example-body { padding: 1.2rem; }
+.step {
+  display: flex;
+  gap: 1rem;
+  margin: 0.8rem 0;
+  align-items: flex-start;
+}
+.step-num {
+  background: var(--amber);
+  color: white;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.step-content { flex: 1; }
+
+/* ── DIAGRAM PLACEHOLDER ── */
+.diagram {
+  background: var(--cream);
+  border: 1px dashed var(--rule);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  text-align: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+  color: #8a7a60;
+}
+
+/* ── NEURAL NET DIAGRAM ── */
+.nn-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: var(--cream);
+  border-radius: 8px;
+  border: 1px solid var(--rule);
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+.nn-layer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.nn-layer-label {
+  font-size: 0.68rem;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #8a7a60;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.nn-nodes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.nn-node {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.68rem;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.nn-node.input-node  { border-color: var(--teal);  background: #e8f5f5; }
+.nn-node.hidden-node { border-color: var(--amber); background: #fff5e8; }
+.nn-node.output-node { border-color: var(--rose);  background: #fff0f0; }
+.nn-arrow { font-size: 1.5rem; color: var(--rule); }
+
+/* ── CONFUSION MATRIX ── */
+.cm-table { margin: 1rem auto; }
+.cm-table td {
+  width: 100px; height: 70px;
+  text-align: center;
+  vertical-align: middle;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+}
+.cm-tp { background: #d4edda; color: #155724; font-size: 1.1rem; }
+.cm-tn { background: #d4edda; color: #155724; font-size: 1.1rem; }
+.cm-fp { background: #f8d7da; color: #721c24; font-size: 1.1rem; }
+.cm-fn { background: #fff3cd; color: #856404; font-size: 1.1rem; }
+.cm-header { background: var(--ink); color: var(--amber-light); font-size: 0.75rem; }
+
+/* ── QNA ── */
+.qna-item {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  margin: 0.8rem 0;
+  overflow: hidden;
+}
+.qna-q {
+  background: #f0ebe0;
+  padding: 0.8rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+.qna-q::after { content: '▼'; font-size: 0.7rem; color: var(--amber); transition: 0.2s; }
+.qna-q.open::after { transform: rotate(180deg); }
+.qna-a {
+  display: none;
+  padding: 1rem 1.2rem;
+  background: white;
+  border-top: 1px solid var(--rule);
+}
+.qna-a.show { display: block; }
+
+/* ── ACTIVATION FUNCTION CARDS ── */
+.act-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.act-card {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.act-card-header {
+  background: var(--ink);
+  color: var(--amber-light);
+  padding: 0.5rem 0.8rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.act-card-body {
+  padding: 0.8rem;
+  background: var(--cream);
+}
+.act-card-body .eq {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  color: var(--teal);
+  margin-bottom: 0.5rem;
+}
+.act-card-body ul { font-size: 0.82rem; padding-left: 1.2rem; }
+.act-card-body .use { font-size: 0.75rem; color: var(--rose); font-family: 'IBM Plex Mono', monospace; }
+
+/* ── HIGHLIGHT ── */
+.hl { background: #fff3cd; padding: 0.1em 0.3em; border-radius: 2px; }
+.hl-r { background: #fde8e8; padding: 0.1em 0.3em; border-radius: 2px; }
+.hl-g { background: #e8f5e9; padding: 0.1em 0.3em; border-radius: 2px; }
+
+/* ── COMPARISON TABLE ── */
+.comp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+.comp-side {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.comp-head {
+  padding: 0.6rem 1rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-align: center;
+}
+.comp-head.left  { background: #e8f5f5; color: var(--teal); }
+.comp-head.right { background: #fff0f0; color: var(--rose); }
+.comp-body { padding: 0.8rem 1rem; font-size: 0.85rem; }
+.comp-body li { margin: 0.2rem 0; }
+
+/* ── CNN LAYER DIAGRAM ── */
+.cnn-arch {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1.2rem;
+  background: var(--cream);
+  border-radius: 8px;
+  border: 1px solid var(--rule);
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+.cnn-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 60px;
+}
+.cnn-box {
+  width: 50px; height: 50px;
+  border-radius: 4px;
+  border: 2px solid;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.62rem;
+  font-family: 'IBM Plex Mono', monospace;
+  text-align: center;
+  line-height: 1.2;
+}
+.cnn-box.conv  { border-color: var(--teal);  background: #e8f5f5; color: var(--teal); }
+.cnn-box.pool  { border-color: var(--amber); background: #fff5e8; color: var(--amber); }
+.cnn-box.fc    { border-color: var(--rose);  background: #fff0f0; color: var(--rose); }
+.cnn-box.input { border-color: #666; background: #f0f0f0; color: #444; }
+.cnn-box.soft  { border-color: var(--purple); background: #f0eeff; color: var(--purple); }
+.cnn-label { font-size: 0.6rem; font-family: 'IBM Plex Mono', monospace; color: #8a7a60; text-align: center; }
+.cnn-arrow { font-size: 1.2rem; color: #c8baa8; }
+
+/* ── MATRIX ── */
+.matrix {
+  display: inline-block;
+  border-left: 3px solid var(--ink);
+  border-right: 3px solid var(--ink);
+  padding: 0.3rem 0.6rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  margin: 0.3rem 0;
+}
+.matrix .row { display: flex; gap: 0.8rem; justify-content: center; }
+.matrix .val { min-width: 24px; text-align: right; }
+.matrix .val.neg { color: var(--rose); }
+.matrix .val.pos { color: var(--teal); }
+
+/* ── INTERVIEW Q ── */
+.iq-list { counter-reset: iq; }
+.iq-item {
+  border-left: 3px solid var(--purple);
+  padding: 0.8rem 1.2rem;
+  margin: 0.7rem 0;
+  background: #f8f5ff;
+  border-radius: 0 6px 6px 0;
+  counter-increment: iq;
+}
+.iq-item::before {
+  content: 'IQ-0' counter(iq);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--purple);
+  display: block;
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.1em;
+}
+.iq-q { font-weight: 600; margin-bottom: 0.4rem; }
+.iq-a { font-size: 0.9rem; color: #4a3a60; }
+
+/* ── SEPARATOR ── */
+.sep {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 2rem 0;
+}
+
+/* ── BACK TO TOP ── */
+.back-top {
+  position: fixed;
+  bottom: 2rem; right: 2rem;
+  background: var(--ink);
+  color: var(--amber-light);
+  border: none;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 50;
+}
+.back-top.show { opacity: 1; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .overlay.show { display: block; }
+  .hamburger { display: flex; flex-direction: column; }
+  .main { margin-left: 0; }
+  .content { padding: 1.2rem 1.2rem 3rem; }
+  .hero { padding: 3rem 1.5rem 2rem; padding-top: 4.5rem; }
+  .comp-row { grid-template-columns: 1fr; }
+  .formula-grid { grid-template-columns: 1fr; }
+  .act-grid { grid-template-columns: 1fr; }
+  .toc-bar { padding: 0.5rem 1rem; }
+}
+@media (max-width: 500px) {
+  .cnn-box { width: 40px; height: 40px; font-size: 0.55rem; }
+  .nn-node { width: 28px; height: 28px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Hamburger -->
+<button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+  <span></span><span></span><span></span>
+</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2>Deep Learning &amp;<br>Pattern Recognition</h2>
+    <p>Mid Exam Notes · FAST-NUCES</p>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Chapter 1 · ML Basics</div>
+    <a href="#ai-ml-dl">AI vs ML vs DL</a>
+    <a href="#supervised">Supervised Learning</a>
+    <a href="#unsupervised">K-Means Clustering</a>
+    <a href="#features">Feature Engineering</a>
+    <a href="#distance">Distance Metrics</a>
+    <a href="#eval-metrics">Evaluation Metrics</a>
+    <a href="#confusion">Confusion Matrix</a>
+    <a href="#threshold">Threshold Tradeoff</a>
+    <a href="#class-imbalance">Class Imbalance</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Chapter 2 · Neural Nets</div>
+    <a href="#perceptron">BIP / Perceptron</a>
+    <a href="#activation">Activation Functions</a>
+    <a href="#forward-prop">Forward Propagation</a>
+    <a href="#cost-fn">Cost &amp; Loss Functions</a>
+    <a href="#backprop">Backpropagation</a>
+    <a href="#gradient-descent">Gradient Descent</a>
+    <a href="#vanishing">Vanishing Gradient</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Chapter 3 · CNN</div>
+    <a href="#cnn-intro">CNN Introduction</a>
+    <a href="#convolution">Convolution</a>
+    <a href="#filter-stride">Stride &amp; Padding</a>
+    <a href="#pooling">Pooling</a>
+    <a href="#cnn-params">Parameters in CNN</a>
+    <a href="#batch-norm">Batch Normalization</a>
+    <a href="#overfitting">Overfitting &amp; Dropout</a>
+    <a href="#data-aug">Data Augmentation</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Chapter 4 · Architectures</div>
+    <a href="#lenet">LeNet Architecture</a>
+    <a href="#resnet">ResNet &amp; Skip Conn.</a>
+    <a href="#inception">Inception Network</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Extras</div>
+    <a href="#numericals">Solved Numericals</a>
+    <a href="#interview-qs">Interview Questions</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="hero">
+    <div class="hero-tag">FAST-NUCES · Dr. Jawwad A. Shamsi</div>
+    <h1>Deep Learning &amp; <em>Pattern Recognition</em><br>— Complete Mid Notes</h1>
+    <div class="hero-meta">
+      <span class="hero-badge"><strong>4 Chapters</strong> · Full Coverage</span>
+      <span class="hero-badge"><strong>Solved</strong> Numericals</span>
+      <span class="hero-badge"><strong>QnA</strong> + Interview Qs</span>
+      <span class="hero-badge"><strong>All</strong> Equations</span>
+    </div>
+  </div>
+
+  <div class="toc-bar">
+    <a href="#ai-ml-dl">ML Basics</a> ·
+    <a href="#perceptron">Neural Nets</a> ·
+    <a href="#activation">Activations</a> ·
+    <a href="#backprop">Backprop</a> ·
+    <a href="#cnn-intro">CNN</a> ·
+    <a href="#lenet">LeNet</a> ·
+    <a href="#resnet">ResNet</a> ·
+    <a href="#inception">Inception</a> ·
+    <a href="#numericals">Numericals</a> ·
+    <a href="#interview-qs">Interview Qs</a>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══════════════════════════════════════════════════════
+         CHAPTER 1: ML FUNDAMENTALS
+    ═══════════════════════════════════════════════════════ -->
+    <div class="chapter" id="ai-ml-dl">
+      <div class="chapter-num">Chapter 01</div>
+      <h2>Fundamentals of Machine Learning</h2>
+    </div>
+
+    <h3>1.1 AI vs ML vs DL — The Big Picture</h3>
+    <div class="callout callout-tip">
+      <div class="callout-title">🧠 Intuition</div>
+      Think of it as nested circles: <strong>AI ⊃ ML ⊃ DL</strong>. Every DL algorithm is ML, and every ML algorithm is AI — but not vice versa.
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Term</th><th>Full Form</th><th>Definition</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AI</td>
+            <td>Artificial Intelligence</td>
+            <td>Creating machines that simulate human thinking, problem-solving, and cognitive behavior</td>
+            <td>Chess-playing computer, self-driving cars</td>
+          </tr>
+          <tr>
+            <td>ML</td>
+            <td>Machine Learning</td>
+            <td>Subset of AI; gives computers the ability to learn from data using statistical models <em>without explicit programming</em> (Arthur Samuel, 1959)</td>
+            <td>Email spam detector, house price prediction</td>
+          </tr>
+          <tr>
+            <td>DL</td>
+            <td>Deep Learning</td>
+            <td>Subset of ML; eliminates need for feature engineering by using neural networks (inspired by human brain)</td>
+            <td>Face recognition, ChatGPT, image classification</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-key">
+      <div class="callout-title">🔑 Key Distinction</div>
+      <strong>Traditional Programming:</strong> Data + Program → Computer → Output<br>
+      <strong>Machine Learning:</strong> Data + Output → Computer → Program (the rules are <em>learned</em>)
+    </div>
+
+    <h3 id="supervised">1.2 Types of ML Problems</h3>
+    <h4>Supervised Learning</h4>
+    <p>Data is <strong>labeled</strong>. The model learns a mapping from input features to output labels.</p>
+    <ul>
+      <li><strong>Classification:</strong> Predict a discrete class (e.g., grade A/B/C, spam/not-spam)</li>
+      <li><strong>Regression:</strong> Predict a continuous value (e.g., house price, salary)</li>
+    </ul>
+
+    <h4 id="unsupervised">Unsupervised Learning (Clustering)</h4>
+    <p>Data is <strong>not labeled</strong>. We find patterns and groupings ourselves.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📌 K-Means Algorithm — Step by Step</div>
+      <strong>Goal:</strong> Given N unlabeled data points, group them into K clusters.<br><br>
+      <div class="step"><div class="step-num">1</div><div class="step-content">Decide the number of clusters K</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content">Randomly pick K points as initial centroids C₁, C₂, …, Cₖ</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content">Assign each data point to the nearest centroid (using Euclidean or Manhattan distance)</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-content">Recompute each centroid as the <em>mean</em> of all points assigned to it</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-content">Repeat steps 3–4 until centroids stop moving (convergence)</div></div>
+    </div>
+
+    <h3 id="features">1.3 Features &amp; Feature Engineering</h3>
+    <p>A <strong>feature</strong> is an attribute (column) of a data point. Choosing the right features is critical.</p>
+    <div class="callout callout-warn">
+      <div class="callout-title">⚠️ Warning</div>
+      Too many features → <strong>Overfitting</strong>. Irrelevant features (e.g., eye color for grade prediction) add noise without adding signal.
+    </div>
+    <p><em>"All models are wrong, but some are useful."</em> — George Box</p>
+    <p>The data pipeline is always split into:</p>
+    <div class="formula-grid">
+      <div class="formula-card">
+        <h5>Training Data</h5>
+        <p>Used to <strong>train</strong> the model and learn weights/parameters</p>
+      </div>
+      <div class="formula-card">
+        <h5>Validation Data</h5>
+        <p>Used <strong>during training</strong> to check accuracy on unseen data; guides hyperparameter tuning</p>
+      </div>
+      <div class="formula-card">
+        <h5>Test Data</h5>
+        <p>Used <strong>after training</strong> to evaluate final model quality. <em>Never</em> used during model design!</p>
+      </div>
+    </div>
+
+    <h3 id="distance">1.4 Distance Metrics</h3>
+    <p>Used to measure similarity/dissimilarity between data points.</p>
+
+    <div class="formula-grid">
+      <div class="formula-card">
+        <h5>Manhattan Distance</h5>
+        <div class="eq">d = |x₂−x₁| + |y₂−y₁|</div>
+        <p>Sum of <em>absolute</em> differences. Preferred for <strong>high-dimensional</strong> data. Like navigating city blocks.</p>
+        <p><strong>Example:</strong> P(2,3), Q(6,8) → |6−2| + |8−3| = 4+5 = <span class="hl">9</span></p>
+      </div>
+      <div class="formula-card">
+        <h5>Euclidean Distance</h5>
+        <div class="eq">d = √[(x₂−x₁)² + (y₂−y₁)²]</div>
+        <p>Straight-line (as the crow flies) distance. For n-dimensional data: √Σ(xᵢ−yᵢ)²</p>
+        <p><strong>Example:</strong> P(2,3), Q(6,8) → √(16+25) = √41 ≈ <span class="hl">6.40</span></p>
+      </div>
+    </div>
+
+    <h3 id="eval-metrics">1.5 Evaluation Metrics for Classification</h3>
+    <h4 id="confusion">Confusion Matrix</h4>
+    <div class="callout callout-tip">
+      <div class="callout-title">💡 Background Intuition</div>
+      A confusion matrix is like a report card showing what the model got right and wrong for each class.
+    </div>
+
+    <div class="tbl-wrap">
+      <table class="cm-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="cm-header">Predicted POSITIVE</th>
+            <th class="cm-header">Predicted NEGATIVE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Actual POSITIVE</strong></td>
+            <td class="cm-tp">TP ✓<br><small>True Positive</small></td>
+            <td class="cm-fn">FN ✗<br><small>False Negative<br>(Type II Error)</small></td>
+          </tr>
+          <tr>
+            <td><strong>Actual NEGATIVE</strong></td>
+            <td class="cm-fp">FP ✗<br><small>False Positive<br>(Type I Error)</small></td>
+            <td class="cm-tn">TN ✓<br><small>True Negative</small></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="formula-grid">
+      <div class="formula-card">
+        <h5>Accuracy</h5>
+        <div class="eq">= (TP + TN) / (TP+TN+FP+FN)</div>
+        <p>Overall fraction of correct predictions. <span class="hl-r">Misleading on imbalanced data!</span></p>
+      </div>
+      <div class="formula-card">
+        <h5>Precision</h5>
+        <div class="eq">= TP / (TP + FP)</div>
+        <p>"Of all I said were positive, how many actually were?" High precision = few false alarms.</p>
+      </div>
+      <div class="formula-card">
+        <h5>Recall (Sensitivity)</h5>
+        <div class="eq">= TP / (TP + FN)</div>
+        <p>"Of all actual positives, how many did I catch?" High recall = miss very few positives.</p>
+      </div>
+      <div class="formula-card">
+        <h5>F1-Score</h5>
+        <div class="eq">= 2 × (P × R) / (P + R)</div>
+        <p>Harmonic mean of Precision &amp; Recall. Useful when you care about both equally.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📌 When to use Precision vs Recall?</div>
+      <strong>High Recall critical</strong> → When a False Negative is very costly. Examples: cancer detection (missing a positive case = dangerous), fraud detection.<br><br>
+      <strong>High Precision critical</strong> → When a False Positive is very costly. Examples: spam filter (don't want important emails deleted), YouTube content moderation.
+    </div>
+
+    <h4 id="threshold">Threshold &amp; Precision-Recall Tradeoff</h4>
+    <p>A classifier outputs probability p(y=1|x). We choose a threshold t:</p>
+    <div class="eq-block">
+      If p(y=1|x) ≥ t → Predict Positive<br>
+      If p(y=1|x) &lt; t → Predict Negative
+    </div>
+    <div class="comp-row">
+      <div class="comp-side">
+        <div class="comp-head left">Strict threshold (t = 0.9)</div>
+        <div class="comp-body">
+          <ul>
+            <li>Fewer positives predicted</li>
+            <li>FP ↓ → Precision ↑</li>
+            <li>FN ↑ → Recall ↓</li>
+            <li>Result: <strong>High precision, low recall</strong></li>
+            <li>"When I say spam, I'm usually right — but many spams slip through"</li>
+          </ul>
+        </div>
+      </div>
+      <div class="comp-side">
+        <div class="comp-head right">Relaxed threshold (t = 0.3)</div>
+        <div class="comp-body">
+          <ul>
+            <li>More positives predicted</li>
+            <li>FN ↓ → Recall ↑</li>
+            <li>FP ↑ → Precision ↓</li>
+            <li>Result: <strong>High recall, low precision</strong></li>
+            <li>"I catch most spam — but some normal emails get flagged"</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <h4 id="class-imbalance">Class Imbalance</h4>
+    <div class="callout callout-warn">
+      <div class="callout-title">⚠️ Classic Trap</div>
+      Suppose 990 negative samples and 10 positive. A model that <em>always predicts negative</em> achieves <strong>99% accuracy</strong> — but is completely useless! This is the class imbalance problem. Use <strong>Precision, Recall, and F1</strong> instead of accuracy in such cases.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CHAPTER 2: NEURAL NETWORKS
+    ═══════════════════════════════════════════════════════ -->
+    <div class="chapter" id="perceptron">
+      <div class="chapter-num">Chapter 02</div>
+      <h2>Deep Neural Networks — Fundamentals</h2>
+    </div>
+
+    <h3>2.1 The Biological Inspiration &amp; BIP (Basic Ideal Perceptron)</h3>
+    <div class="callout callout-tip">
+      <div class="callout-title">💡 Intuition</div>
+      A biological neuron receives signals, combines them, and fires (or doesn't). An artificial neuron (perceptron) does the same: it takes inputs, computes a weighted sum, applies a threshold function (activation), and produces an output.
+    </div>
+
+    <p>The <strong>BIP (Basic Ideal Perceptron)</strong> is the smallest computational unit in a neural network:</p>
+    <ul>
+      <li>Takes multiple inputs x₁, x₂, …, xₙ</li>
+      <li>Computes a weighted sum (strength of signal)</li>
+      <li>Adds a bias term</li>
+      <li>Passes through an activation function</li>
+      <li>Outputs ŷ</li>
+    </ul>
+
+    <div class="nn-diagram">
+      <div class="nn-layer">
+        <div class="nn-layer-label">Inputs</div>
+        <div class="nn-nodes">
+          <div class="nn-node input-node">x₁</div>
+          <div class="nn-node input-node">x₂</div>
+          <div class="nn-node input-node">xₙ</div>
+          <div class="nn-node input-node">b</div>
+        </div>
+      </div>
+      <div class="nn-arrow">→</div>
+      <div class="nn-layer">
+        <div class="nn-layer-label">Σ + Activation</div>
+        <div class="nn-nodes">
+          <div class="nn-node hidden-node" style="width:56px;height:56px;font-size:0.75rem">Σ→σ</div>
+        </div>
+      </div>
+      <div class="nn-arrow">→</div>
+      <div class="nn-layer">
+        <div class="nn-layer-label">Output</div>
+        <div class="nn-nodes">
+          <div class="nn-node output-node">ŷ</div>
+        </div>
+      </div>
+    </div>
+
+    <h4>The Weighted Sum (Pre-activation / Logit)</h4>
+    <div class="eq-block">
+      <span class="eq-label">(Eq. 1)</span>
+      z = w₁x₁ + w₂x₂ + w₃x₃ + … + wₙxₙ + b<br>
+      z = Σᵢ wᵢxᵢ + b
+    </div>
+    <p>Then: <strong>ŷ = σ(z)</strong> where σ is the activation function.</p>
+
+    <div class="callout callout-key">
+      <div class="callout-title">🔑 Parameters vs Hyperparameters</div>
+      <strong>Parameters</strong> = things <em>learned</em> by the model during training → Weights (w), Bias (b)<br>
+      <strong>Hyperparameters</strong> = things we <em>set manually</em> before training → Learning rate (α), Epochs, Batch size, # of layers, # of neurons
+    </div>
+
+    <h3>2.2 Multi-Layer Perceptron (MLP)</h3>
+    <p>A single perceptron can only learn linear boundaries. To solve complex non-linear problems, we stack layers:</p>
+    <div class="nn-diagram">
+      <div class="nn-layer">
+        <div class="nn-layer-label">Input Layer</div>
+        <div class="nn-nodes">
+          <div class="nn-node input-node">x₀</div>
+          <div class="nn-node input-node">x₁</div>
+          <div class="nn-node input-node">x₂</div>
+        </div>
+      </div>
+      <div class="nn-arrow">→</div>
+      <div class="nn-layer">
+        <div class="nn-layer-label">Hidden Layer 1</div>
+        <div class="nn-nodes">
+          <div class="nn-node hidden-node">h₁</div>
+          <div class="nn-node hidden-node">h₂</div>
+          <div class="nn-node hidden-node">h₃</div>
+        </div>
+      </div>
+      <div class="nn-arrow">→</div>
+      <div class="nn-layer">
+        <div class="nn-layer-label">Hidden Layer 2</div>
+        <div class="nn-nodes">
+          <div class="nn-node hidden-node">h₄</div>
+          <div class="nn-node hidden-node">h₅</div>
+        </div>
+      </div>
+      <div class="nn-arrow">→</div>
+      <div class="nn-layer">
+        <div class="nn-layer-label">Output</div>
+        <div class="nn-nodes">
+          <div class="nn-node output-node">ŷ</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📌 Why Multiple Hidden Layers?</div>
+      <ul>
+        <li><strong>Expressiveness:</strong> Multiple neurons in same layer → learn multiple features in parallel</li>
+        <li><strong>Abstraction:</strong> Earlier layers learn simple features (edges), deeper layers learn complex features (faces, objects)</li>
+        <li><strong>Non-linearity is crucial:</strong> Without non-linear activations, stacking layers is pointless — the whole thing collapses to a single linear model</li>
+      </ul>
+    </div>
+
+    <h3 id="activation">2.3 Activation Functions — Complete Guide</h3>
+    <p>Activation functions introduce <strong>non-linearity</strong>. Without them, no matter how deep the network, it's just a linear model.</p>
+
+    <div class="act-grid">
+      <div class="act-card">
+        <div class="act-card-header">1. Sigmoid (Logistic)</div>
+        <div class="act-card-body">
+          <div class="eq">σ(z) = 1 / (1 + e⁻ᶻ)</div>
+          <ul>
+            <li>Output: (0, 1) — can be interpreted as probability</li>
+            <li>Threshold at 0.5: ≥0.5 → class 1, &lt;0.5 → class 0</li>
+            <li>Derivative: σ'(z) = σ(z)(1 − σ(z))</li>
+          </ul>
+          <p class="use">USE: Binary classification output layer</p>
+          <p style="color:var(--rose);font-size:0.8rem">⚠ Vanishing gradient for large |z|</p>
+        </div>
+      </div>
+      <div class="act-card">
+        <div class="act-card-header">2. Softmax</div>
+        <div class="act-card-body">
+          <div class="eq">σ(zᵢ) = eᶻⁱ / Σⱼ eᶻʲ</div>
+          <ul>
+            <li>Output: (0,1) for each class</li>
+            <li>Sum of all outputs = 1 (valid probability distribution)</li>
+            <li>Generalizes sigmoid to multi-class</li>
+          </ul>
+          <p class="use">USE: Multi-class classification output layer</p>
+        </div>
+      </div>
+      <div class="act-card">
+        <div class="act-card-header">3. ReLU</div>
+        <div class="act-card-body">
+          <div class="eq">ReLU(z) = max(0, z)</div>
+          <ul>
+            <li>If z &lt; 0: output = 0</li>
+            <li>If z ≥ 0: output = z</li>
+            <li>Fast, no exponentials needed</li>
+          </ul>
+          <p class="use">USE: Hidden layers (most common default)</p>
+          <p style="color:var(--rose);font-size:0.8rem">⚠ Dying ReLU problem</p>
+        </div>
+      </div>
+      <div class="act-card">
+        <div class="act-card-header">4. Leaky ReLU</div>
+        <div class="act-card-body">
+          <div class="eq">f(z) = z if z&gt;0, αz if z≤0</div>
+          <ul>
+            <li>α is small constant, typically 0.01</li>
+            <li>Fixes dying ReLU: non-zero gradient for z &lt; 0</li>
+            <li>Piecewise linear (NOT fully linear!)</li>
+          </ul>
+          <p class="use">USE: Hidden layers when ReLU neurons die</p>
+        </div>
+      </div>
+      <div class="act-card">
+        <div class="act-card-header">5. Tanh</div>
+        <div class="act-card-body">
+          <div class="eq">tanh(z) = (eᶻ − e⁻ᶻ) / (eᶻ + e⁻ᶻ)</div>
+          <ul>
+            <li>Output: (−1, 1) → zero-centered</li>
+            <li>Smoother gradients than sigmoid</li>
+            <li>Bounded outputs</li>
+          </ul>
+          <p class="use">USE: RNNs, some hidden layers</p>
+          <p style="color:var(--rose);font-size:0.8rem">⚠ Vanishing gradient for large |z|</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Problem Type</th><th>Output Activation</th><th>Loss Function</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Binary Classification</td><td>Sigmoid</td><td>Binary Cross Entropy</td></tr>
+          <tr><td>Multi-class (one class at a time)</td><td>Softmax</td><td>Categorical Cross Entropy</td></tr>
+          <tr><td>Multi-label (multiple classes at once)</td><td>Sigmoid</td><td>Binary Cross Entropy</td></tr>
+          <tr><td>Regression</td><td>Linear (none)</td><td>MSE or MAE</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-key">
+      <div class="callout-title">🔑 Multi-class vs Multi-label</div>
+      <strong>Multi-class:</strong> One of many classes. E.g., animal is dog OR cat OR fish. Sum of probabilities = 1. Use Softmax.<br><br>
+      <strong>Multi-label:</strong> Can belong to multiple classes simultaneously. E.g., chest X-ray can show TB AND COVID. Sum of probabilities can be &gt;1. Use Sigmoid per output neuron.
+    </div>
+
+    <h3 id="forward-prop">2.4 Forward Propagation</h3>
+    <p>Forward propagation is the process of computing predictions by passing input through all layers from input → output.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📌 Why do we separate z (pre-activation) from a (activation)?</div>
+      Backpropagation uses derivatives of activation functions. Separating z and a makes the math cleaner and allows swapping activation functions without changing the linear part.
+    </div>
+
+    <p>For a network with hidden layers:</p>
+    <div class="eq-block">
+      <strong>Layer l computation:</strong><br><br>
+      z⁽ˡ⁾ = W⁽ˡ⁾ · a⁽ˡ⁻¹⁾ + b⁽ˡ⁾   ← linear combination (pre-activation)<br>
+      a⁽ˡ⁾ = σ(z⁽ˡ⁾)              ← apply activation function<br><br>
+      <strong>Full forward pass:</strong><br>
+      z⁽¹⁾ = W⁽¹⁾x,  a⁽¹⁾ = σ(z⁽¹⁾)<br>
+      z⁽²⁾ = W⁽²⁾a⁽¹⁾, a⁽²⁾ = σ(z⁽²⁾)<br>
+      ŷ = σ(W⁽³⁾a⁽²⁾)
+    </div>
+
+    <p>Where <strong>w<sup>l</sup><sub>jk</sub></strong> = weight between j-th node at layer l and k-th node at layer (l−1).</p>
+
+    <h3 id="cost-fn">2.5 Loss Functions &amp; Cost Functions</h3>
+    <div class="callout callout-tip">
+      <div class="callout-title">💡 Error vs Loss vs Cost — Clarified</div>
+      <strong>Error:</strong> Difference for one sample → ŷ − y<br>
+      <strong>Loss Function:</strong> Maps error to a non-negative scalar for one sample → L(y, ŷ)<br>
+      <strong>Cost Function J(θ):</strong> Average of loss over ALL training samples → (1/N) Σ L(y⁽ⁱ⁾, ŷ⁽ⁱ⁾)
+    </div>
+
+    <div class="formula-grid">
+      <div class="formula-card">
+        <h5>MSE (Regression)</h5>
+        <div class="eq">J = (1/N) Σ(yᵢ − ŷᵢ)²</div>
+        <p>Mean Squared Error. Penalizes large errors more heavily (squares them). Sensitive to outliers.</p>
+      </div>
+      <div class="formula-card">
+        <h5>MAE (Regression)</h5>
+        <div class="eq">J = (1/N) Σ|yᵢ − ŷᵢ|</div>
+        <p>Mean Absolute Error. Less sensitive to outliers than MSE.</p>
+      </div>
+      <div class="formula-card">
+        <h5>Binary Cross Entropy</h5>
+        <div class="eq">L = −[y·log(ŷ) + (1−y)·log(1−ŷ)]</div>
+        <p>For binary classification with sigmoid output. Penalizes confident wrong predictions.</p>
+      </div>
+      <div class="formula-card">
+        <h5>Categorical Cross Entropy</h5>
+        <div class="eq">L = −Σᵢ yᵢ · log(ŷᵢ)</div>
+        <p>General formula for multi-class. Only the correct class term survives (one-hot targets).</p>
+      </div>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📌 Why Cross Entropy over MSE for classification?</div>
+      For a classification problem using sigmoid/softmax, MSE creates flat gradients (slow learning) when the prediction is very wrong. Cross entropy has steep gradients when predictions are confidently wrong → faster learning.
+    </div>
+
+    <h3 id="backprop">2.6 Backpropagation</h3>
+    <div class="callout callout-tip">
+      <div class="callout-title">💡 Intuition</div>
+      Backpropagation is the algorithm that computes how much each weight contributed to the error, then adjusts weights to reduce the error. It works backward — from output layer to input layer — using the <strong>chain rule</strong> of calculus.
+    </div>
+
+    <h4>The Chain Rule — Foundation of Backprop</h4>
+    <div class="eq-block">
+      If y = f(u) and u = g(x), then:<br><br>
+      dy/dx = (dy/du) · (du/dx)
+    </div>
+
+    <h4>Weight Update Rule</h4>
+    <div class="eq-block">
+      <span class="eq-label">Core Formula</span>
+      ΔW = −α · (∂E/∂W)<br><br>
+      W_new = W_old − α · (∂E/∂W)
+    </div>
+    <ul>
+      <li><strong>α (alpha)</strong> = Learning rate = step size</li>
+      <li><strong>∂E/∂W</strong> = Gradient = slope of error w.r.t. weight</li>
+      <li><strong>Negative sign</strong> = Move opposite to gradient (to decrease error)</li>
+    </ul>
+
+    <div class="callout callout-key">
+      <div class="callout-title">🔑 Why move opposite to gradient?</div>
+      The gradient points in the direction of <em>steepest increase</em> of the cost function. To <em>minimize</em> cost, we move in the <em>opposite</em> direction.
+    </div>
+
+    <h4>Sigmoid Derivative (used in backprop)</h4>
+    <div class="eq-block">
+      σ'(y) = σ(y) · (1 − σ(y)) = y · (1 − y)
+    </div>
+    <p>This is why sigmoid causes vanishing gradients: for y ≈ 0 or y ≈ 1, the derivative ≈ 0 → tiny gradient updates.</p>
+
+    <h3 id="gradient-descent">2.7 Gradient Descent Variants</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Method</th><th>How it works</th><th>Pros</th><th>Cons</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Batch GD</td>
+            <td>Uses entire dataset to compute gradient; updates weights once per epoch</td>
+            <td>Stable, fewer oscillations</td>
+            <td>Very slow for large datasets; may get stuck in local minima</td>
+          </tr>
+          <tr>
+            <td>SGD</td>
+            <td>Randomly selects ONE data point; computes gradient for that point</td>
+            <td>Fast, can escape local minima, computationally efficient</td>
+            <td>High oscillations, may not converge to global minimum</td>
+          </tr>
+          <tr>
+            <td>Mini-Batch GD</td>
+            <td>Divides dataset into small batches; updates per batch</td>
+            <td>Balance of stability and speed; approximates global minimum</td>
+            <td>Requires tuning of batch size</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📌 Key Terminology</div>
+      <strong>Epoch:</strong> One complete pass of the ENTIRE training dataset through the network (forward + backward)<br>
+      <strong>Batch size:</strong> Number of training samples processed in one forward/backward pass<br>
+      <strong>Iteration:</strong> One update of model parameters using a single batch<br>
+      <strong>Example:</strong> 2000 samples, batch size 500 → 1 epoch = 4 iterations
+    </div>
+
+    <h3 id="vanishing">2.8 Vanishing &amp; Exploding Gradient Problem</h3>
+    <div class="callout callout-warn">
+      <div class="callout-title">⚠️ Critical Problem</div>
+      In theory, deeper networks → lower training error. In practice, too deep → training error <em>increases</em> due to vanishing/exploding gradients.
+    </div>
+
+    <p><strong>Vanishing Gradient:</strong> During backprop, the chain rule multiplies many small derivatives together. For sigmoid/tanh activations, these derivatives are &lt; 1. Multiplying many numbers &lt; 1 → exponentially small gradient → early layers barely update → training stalls.</p>
+
+    <p><strong>Exploding Gradient:</strong> If weights are initialized too large, gradients grow exponentially → model becomes unstable.</p>
+
+    <div class="formula-grid">
+      <div class="formula-card">
+        <h5>Solutions to Vanishing Gradient</h5>
+        <ul>
+          <li>Use <strong>ReLU</strong> (constant gradient for z &gt; 0)</li>
+          <li><strong>Batch Normalization</strong></li>
+          <li><strong>Skip/Residual connections</strong> (ResNet)</li>
+          <li>Careful weight initialization (e.g., He init: variance = 2/n)</li>
+        </ul>
+      </div>
+      <div class="formula-card">
+        <h5>Common Confusion</h5>
+        <p><strong>Overfitting ≠ Vanishing Gradient</strong></p>
+        <p>In overfitting, training error is LOW but test error is HIGH.<br>
+        In vanishing gradient, training error itself is HIGH (the model can't even learn the training data well).</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CHAPTER 3: CNN
+    ═══════════════════════════════════════════════════════ -->
+    <div class="chapter" id="cnn-intro">
+      <div class="chapter-num">Chapter 03</div>
+      <h2>Convolutional Neural Networks (CNN)</h2>
+    </div>
+
+    <h3>3.1 Why CNN? Problems with MLP for Images</h3>
+    <p>Suppose we have a 1 MP (1024×1024) image:</p>
+    <ul>
+      <li>1 MP = ~10⁶ input pixels</li>
+      <li>With 10⁶ neurons at input layer → 10¹² weights just for first layer</li>
+      <li>Computationally <span class="hl-r">impossible</span> to train</li>
+      <li>Also: MLP loses <strong>spatial information</strong> (where is the cat in the image?)</li>
+    </ul>
+    <div class="callout callout-tip">
+      <div class="callout-title">💡 CNN's Big Idea</div>
+      Instead of connecting every pixel to every neuron, use a small <strong>filter</strong> that slides across the image, detecting local patterns (edges, textures). The same filter is applied everywhere → <strong>parameter sharing</strong> → massively fewer parameters!
+    </div>
+
+    <h3 id="convolution">3.2 The Convolution Operation</h3>
+    <p>A <strong>filter (kernel)</strong> is a small matrix of learnable weights that slides over the input image.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📌 How Convolution Works</div>
+      <div class="step"><div class="step-num">1</div><div class="step-content">Place the filter at a position on the input</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content">Perform <em>element-wise multiplication</em> between filter values and input values</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content">Sum all products → one output value</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-content">Slide filter (by stride S) and repeat → produces a <strong>feature map</strong></div></div>
+    </div>
+
+    <h4>Output Size Formula</h4>
+    <div class="eq-block">
+      <span class="eq-label">(Key Formula)</span>
+      Output Size = ⌊(n − f + 2P) / S⌋ + 1<br><br>
+      Where:<br>
+      n = input size (height or width)<br>
+      f = filter size<br>
+      P = padding<br>
+      S = stride
+    </div>
+
+    <div class="example-box">
+      <div class="example-header">📐 Example: Output Size Calculations</div>
+      <div class="example-body">
+        <p><strong>Example 1:</strong> Input 4×4, Filter 2×2, Stride 1, Padding 0</p>
+        <p>Output = (4 − 2 + 0)/1 + 1 = <span class="hl">3×3</span></p>
+        <hr class="sep" style="margin:0.5rem 0">
+        <p><strong>Example 2:</strong> Input 150×150, Filter 3×3, Stride 1, Padding 0</p>
+        <p>Output = (150 − 3 + 0)/1 + 1 = <span class="hl">148×148</span></p>
+        <hr class="sep" style="margin:0.5rem 0">
+        <p><strong>Example 3 (with Padding):</strong> Input 150×150, Filter 3×3, Stride 1, Padding 1</p>
+        <p>Output = (150 − 3 + 2)/1 + 1 = <span class="hl">150×150</span> (same padding!)</p>
+      </div>
+    </div>
+
+    <h4>Convolution on RGB Images</h4>
+    <p>An RGB image has shape: <strong>H × W × 3</strong> (3 channels). The filter must also have 3 channels (H_f × W_f × 3).</p>
+    <p>Process:</p>
+    <ol>
+      <li>Apply filter channel to corresponding image channel → 3 separate element-wise products</li>
+      <li>Sum the products from all 3 channels + bias → one output pixel</li>
+      <li>Result: 3D input → 2D feature map (one per filter)</li>
+    </ol>
+
+    <p>The third dimension (depth) of the output = number of filters applied.</p>
+
+    <h4>Activation After Convolution</h4>
+    <div class="eq-block">
+      Z = W ∗ X + b    ← convolution result (pre-activation)<br>
+      A = ReLU(Z) = max(0, Z)  ← feature map (post-activation)
+    </div>
+    <p>ReLU is used because it introduces non-linearity and suppresses negative values (irrelevant features).</p>
+
+    <h3 id="filter-stride">3.3 Stride &amp; Padding</h3>
+    <h4>Stride</h4>
+    <p>Stride = how many pixels the filter moves at each step.</p>
+    <ul>
+      <li>Stride 1 → filter moves 1 pixel at a time → output is close to input size</li>
+      <li>Stride 2 → filter moves 2 pixels → output is half the input size (dimensionality reduction)</li>
+    </ul>
+
+    <h4>Padding</h4>
+    <p>Adding zeros around the border of the input <em>before</em> convolution.</p>
+    <div class="comp-row">
+      <div class="comp-side">
+        <div class="comp-head left">Without Padding (Valid)</div>
+        <div class="comp-body">
+          <ul>
+            <li>Output shrinks each layer</li>
+            <li>Corner pixels used fewer times → less influential</li>
+            <li>Edge information is lost</li>
+          </ul>
+        </div>
+      </div>
+      <div class="comp-side">
+        <div class="comp-head right">With Padding (Same)</div>
+        <div class="comp-body">
+          <ul>
+            <li>Output keeps same spatial size</li>
+            <li>All pixels (including edges) contribute equally</li>
+            <li>Choose P = (f−1)/2 for same padding</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <h3 id="pooling">3.4 Pooling — Dimensionality Reduction</h3>
+    <div class="callout callout-tip">
+      <div class="callout-title">💡 Purpose of Pooling</div>
+      Pooling reduces the spatial size of feature maps → fewer parameters → faster training → less overfitting. It also provides <strong>translation invariance</strong> (small shifts in input don't change output much). <strong>Pooling has NO learnable parameters!</strong>
+    </div>
+
+    <div class="comp-row">
+      <div class="comp-side">
+        <div class="comp-head left">Max Pooling</div>
+        <div class="comp-body">
+          <p>Takes the <strong>maximum</strong> value in each pooling window.</p>
+          <p>Example: 2×2 window:</p>
+          <div style="font-family:monospace;font-size:0.85rem;margin:0.3rem 0">
+            [10 11] [14 12] → max([10,11,14,12]) = <strong>14</strong>
+          </div>
+          <p>Preserves the most prominent features. Most common in modern CNNs.</p>
+        </div>
+      </div>
+      <div class="comp-side">
+        <div class="comp-head right">Average Pooling</div>
+        <div class="comp-body">
+          <p>Takes the <strong>average</strong> value in each pooling window.</p>
+          <p>Example: 2×2 window:</p>
+          <div style="font-family:monospace;font-size:0.85rem;margin:0.3rem 0">
+            [10 11 14 12] → avg = 11.75
+          </div>
+          <p>Smoother, used in LeNet and sometimes at the end of networks.</p>
+        </div>
+      </div>
+    </div>
+
+    <p>Pooling also uses the output size formula: Output = ⌊(n − f)/S⌋ + 1 (no padding in pooling)</p>
+
+    <h3 id="cnn-params">3.5 Parameter Count in CNN Layers</h3>
+
+    <div class="eq-block">
+      <span class="eq-label">(CNN Param Formula)</span>
+      Parameters = (f × f × Cᵢₙ) × Cₒᵤₜ + Cₒᵤₜ<br><br>
+      f = filter size, Cᵢₙ = input channels, Cₒᵤₜ = number of filters<br>
+      Extra Cₒᵤₜ = one bias per filter
+    </div>
+
+    <div class="example-box">
+      <div class="example-header">📐 Parameter Calculation Examples</div>
+      <div class="example-body">
+        <p><strong>Conv Layer 1:</strong> Input 150×150×3, Filter 3×3, 16 filters</p>
+        <p>Params = (3×3×3) × 16 + 16 = 27×16 + 16 = 432 + 16 = <span class="hl">448</span></p>
+        <hr class="sep" style="margin:0.5rem 0">
+        <p><strong>Conv Layer 2:</strong> Input 74×74×16, Filter 3×3, 32 filters</p>
+        <p>Params = (3×3×16) × 32 + 32 = 144×32 + 32 = 4608 + 32 = <span class="hl">4640</span></p>
+        <hr class="sep" style="margin:0.5rem 0">
+        <p><strong>Conv Layer 3:</strong> Input 36×36×32, Filter 3×3, 64 filters</p>
+        <p>Params = (3×3×32) × 64 + 64 = 288×64 + 64 = 18432 + 64 = <span class="hl">18496</span></p>
+        <hr class="sep" style="margin:0.5rem 0">
+        <p><strong>Max Pooling:</strong> Parameters = <span class="hl">0</span> (no learnable params!)</p>
+        <hr class="sep" style="margin:0.5rem 0">
+        <p><strong>Dense Layer:</strong> 18496 flattened inputs → 512 neurons</p>
+        <p>Params = (18496 × 512) + 512 = <span class="hl">9,470,464</span> ← over 99% of total params!</p>
+        <div class="callout callout-warn" style="margin-top:0.8rem">
+          <div class="callout-title">⚠️ Key Insight</div>
+          Dense layers dominate parameter count because each neuron connects to ALL neurons in the previous layer. CNN layers are efficient because they share parameters via filters.
+        </div>
+      </div>
+    </div>
+
+    <h3 id="batch-norm">3.6 Batch Normalization (BN)</h3>
+    <div class="callout callout-tip">
+      <div class="callout-title">💡 Problem it solves: Internal Covariate Shift</div>
+      During training, after each mini-batch, weights update → the input distribution to deeper layers <em>keeps changing</em>. Each layer must constantly re-adapt to this shifting distribution. This is called <strong>Internal Covariate Shift</strong>. It slows training and causes vanishing/exploding gradients.
+    </div>
+
+    <p><strong>Batch Normalization</strong> normalizes the output of each layer before passing it to the next layer, using the <em>mean and variance of the current mini-batch</em>.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📌 BN Mathematical Steps</div>
+      <div class="step"><div class="step-num">1</div><div class="step-content">Compute batch mean: μ_B = (1/m) Σ xᵢ</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content">Compute batch variance: σ²_B = (1/m) Σ(xᵢ − μ_B)²</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content">Normalize: x̂ᵢ = (xᵢ − μ_B) / √(σ²_B + ε)  ← ensures numerical stability</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-content">Scale &amp; shift (learnable): yᵢ = γ·x̂ᵢ + β  ← γ (scale), β (shift) learned via backprop</div></div>
+    </div>
+
+    <div class="formula-grid">
+      <div class="formula-card">
+        <h5>Benefits of BN</h5>
+        <ul>
+          <li>Reduces vanishing gradient problem</li>
+          <li>Reduces exploding gradient problem</li>
+          <li>Stabilizes training</li>
+          <li>Allows higher learning rates</li>
+          <li>Acts as mild regularization</li>
+        </ul>
+      </div>
+      <div class="formula-card">
+        <h5>Normalization vs Batch Norm</h5>
+        <div class="tbl-wrap">
+          <table style="font-size:0.8rem">
+            <tr><th></th><th>Normalization</th><th>Batch Norm</th></tr>
+            <tr><td>Applied on</td><td>Entire dataset</td><td>Mini-batch</td></tr>
+            <tr><td>Location</td><td>Input data</td><td>Hidden layers</td></tr>
+            <tr><td>Used for</td><td>Before training</td><td>Inside network</td></tr>
+            <tr><td>Learnable</td><td>No</td><td>Yes (γ, β)</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <p>BN is typically applied: <strong>Linear → BN → ReLU</strong></p>
+    <p>Mostly used in ResNet. Applied at hidden layers inside the network.</p>
+
+    <h3 id="overfitting">3.7 Overfitting, Underfitting &amp; Regularization</h3>
+    <div class="callout callout-tip">
+      <div class="callout-title">💡 Intuition</div>
+      Think of overfitting as memorizing the exam questions instead of understanding the subject — you do great on known questions but fail on new ones.
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>State</th><th>Training Accuracy</th><th>Validation Accuracy</th><th>Issue</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Underfitting</td>
+            <td class="hl-r">Low</td>
+            <td class="hl-r">Low</td>
+            <td>High Bias — model too simple, hasn't learned enough</td>
+          </tr>
+          <tr>
+            <td>Good Fit</td>
+            <td class="hl-g">High</td>
+            <td class="hl-g">High (≈ Train)</td>
+            <td>Low Bias, Low Variance — ideal!</td>
+          </tr>
+          <tr>
+            <td>Overfitting</td>
+            <td class="hl-g">Very High</td>
+            <td class="hl-r">Low</td>
+            <td>High Variance — model memorized training data + noise</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Dropout — Regularization Technique</h4>
+    <div class="callout callout-note">
+      <div class="callout-title">📌 How Dropout Works</div>
+      <p>During each training iteration, randomly <strong>deactivate</strong> a fraction p of neurons (set to 0).</p>
+      <p><strong>Dropout rate 50%:</strong> If activations = [a₁, a₂, a₃, a₄], random mask = [1,0,1,0], then:</p>
+      <p>After dropout: a' = [a₁, 0, a₃, 0] → neurons 2 and 4 are "dropped"</p>
+      <p>This prevents any single neuron from becoming excessively influential → forces the network to learn redundant representations → better generalization.</p>
+      <p><strong>At test time:</strong> All neurons are active, but their outputs are scaled by (1 − dropout rate).</p>
+    </div>
+
+    <div class="comp-row">
+      <div class="comp-side">
+        <div class="comp-head left">Without Dropout</div>
+        <div class="comp-body">
+          <ul>
+            <li>Low training loss</li>
+            <li>High validation loss</li>
+            <li>Overfitting</li>
+          </ul>
+        </div>
+      </div>
+      <div class="comp-side">
+        <div class="comp-head right">With Dropout</div>
+        <div class="comp-body">
+          <ul>
+            <li>Slightly higher training loss</li>
+            <li>Lower validation loss</li>
+            <li>Better generalization</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <h4>L1 and L2 Regularization</h4>
+    <p>Add a penalty term to the cost function to discourage large weights:</p>
+    <div class="eq-block">
+      L2 (Ridge): J_reg = J + λ·Σ w²<br>
+      L1 (Lasso): J_reg = J + λ·Σ|w|
+    </div>
+    <p>Large weights → higher cost → model learns smaller weights → simpler model → less overfitting.</p>
+
+    <h3 id="data-aug">3.8 Data Augmentation</h3>
+    <div class="callout callout-tip">
+      <div class="callout-title">💡 When you don't have enough data…</div>
+      Data augmentation artificially increases the training dataset by creating <em>modified versions</em> of existing data — instead of collecting new data.
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Data Type</th><th>Augmentation Techniques</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Images</td>
+            <td>Rotation, Flipping (horizontal/vertical), Cropping, Scaling, Translation, Brightness change, Color jitter, Noise addition</td>
+          </tr>
+          <tr>
+            <td>Text</td>
+            <td>Synonym replacement, Random word deletion, Back-translation</td>
+          </tr>
+          <tr>
+            <td>Audio</td>
+            <td>Noise addition, Time stretching, Pitch shifting</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CHAPTER 4: ARCHITECTURES
+    ═══════════════════════════════════════════════════════ -->
+    <div class="chapter" id="lenet">
+      <div class="chapter-num">Chapter 04</div>
+      <h2>CNN Architectures</h2>
+    </div>
+
+    <h3>4.1 LeNet-5 Architecture</h3>
+    <div class="callout callout-note">
+      <div class="callout-title">📌 Background</div>
+      LeNet was developed by <strong>Yann LeCun in 1998</strong> for handwritten digit recognition. It was commercially deployed to read millions of cheques in banks. Input: 32×32 grayscale images from MNIST dataset. It is the <em>pioneer</em> CNN architecture.
+    </div>
+
+    <div class="cnn-arch">
+      <div class="cnn-block">
+        <div class="cnn-box input">32×32<br>×1</div>
+        <div class="cnn-label">Input</div>
+      </div>
+      <div class="cnn-arrow">→</div>
+      <div class="cnn-block">
+        <div class="cnn-box conv">Conv<br>5×5<br>×6</div>
+        <div class="cnn-label">C1<br>28×28×6</div>
+      </div>
+      <div class="cnn-arrow">→</div>
+      <div class="cnn-block">
+        <div class="cnn-box pool">Avg<br>Pool<br>2×2</div>
+        <div class="cnn-label">S2<br>14×14×6</div>
+      </div>
+      <div class="cnn-arrow">→</div>
+      <div class="cnn-block">
+        <div class="cnn-box conv">Conv<br>5×5<br>×16</div>
+        <div class="cnn-label">C3<br>10×10×16</div>
+      </div>
+      <div class="cnn-arrow">→</div>
+      <div class="cnn-block">
+        <div class="cnn-box pool">Avg<br>Pool<br>2×2</div>
+        <div class="cnn-label">S4<br>5×5×16</div>
+      </div>
+      <div class="cnn-arrow">→</div>
+      <div class="cnn-block">
+        <div class="cnn-box fc">FC<br>120</div>
+        <div class="cnn-label">F5</div>
+      </div>
+      <div class="cnn-arrow">→</div>
+      <div class="cnn-block">
+        <div class="cnn-box fc">FC<br>84</div>
+        <div class="cnn-label">F6</div>
+      </div>
+      <div class="cnn-arrow">→</div>
+      <div class="cnn-block">
+        <div class="cnn-box soft">Soft<br>max<br>10</div>
+        <div class="cnn-label">Output</div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Layer</th><th>Type</th><th>Output Shape</th><th>Details</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Input</td><td>—</td><td>32×32×1</td><td>Grayscale image</td></tr>
+          <tr><td>C1</td><td>Conv</td><td>28×28×6</td><td>6 filters of 5×5, stride 1, no padding. (32−5+1=28)</td></tr>
+          <tr><td>S2</td><td>Avg Pool</td><td>14×14×6</td><td>2×2, stride 2. (28/2=14)</td></tr>
+          <tr><td>C3</td><td>Conv</td><td>10×10×16</td><td>16 filters of 5×5, stride 1, no padding. (14−5+1=10)</td></tr>
+          <tr><td>S4</td><td>Avg Pool</td><td>5×5×16</td><td>2×2, stride 2. (10/2=5)</td></tr>
+          <tr><td>F5</td><td>FC</td><td>120</td><td>Flatten 5×5×16=400, then FC to 120</td></tr>
+          <tr><td>F6</td><td>FC</td><td>84</td><td>Fully connected</td></tr>
+          <tr><td>Output</td><td>Softmax</td><td>10</td><td>10 digits (0–9)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📌 LeNet Notes from Lecture</div>
+      <ul>
+        <li>Uses <strong>average pooling</strong> (modern CNNs use max pooling)</li>
+        <li>Uses <strong>sigmoid/tanh</strong> activation (modern CNNs use ReLU)</li>
+        <li>As we go deeper: spatial size ↓ (pooling), number of feature maps ↑</li>
+        <li>Final layer uses <strong>Softmax</strong> for 10-class classification</li>
+      </ul>
+    </div>
+
+    <h3 id="resnet">4.2 ResNet — Residual Networks</h3>
+    <div class="callout callout-warn">
+      <div class="callout-title">⚠️ Problem ResNet Solves</div>
+      In very deep networks (50+ layers), the vanishing gradient problem makes early layers learn very slowly. Also, "plain networks" (just stacking layers) degrade — <em>adding more layers increases training error</em> (counterintuitively). ResNet solves this with <strong>skip connections</strong>.
+    </div>
+
+    <h4>Skip Connections / Residual Connections</h4>
+    <div class="eq-block">
+      <strong>Normal layer:</strong>  a(l+1) = g(z(l+1))<br>
+      <strong>Residual block:</strong> a(l+2) = g(z(l+2) + a(l))<br><br>
+      z(l+2) = W(l+2) · a(l+1) + b(l+2)<br>
+      a(l+2) = g(z(l+2) + a(l))   ← adds the input directly to the output!
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">💡 Intuition Behind Skip Connections</div>
+      The skip connection "shortcuts" the signal directly to later layers. Even if the intermediate layers learn nothing (gradient vanishes), the signal still flows through. At worst, the block learns an identity function → the network doesn't degrade with depth.
+      <br><br>
+      The block learns the <em>residual</em> F(x) = H(x) − x (what needs to be added to the input). That's why it's called a "residual" connection.
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📌 ResNet Summary</div>
+      <ul>
+        <li>Solves vanishing gradient by providing shortcut paths for gradients</li>
+        <li>Uses <strong>residual learning</strong>: learns what to add, not what to output</li>
+        <li>Enables training of very deep networks (50, 100, 152 layers)</li>
+        <li>Used in: image classification, object detection, medical imaging</li>
+        <li>Skip connections are also called "shortcut connections" or "identity shortcuts"</li>
+      </ul>
+    </div>
+
+    <h3 id="inception">4.3 Inception Network (GoogLeNet)</h3>
+    <div class="callout callout-tip">
+      <div class="callout-title">💡 Motivation</div>
+      For a dog image: sometimes the dog fills the whole frame, sometimes it's tiny in a corner. The "right" filter size depends on where the object is and how big it is. <strong>Inception's idea: use MULTIPLE filter sizes in parallel!</strong>
+    </div>
+
+    <h4>Core Idea of Inception Module</h4>
+    <p>Instead of choosing one filter size, apply all of them simultaneously and concatenate:</p>
+    <ul>
+      <li><strong>1×1 convolution</strong> → small/local features + dimension reduction</li>
+      <li><strong>3×3 convolution</strong> → medium features</li>
+      <li><strong>5×5 convolution</strong> → large features</li>
+      <li><strong>3×3 max pooling</strong> → pooled features</li>
+    </ul>
+    <p>All outputs must have the same H×W dimensions (use padding). Concatenate along depth axis (Z dimension).</p>
+
+    <h4>The Problem of Computational Cost</h4>
+    <div class="example-box">
+      <div class="example-header">💰 Computational Cost Example</div>
+      <div class="example-body">
+        <p><strong>Scenario:</strong> Input 28×28×192, apply 32 filters of 5×5</p>
+        <p>Computations = 28×28×32 × 5×5×192 = <span class="hl-r">120 Million operations!</span></p>
+        <hr class="sep" style="margin:0.5rem 0">
+        <p><strong>Solution: Add a 1×1 bottleneck convolution first</strong></p>
+        <div class="step"><div class="step-num">1</div><div class="step-content">Apply 16 filters of 1×1×192 → result: 28×28×16 (reduce channels from 192 to 16)<br>Cost = 28×28×16 × 1×1×192 = <strong>2.4 Million</strong></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content">Apply 32 filters of 5×5×16 on this → result: 28×28×32<br>Cost = 28×28×32 × 5×5×16 = <strong>10 Million</strong></div></div>
+        <p><strong>Total = 12.4 Million</strong> — a <span class="hl-g">10× reduction!</span></p>
+      </div>
+    </div>
+
+    <div class="callout callout-key">
+      <div class="callout-title">🔑 Why 1×1 Convolution?</div>
+      A 1×1 convolution doesn't change the spatial dimensions (H, W) but can change the number of channels (depth). It applies a learned linear combination across channels — acting as a cheap "bottleneck" to reduce computational cost before more expensive 3×3 or 5×5 convolutions.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         SOLVED NUMERICALS
+    ═══════════════════════════════════════════════════════ -->
+    <div class="chapter" id="numericals">
+      <div class="chapter-num">Solved Numericals</div>
+      <h2>Complete Worked Examples</h2>
+    </div>
+
+    <h3>N1: Backpropagation — Full Numerical</h3>
+    <div class="callout callout-note">
+      <div class="callout-title">📌 Setup (from lecture notes)</div>
+      A 2-input, 2-hidden, 2-output neural network.<br>
+      x₁ = 0.05, x₂ = 0.10 (inputs), Target: t₁ = 0.01, t₂ = 0.99<br>
+      Weights: w₁=0.15, w₂=0.25, w₃=0.20, w₄=0.30, w₅=0.40, w₆=0.45, w₇=0.50, w₈=0.55<br>
+      Biases: b₁=0.35, b₂=0.60
+    </div>
+
+    <div class="example-box">
+      <div class="example-header">🔢 Step 1: Forward Pass</div>
+      <div class="example-body">
+        <p><strong>Hidden neuron h1:</strong></p>
+        <div class="eq-block">
+          neth₁ = w₁·x₁ + w₂·x₂ + b₁ = (0.15)(0.05) + (0.10)(0.20) + 0.35 = 0.3775<br>
+          h₁_out = σ(0.3775) = 1/(1+e⁻⁰·³⁷⁷⁵) ≈ 0.59326
+        </div>
+        <p><strong>Hidden neuron h2:</strong></p>
+        <div class="eq-block">
+          neth₂ = w₃·x₁ + w₄·x₂ + b₁ = (0.25)(0.05) + (0.30)(0.20) + 0.35 = 0.3925<br>
+          h₂_out = σ(0.3925) = 1/(1+e⁻⁰·³⁹²⁵) ≈ 0.59688
+        </div>
+        <p><strong>Output neuron o1:</strong></p>
+        <div class="eq-block">
+          neto₁ = w₅·h₁ + w₆·h₂ + b₂ = (0.40)(0.59326) + (0.45)(0.59688) + 0.60<br>
+                = 0.23730 + 0.26860 + 0.60 = 1.10590<br>
+          o₁ = σ(1.10590) = 1/(1+e⁻¹·¹⁰⁵⁹) ≈ 0.75136
+        </div>
+        <p><strong>Output neuron o2:</strong></p>
+        <div class="eq-block">
+          neto₂ = (0.50)(0.59326) + (0.55)(0.59688) + 0.60 = 1.22491<br>
+          o₂ = σ(1.22491) ≈ 0.77292
+        </div>
+      </div>
+    </div>
+
+    <div class="example-box">
+      <div class="example-header">🔢 Step 2: Calculate Total Error</div>
+      <div class="example-body">
+        <div class="eq-block">
+          E_o1 = ½(t₁ − o₁)² = ½(0.01 − 0.75136)² = 0.27481<br>
+          E_o2 = ½(t₂ − o₂)² = ½(0.99 − 0.77292)² = 0.02357<br>
+          E_total = E_o1 + E_o2 = 0.29838
+        </div>
+      </div>
+    </div>
+
+    <div class="example-box">
+      <div class="example-header">🔢 Step 3: Backpropagation — Output Layer</div>
+      <div class="example-body">
+        <p><strong>Gradient ∂E/∂w₅ (using chain rule):</strong></p>
+        <div class="eq-block">
+          ∂E/∂w₅ = ∂E/∂o₁ · ∂o₁/∂neto₁ · ∂neto₁/∂w₅<br><br>
+          ∂E/∂o₁ = −(t₁ − o₁) = −0.01 + 0.75136 = 0.74136<br>
+          ∂o₁/∂neto₁ = o₁(1−o₁) = 0.75136 × (1−0.75136) = 0.18680   ← sigmoid derivative<br>
+          ∂neto₁/∂w₅ = h₁_out = 0.59326<br><br>
+          δ_o1 = ∂E/∂o₁ × ∂o₁/∂neto₁ = 0.74136 × 0.18680 = 0.13850<br><br>
+          ∂E/∂w₅ = δ_o1 × h₁_out = 0.13850 × 0.59326 = 0.08216
+        </div>
+        <p>Similarly: ∂E/∂w₆ = 0.13850 × 0.59688 = 0.08266</p>
+      </div>
+    </div>
+
+    <div class="example-box">
+      <div class="example-header">🔢 Step 4: Weight Update</div>
+      <div class="example-body">
+        <p>Using learning rate α = 0.5:</p>
+        <div class="eq-block">
+          w₅_new = w₅ − α · ∂E/∂w₅ = 0.40 − 0.5 × 0.08216 = 0.40 − 0.04108 = 0.35892
+        </div>
+      </div>
+    </div>
+
+    <h3>N2: Softmax Computation — Grade Prediction</h3>
+    <div class="example-box">
+      <div class="example-header">📐 Problem: Predict grade for Hours=4, Attendance=80%</div>
+      <div class="example-body">
+        <p><strong>Given weights:</strong></p>
+        <p>For A: w_A1=0.5, w_A2=0.3, b_A=1.0</p>
+        <p>For B: w_B1=0.4, w_B2=0.4, b_B=0.5</p>
+        <p>For C: w_C1=0.3, w_C2=0.2, b_C=−0.5</p>
+
+        <div class="step"><div class="step-num">1</div><div class="step-content">
+          <strong>Compute logits:</strong><br>
+          z_A = 0.5(4) + 0.3(80) + 1.0 = 2 + 24 + 1 = <strong>27.0</strong><br>
+          z_B = 0.4(4) + 0.4(80) + 0.5 = 1.6 + 32 + 0.5 = <strong>34.1</strong><br>
+          z_C = 0.3(4) + 0.2(80) − 0.5 = 1.2 + 16 − 0.5 = <strong>16.7</strong>
+        </div></div>
+
+        <div class="step"><div class="step-num">2</div><div class="step-content">
+          <strong>Exponentiate:</strong><br>
+          e^27.0 ≈ 5.32 × 10¹¹<br>
+          e^34.1 ≈ 6.48 × 10¹⁴<br>
+          e^16.7 ≈ 1.81 × 10⁷
+        </div></div>
+
+        <div class="step"><div class="step-num">3</div><div class="step-content">
+          <strong>Sum ≈ 6.49 × 10¹⁴</strong>
+        </div></div>
+
+        <div class="step"><div class="step-num">4</div><div class="step-content">
+          <strong>Probabilities:</strong><br>
+          P(A) ≈ 0.00082 (0.082%)<br>
+          P(B) ≈ 0.99985 (99.985%) ← <span class="hl">Predicted Grade = B</span><br>
+          P(C) ≈ 2.79 × 10⁻⁸
+        </div></div>
+      </div>
+    </div>
+
+    <h3>N3: Evaluation Metrics — Spam Detector</h3>
+    <div class="example-box">
+      <div class="example-header">📐 Given: TP=9, FP=1, TN=79, FN=11 (100 emails tested)</div>
+      <div class="example-body">
+        <div class="eq-block">
+          Accuracy  = (9 + 79) / 100 = 88/100 = <strong>0.88</strong><br>
+          Precision = 9 / (9 + 1) = 9/10 = <strong>0.90</strong><br>
+          Recall    = 9 / (9 + 11) = 9/20 = <strong>0.45</strong><br>
+          F1        = 2 × (0.90 × 0.45) / (0.90 + 0.45) = 2 × 0.405/1.35 = <strong>0.60</strong>
+        </div>
+      </div>
+    </div>
+
+    <h3>N4: CNN Parameter Count — Detailed Table</h3>
+    <div class="example-box">
+      <div class="example-header">📐 CNN with Input 150×150×3</div>
+      <div class="example-body">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th>Layer</th><th>Filter / Size</th><th>Output Shape</th><th>Parameters</th><th>Calculation</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Input</td><td>—</td><td>150×150×3</td><td>0</td><td>—</td></tr>
+              <tr><td>Conv2D</td><td>3×3, 16 filters</td><td>148×148×16</td><td>448</td><td>(3×3×3)×16 + 16</td></tr>
+              <tr><td>MaxPool2D</td><td>2×2</td><td>74×74×16</td><td>0</td><td>—</td></tr>
+              <tr><td>Conv2D</td><td>3×3, 32 filters</td><td>72×72×32</td><td>4,640</td><td>(3×3×16)×32 + 32</td></tr>
+              <tr><td>MaxPool2D</td><td>2×2</td><td>36×36×32</td><td>0</td><td>—</td></tr>
+              <tr><td>Conv2D</td><td>3×3, 64 filters</td><td>34×34×64</td><td>18,496</td><td>(3×3×32)×64 + 64</td></tr>
+              <tr><td>MaxPool2D</td><td>2×2</td><td>17×17×64</td><td>0</td><td>—</td></tr>
+              <tr><td>Flatten</td><td>—</td><td>18,496</td><td>0</td><td>—</td></tr>
+              <tr><td>Dense</td><td>512 neurons</td><td>512</td><td>9,470,464</td><td>(18496×512) + 512</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <h3>N5: K-Means — Worked Example</h3>
+    <div class="example-box">
+      <div class="example-header">📐 K=2 Clustering on 10 Points</div>
+      <div class="example-body">
+        <p>Points: P1(2,3), P2(3,3), P3(6,8), P4(7,8), P5(2,2), P6(3,2), P7(6,7), P8(7,7), P9(3,4), P10(6,6)</p>
+        <p><strong>Initial Centroids:</strong> C1=(2,2), C2=(6,8)</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th>Point</th><th>Dist to C1(2,2)</th><th>Dist to C2(6,8)</th><th>Cluster</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>P1(2,3)</td><td>√(0+1) = 1.0</td><td>√(16+25) = 6.40</td><td><span class="hl-g">C1</span></td></tr>
+              <tr><td>P2(3,3)</td><td>√(1+1) = 1.41</td><td>√(9+25) = 5.83</td><td><span class="hl-g">C1</span></td></tr>
+              <tr><td>P3(6,8)</td><td>√(16+36) = 7.21</td><td>√(0+0) = 0.0</td><td><span class="hl">C2</span></td></tr>
+              <tr><td>P4(7,8)</td><td>√(25+36) = 7.81</td><td>√(1+0) = 1.0</td><td><span class="hl">C2</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>Final Clusters:</strong><br>
+        Cluster 1: P1, P2, P5, P6, P9 (lower-left group)<br>
+        Cluster 2: P3, P4, P7, P8, P10 (upper-right group)</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         INTERVIEW QUESTIONS
+    ═══════════════════════════════════════════════════════ -->
+    <div class="chapter" id="interview-qs">
+      <div class="chapter-num">Extras</div>
+      <h2>Interview Questions &amp; QnA</h2>
+    </div>
+
+    <h3>Short Answer QnA</h3>
+
+    <div class="qna-item">
+      <div class="qna-q" onclick="toggleQna(this)">Q: Why do we use activation functions in neural networks?</div>
+      <div class="qna-a">Without activation functions, no matter how many layers you stack, the network is just a linear model (W₃·W₂·W₁·x is still a linear transformation). Activation functions introduce non-linearity, allowing the network to learn complex patterns. For example, ReLU replaces negatives with zero, creating piecewise linear boundaries.</div>
+    </div>
+
+    <div class="qna-item">
+      <div class="qna-q" onclick="toggleQna(this)">Q: What is the dying ReLU problem and how is it fixed?</div>
+      <div class="qna-a">When a neuron consistently receives negative inputs, ReLU outputs zero for all inputs. The gradient is also zero → no weight update → the neuron "dies" and never recovers. <strong>Fix:</strong> Use Leaky ReLU: f(z) = αz for z ≤ 0 (α ≈ 0.01). This provides a small non-zero gradient even for negative inputs, keeping neurons alive.</div>
+    </div>
+
+    <div class="qna-item">
+      <div class="qna-q" onclick="toggleQna(this)">Q: Why can't we use MSE loss for classification?</div>
+      <div class="qna-a">MSE creates a non-convex loss surface for classification tasks (with sigmoid/softmax outputs), leading to flat gradients when predictions are confident but wrong. Cross-entropy loss produces steeper gradients for wrong predictions, enabling faster learning. Cross-entropy is designed for probability distributions.</div>
+    </div>
+
+    <div class="qna-item">
+      <div class="qna-q" onclick="toggleQna(this)">Q: Why does stacking more layers sometimes increase training error (not just test error)?</div>
+      <div class="qna-a">This is the degradation problem solved by ResNet. It's caused by the vanishing gradient problem — in very deep networks, gradients become exponentially small in early layers. Those layers barely update → the network can't learn even the training data effectively. ResNet's skip connections solve this by providing direct gradient pathways.</div>
+    </div>
+
+    <div class="qna-item">
+      <div class="qna-q" onclick="toggleQna(this)">Q: What is internal covariate shift and how does Batch Normalization fix it?</div>
+      <div class="qna-a">During training, each mini-batch updates weights. This changes the input distribution to deeper layers — a phenomenon called Internal Covariate Shift. Each layer must constantly re-adapt to the new distribution, slowing training and causing gradient problems. BN normalizes the output of each layer using the mini-batch mean and variance, keeping the distribution stable. Learnable parameters γ and β allow the network to "undo" the normalization if needed.</div>
+    </div>
+
+    <div class="qna-item">
+      <div class="qna-q" onclick="toggleQna(this)">Q: Why does precision decrease when we lower the classification threshold?</div>
+      <div class="qna-a">Lowering the threshold makes the model predict "positive" more often. This catches more true positives (recall ↑) but also incorrectly flags more negatives as positive (FP ↑). Since Precision = TP/(TP+FP), more FPs → lower precision. It's a fundamental tradeoff: you can't maximize both simultaneously (unless the model is perfect).</div>
+    </div>
+
+    <div class="qna-item">
+      <div class="qna-q" onclick="toggleQna(this)">Q: What does "parameter sharing" mean in CNN and why does it matter?</div>
+      <div class="qna-a">In CNN, the same filter (set of weights) is applied to every position in the input image. All positions share the same parameters. This dramatically reduces the number of parameters compared to MLP (where every connection has a unique weight). For a 1MP image, MLP needs ~10¹² weights for just one hidden layer; a CNN might need just thousands. This makes CNNs trainable on reasonable hardware.</div>
+    </div>
+
+    <div class="qna-item">
+      <div class="qna-q" onclick="toggleQna(this)">Q: Differentiate multi-class and multi-label classification.</div>
+      <div class="qna-a"><strong>Multi-class:</strong> Exactly one class applies. Example: digit recognition (0-9), only one digit is correct. Use Softmax — probabilities sum to 1.<br><br><strong>Multi-label:</strong> Multiple classes can apply simultaneously. Example: a chest X-ray may show TB AND pneumonia AND COVID at once. Use Sigmoid for each output — each outputs independent probability, sum can exceed 1.</div>
+    </div>
+
+    <div class="qna-item">
+      <div class="qna-q" onclick="toggleQna(this)">Q: Why is accuracy a bad metric for imbalanced datasets?</div>
+      <div class="qna-a">Consider 990 negatives, 10 positives. A "dummy" model predicting everything negative gets 99% accuracy. But it has recall = 0 (catches none of the positives). In medical diagnosis, this would mean missing every single disease case. Use F1-score, Precision, and Recall for imbalanced data evaluation.</div>
+    </div>
+
+    <div class="qna-item">
+      <div class="qna-q" onclick="toggleQna(this)">Q: What does a 1×1 convolution do?</div>
+      <div class="qna-a">A 1×1 conv doesn't change spatial dimensions (H, W) but changes the number of channels. It applies a learned weighted combination across all channels at each spatial position. Used in Inception networks as a "bottleneck" to reduce channel depth cheaply before expensive 3×3 or 5×5 convolutions, dramatically reducing computation. Also adds a non-linear transformation at each pixel independently.</div>
+    </div>
+
+    <hr class="sep">
+
+    <h3>Interview Questions (Technical)</h3>
+    <div class="iq-list">
+      <div class="iq-item">
+        <div class="iq-q">What are the key differences between SGD, Batch GD, and Mini-Batch GD?</div>
+        <div class="iq-a">SGD uses 1 sample per update (fast, noisy, can escape local minima). Batch GD uses entire dataset (stable but slow). Mini-Batch uses a subset (balances speed and stability, most used in practice). The oscillation pattern: SGD &gt; Mini-Batch &gt; Batch.</div>
+      </div>
+      <div class="iq-item">
+        <div class="iq-q">Explain the vanishing gradient problem and list 3 solutions.</div>
+        <div class="iq-a">During backpropagation through many layers, gradients become exponentially small (especially with sigmoid/tanh). Early layers get tiny updates → can't learn. Solutions: (1) ReLU activation — constant gradient for z &gt; 0. (2) Batch Normalization — keeps activations in healthy range. (3) ResNet skip connections — provide direct gradient paths to early layers.</div>
+      </div>
+      <div class="iq-item">
+        <div class="iq-q">Why do CNN layers have fewer parameters than dense layers for image data?</div>
+        <div class="iq-a">CNN uses parameter sharing: same filter weights applied everywhere. For a 3×3 filter with 64 output channels and 32 input channels: only (3×3×32)×64 + 64 = 18,496 params regardless of image size. A dense layer connecting 148×148×64 = 1.4M neurons to 512 neurons needs 720M parameters. CNN params depend on kernel size and channel depth, not spatial dimensions.</div>
+      </div>
+      <div class="iq-item">
+        <div class="iq-q">What is the purpose of pooling in CNN and does it have learnable parameters?</div>
+        <div class="iq-a">Pooling reduces spatial dimensions (H×W) of feature maps, lowering computation and parameter count in subsequent layers. It also provides local translation invariance. Max pooling takes the maximum value in each window (preserves strongest feature). Average pooling averages values. <strong>No learnable parameters</strong> — pooling is a fixed operation.</div>
+      </div>
+      <div class="iq-item">
+        <div class="iq-q">What is the difference between overfitting and the vanishing gradient problem?</div>
+        <div class="iq-a">Overfitting: Training accuracy is HIGH, test accuracy is LOW — the model memorized training data including noise. The model is too complex for the data. Vanishing gradient: Both training AND test accuracy are poor — the model can't even learn the training data because gradients are too small to update early layers.</div>
+      </div>
+      <div class="iq-item">
+        <div class="iq-q">Explain why Inception applies multiple filter sizes in parallel.</div>
+        <div class="iq-a">Objects in images appear at different scales and in different positions. A 1×1 filter captures point features; 3×3 captures medium-scale features; 5×5 captures large features. Choosing one size risks missing features at other scales. By applying all sizes in parallel and concatenating, the network learns the most useful scale automatically for each image/task.</div>
+      </div>
+      <div class="iq-item">
+        <div class="iq-q">Explain Dropout — how does it prevent overfitting?</div>
+        <div class="iq-a">Dropout randomly disables neurons during each training batch. This prevents neurons from co-adapting (relying on specific other neurons). Each training iteration effectively trains a different "sub-network." The final model can be seen as an ensemble of many sub-networks → better generalization. At test time, all neurons are active but scaled by (1−dropout_rate) to compensate for more active neurons than during training.</div>
+      </div>
+      <div class="iq-item">
+        <div class="iq-q">What are the key properties of ReLU that make it preferred over sigmoid for hidden layers?</div>
+        <div class="iq-a">(1) <strong>No vanishing gradient</strong> for positive inputs (gradient = constant 1). (2) <strong>Computational efficiency</strong> — just max(0,z), no expensive exponentials. (3) <strong>Sparse activation</strong> — typically ~50% of neurons output 0 → sparse representation, efficient. (4) Faster convergence in practice. Sigmoid squashes outputs to (0,1) — multiplying many small derivatives → vanishing gradient.</div>
+      </div>
+    </div>
+
+    <hr class="sep">
+
+    <div class="callout callout-key">
+      <div class="callout-title">🎯 Quick Reference — All Key Formulas</div>
+      <div class="formula-grid">
+        <div class="formula-card"><h5>Weighted Sum</h5><div class="eq">z = Σwᵢxᵢ + b</div></div>
+        <div class="formula-card"><h5>Weight Update</h5><div class="eq">ΔW = −α·∂E/∂W</div></div>
+        <div class="formula-card"><h5>Sigmoid</h5><div class="eq">σ(z) = 1/(1+e⁻ᶻ)</div></div>
+        <div class="formula-card"><h5>Sigmoid Deriv</h5><div class="eq">σ'(z) = σ(z)(1−σ(z))</div></div>
+        <div class="formula-card"><h5>Softmax</h5><div class="eq">P(i) = eᶻⁱ/Σeᶻʲ</div></div>
+        <div class="formula-card"><h5>ReLU</h5><div class="eq">max(0, z)</div></div>
+        <div class="formula-card"><h5>Leaky ReLU</h5><div class="eq">z if z&gt;0, αz if z≤0</div></div>
+        <div class="formula-card"><h5>Tanh</h5><div class="eq">(eᶻ−e⁻ᶻ)/(eᶻ+e⁻ᶻ)</div></div>
+        <div class="formula-card"><h5>Precision</h5><div class="eq">TP/(TP+FP)</div></div>
+        <div class="formula-card"><h5>Recall</h5><div class="eq">TP/(TP+FN)</div></div>
+        <div class="formula-card"><h5>F1</h5><div class="eq">2PR/(P+R)</div></div>
+        <div class="formula-card"><h5>Conv Output</h5><div class="eq">⌊(n−f+2P)/S⌋+1</div></div>
+        <div class="formula-card"><h5>MSE</h5><div class="eq">(1/N)Σ(y−ŷ)²</div></div>
+        <div class="formula-card"><h5>Cross Entropy</h5><div class="eq">−Σyᵢlog(ŷᵢ)</div></div>
+        <div class="formula-card"><h5>CNN Params</h5><div class="eq">(f²·Cᵢₙ)·Cₒᵤₜ+Cₒᵤₜ</div></div>
+        <div class="formula-card"><h5>BN Normalize</h5><div class="eq">x̂ = (x−μ)/√(σ²+ε)</div></div>
+      </div>
+    </div>
+
+  </div><!-- end .content -->
+</div><!-- end .main -->
+
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+
+function toggleQna(el) {
+  el.classList.toggle('open');
+  const ans = el.nextElementSibling;
+  ans.classList.toggle('show');
+}
+
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('backTop');
+  btn.classList.toggle('show', window.scrollY > 400);
+});
+
+// Close sidebar on link click (mobile)
+document.querySelectorAll('.nav-section a').forEach(link => {
+  link.addEventListener('click', () => {
+    if (window.innerWidth < 900) toggleSidebar();
+  });
+});
+</script>
+</body>
+</html>
