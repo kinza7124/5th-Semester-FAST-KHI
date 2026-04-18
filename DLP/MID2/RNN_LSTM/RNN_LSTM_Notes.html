@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RNN & LSTM — Complete Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Literata:ital,wght@0,400;0,600;0,700;1,400&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #141720;
+    --surface2: #1c2030;
+    --border: #252b3b;
+    --accent: #4f9cf9;
+    --accent2: #f97b4f;
+    --accent3: #7be495;
+    --accent4: #c87bf9;
+    --text: #dde3f0;
+    --text-muted: #7a849e;
+    --heading: #ffffff;
+    --code-bg: #0a0c11;
+    --yellow: #f9d74f;
+    --red: #f96b6b;
+    --tag-bg: rgba(79,156,249,0.1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Literata', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .site-header {
+    background: linear-gradient(135deg, #0d1220 0%, #111827 50%, #0d1528 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% -20%, rgba(79,156,249,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .site-header .badge {
+    display: inline-block;
+    background: var(--tag-bg);
+    border: 1px solid rgba(79,156,249,0.3);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.9rem;
+    border-radius: 2rem;
+    margin-bottom: 1rem;
+  }
+  .site-header h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 3.2rem);
+    font-weight: 700;
+    color: var(--heading);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 0.6rem;
+  }
+  .site-header h1 span { color: var(--accent); }
+  .site-header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    font-family: 'Space Grotesk', sans-serif;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
+  /* TOC */
+  .toc-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+  .toc-bar::-webkit-scrollbar { display: none; }
+  .toc-bar ul {
+    display: inline-flex;
+    list-style: none;
+    gap: 0;
+    padding: 0 0.5rem;
+  }
+  .toc-bar li a {
+    display: block;
+    padding: 0.75rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .toc-bar li a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* MAIN CONTENT */
+  .content {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1.2rem 5rem;
+  }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 3.5rem;
+    scroll-margin-top: 60px;
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.3rem, 3.5vw, 1.9rem);
+    font-weight: 700;
+    color: var(--heading);
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h2::before {
+    content: attr(data-num);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    margin-right: 0.6rem;
+    opacity: 0.7;
+  }
+
+  h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent2);
+    margin: 1.8rem 0 0.8rem;
+    letter-spacing: -0.01em;
+  }
+
+  h4 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent3);
+    margin: 1.2rem 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.8rem;
+  }
+
+  p { margin-bottom: 0.9rem; }
+
+  strong { color: var(--heading); font-weight: 600; }
+  em { color: var(--accent); font-style: italic; }
+
+  /* CALLOUT BOXES */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: rgba(79,156,249,0.05);
+    padding: 1rem 1.2rem;
+    border-radius: 0 6px 6px 0;
+    margin: 1.2rem 0;
+  }
+  .callout.warn { border-color: var(--accent2); background: rgba(249,123,79,0.05); }
+  .callout.success { border-color: var(--accent3); background: rgba(123,228,149,0.05); }
+  .callout.purple { border-color: var(--accent4); background: rgba(200,123,249,0.05); }
+  .callout .callout-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .callout.warn .callout-title { color: var(--accent2); }
+  .callout.success .callout-title { color: var(--accent3); }
+  .callout.purple .callout-title { color: var(--accent4); }
+
+  /* EQUATION */
+  .eq {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.4rem;
+    margin: 1rem 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--yellow);
+    overflow-x: auto;
+    line-height: 2;
+  }
+  .eq .comment {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+  .eq .hl { color: var(--accent); }
+  .eq .hl2 { color: var(--accent2); }
+  .eq .hl3 { color: var(--accent3); }
+
+  /* CODE */
+  .code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.4rem;
+    margin: 1rem 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: #a8d8a8;
+    overflow-x: auto;
+    line-height: 1.8;
+  }
+  .code .kw { color: var(--accent); }
+  .code .str { color: var(--yellow); }
+  .code .cmt { color: var(--text-muted); }
+  .code .fn { color: var(--accent2); }
+
+  /* DIAGRAM */
+  .diagram {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 1.2rem 0;
+    overflow-x: auto;
+  }
+  .diagram svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+  }
+
+  /* GRID CARDS */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: 1.2rem 0;
+  }
+  .card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.2rem;
+  }
+  .card h5 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--heading);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .card p { font-size: 0.88rem; margin: 0; color: var(--text); }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0; border-radius: 8px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  thead tr { background: var(--surface2); }
+  th {
+    padding: 0.7rem 1rem;
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid rgba(37,43,59,0.6);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+
+  /* STEP LIST */
+  .steps { list-style: none; counter-reset: step; margin: 0.8rem 0; }
+  .steps li {
+    counter-increment: step;
+    padding: 0.6rem 0 0.6rem 3rem;
+    position: relative;
+    border-left: 1px solid var(--border);
+    margin-left: 1rem;
+    font-size: 0.93rem;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: -1rem;
+    top: 0.55rem;
+    width: 2rem;
+    height: 2rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* BULLET LIST */
+  .blist { list-style: none; margin: 0.6rem 0; }
+  .blist li {
+    padding: 0.3rem 0 0.3rem 1.4rem;
+    position: relative;
+    font-size: 0.93rem;
+  }
+  .blist li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 0.75rem;
+    top: 0.42rem;
+  }
+  .blist.orange li::before { color: var(--accent2); }
+  .blist.green li::before { color: var(--accent3); }
+
+  /* EXAM SECTION */
+  .exam-section {
+    background: linear-gradient(135deg, rgba(249,215,79,0.04) 0%, rgba(249,123,79,0.04) 100%);
+    border: 1px solid rgba(249,215,79,0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 3rem;
+  }
+  .exam-section h2 {
+    border-color: rgba(249,215,79,0.3);
+    color: var(--yellow);
+  }
+  .exam-section h2::before { color: var(--yellow); }
+
+  .q-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .q-header {
+    padding: 0.85rem 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    user-select: none;
+  }
+  .q-header:hover { background: rgba(255,255,255,0.03); }
+  .q-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--yellow);
+    background: rgba(249,215,79,0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+    font-weight: 600;
+  }
+  .q-text { font-size: 0.93rem; color: var(--text); flex: 1; }
+  .q-toggle {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    transition: transform 0.25s;
+    margin-top: 0.15rem;
+  }
+  .q-body {
+    display: none;
+    padding: 0 1.1rem 1rem 1.1rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.9rem;
+  }
+  .q-body.open { display: block; }
+  .q-toggle.rotated { transform: rotate(180deg); }
+  .q-body p, .q-body li { font-size: 0.9rem; }
+
+  /* TAG */
+  .tag {
+    display: inline-block;
+    background: var(--tag-bg);
+    border: 1px solid rgba(79,156,249,0.25);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.15rem 0.55rem;
+    border-radius: 3px;
+    margin-right: 0.3rem;
+    vertical-align: middle;
+  }
+  .tag.orange { background: rgba(249,123,79,0.1); border-color: rgba(249,123,79,0.25); color: var(--accent2); }
+  .tag.green { background: rgba(123,228,149,0.1); border-color: rgba(123,228,149,0.25); color: var(--accent3); }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .eq, .code { font-size: 0.77rem; padding: 0.8rem 1rem; }
+    h2 { font-size: 1.25rem; }
+    .content { padding: 1.5rem 1rem 4rem; }
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  .highlight-box {
+    background: rgba(79,156,249,0.07);
+    border: 1px solid rgba(79,156,249,0.2);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  @media (max-width: 540px) { .two-col { grid-template-columns: 1fr; } }
+
+  .formula-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin: 0.8rem 0;
+  }
+  .formula-chip {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.4rem 0.9rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--yellow);
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="badge">Deep Learning · Sequence Models</div>
+  <h1>RNNs, <span>LSTMs</span> & Beyond</h1>
+  <p>Complete study notes — Transfer Learning · Functional API · RNN · BPTT · LSTM · GRU · BiRNN · Deep RNNs</p>
+</header>
+
+<!-- STICKY NAV -->
+<nav class="toc-bar">
+  <ul>
+    <li><a href="#s1">Transfer Learning</a></li>
+    <li><a href="#s2">Functional API</a></li>
+    <li><a href="#s3">RNN Intro</a></li>
+    <li><a href="#s4">How RNN Works</a></li>
+    <li><a href="#s5">Language Repr.</a></li>
+    <li><a href="#s6">Backprop (BPTT)</a></li>
+    <li><a href="#s7">RNN Problems</a></li>
+    <li><a href="#s8">LSTM</a></li>
+    <li><a href="#s9">LSTM Gates</a></li>
+    <li><a href="#s10">GRU</a></li>
+    <li><a href="#s11">Deep RNN</a></li>
+    <li><a href="#s12">BiRNN</a></li>
+    <li><a href="#exam">Exam Q&amp;A</a></li>
+  </ul>
+</nav>
+
+<!-- MAIN -->
+<main class="content">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 1. TRANSFER LEARNING -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section" id="s1">
+  <div class="section-label">Section 01</div>
+  <h2 data-num="01">Transfer Learning</h2>
+
+  <p>Transfer learning reuses a model trained on one task to boost performance on a related task. Two primary strategies:</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h5>🔒 Feature Extraction</h5>
+      <p>Freeze all layers. Use the pre-trained network purely as a feature extractor. Only retrain the final classifier.</p>
+    </div>
+    <div class="card">
+      <h5>🔓 Fine-Tuning</h5>
+      <p>Freeze early (convolutional) layers; <strong>unfreeze</strong> the last few layers and retrain them on new data.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Example</div>
+    <p>A model already trained on cat/dog classification already <em>knows</em> how to identify features of cats and dogs. Move those learned features to a new task (e.g., identifying breed) instead of training from scratch.</p>
+  </div>
+
+  <h3>Layer Freezing Strategy</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 560 90" xmlns="http://www.w3.org/2000/svg" width="560" height="90">
+      <!-- frozen layers -->
+      <rect x="10" y="20" width="80" height="50" rx="6" fill="#1c2030" stroke="#252b3b" stroke-width="1.5"/>
+      <text x="50" y="50" text-anchor="middle" fill="#7a849e" font-size="10" font-family="IBM Plex Mono">Conv 1</text>
+      <rect x="100" y="20" width="80" height="50" rx="6" fill="#1c2030" stroke="#252b3b" stroke-width="1.5"/>
+      <text x="140" y="50" text-anchor="middle" fill="#7a849e" font-size="10" font-family="IBM Plex Mono">Conv 2</text>
+      <rect x="190" y="20" width="80" height="50" rx="6" fill="#1c2030" stroke="#252b3b" stroke-width="1.5"/>
+      <text x="230" y="50" text-anchor="middle" fill="#7a849e" font-size="10" font-family="IBM Plex Mono">Conv 3</text>
+      <!-- unfreeze -->
+      <rect x="280" y="15" width="90" height="60" rx="6" fill="rgba(79,156,249,0.1)" stroke="#4f9cf9" stroke-width="1.5"/>
+      <text x="325" y="47" text-anchor="middle" fill="#4f9cf9" font-size="10" font-family="IBM Plex Mono">Conv 4</text>
+      <text x="325" y="63" text-anchor="middle" fill="#4f9cf9" font-size="8" font-family="IBM Plex Mono">retrain</text>
+      <rect x="380" y="15" width="90" height="60" rx="6" fill="rgba(249,123,79,0.1)" stroke="#f97b4f" stroke-width="1.5"/>
+      <text x="425" y="47" text-anchor="middle" fill="#f97b4f" font-size="10" font-family="IBM Plex Mono">FC / Head</text>
+      <text x="425" y="63" text-anchor="middle" fill="#f97b4f" font-size="8" font-family="IBM Plex Mono">retrain</text>
+      <!-- arrow -->
+      <text x="480" y="50" fill="#7be495" font-size="10" font-family="IBM Plex Mono">→ ŷ</text>
+      <!-- labels -->
+      <text x="145" y="88" text-anchor="middle" fill="#7a849e" font-size="9" font-family="IBM Plex Mono">← FROZEN ————</text>
+      <text x="380" y="88" text-anchor="middle" fill="#4f9cf9" font-size="9" font-family="IBM Plex Mono">UNFREEZE →</text>
+    </svg>
+  </div>
+
+  <p><strong>Freeze here</strong> = keep layers unchanged. <strong>Unfreeze</strong> = retrain last layers + FC head on new data.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 2. KERAS FUNCTIONAL API -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section" id="s2">
+  <div class="section-label">Section 02</div>
+  <h2 data-num="02">Keras Functional API</h2>
+
+  <h3>Why Not Sequential?</h3>
+  <div class="callout warn">
+    <div class="callout-title">Limitations of Sequential Model</div>
+    <ul class="blist orange">
+      <li>Only supports a single input and single output (linear flow)</li>
+      <li>Cannot handle multi-branch architectures</li>
+      <li>Fails when you need to predict multiple outputs simultaneously (e.g., age + emotion)</li>
+    </ul>
+  </div>
+
+  <h3>When to Use Functional API</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h5>Multi-Input</h5>
+      <p>E.g., an e-commerce price predictor that takes: product metadata (tabular) + text description (RNN) + product image (CNN).</p>
+    </div>
+    <div class="card">
+      <h5>Multi-Output</h5>
+      <p>E.g., age/emotion prediction from a single image — simultaneously output <em>age</em> and <em>emotion class</em>.</p>
+    </div>
+    <div class="card">
+      <h5>Shared Layers</h5>
+      <p>Reuse the same layer in different branches of the graph.</p>
+    </div>
+  </div>
+
+  <h3>Functional API — Code Pattern</h3>
+  <div class="code">
+<span class="kw">from</span> keras.models <span class="kw">import</span> <span class="fn">Model</span><br>
+<span class="kw">from</span> keras.layers <span class="kw">import</span> *<br><br>
+<span class="cmt"># Define inputs</span><br>
+x = <span class="fn">Input</span>(shape=(3,))<br><br>
+<span class="cmt"># Build layers</span><br>
+hidden1 = <span class="fn">Dense</span>(128, activation=<span class="str">'relu'</span>)(x)<br>
+hidden2 = <span class="fn">Dense</span>(64,  activation=<span class="str">'relu'</span>)(hidden1)<br><br>
+<span class="cmt"># Two output heads</span><br>
+output1 = <span class="fn">Dense</span>(1, activation=<span class="str">'linear'</span>)(hidden1)  <span class="cmt"># age</span><br>
+output2 = <span class="fn">Dense</span>(1, activation=<span class="str">'sigmoid'</span>)(hidden2) <span class="cmt"># location</span><br><br>
+model = <span class="fn">Model</span>(inputs=x, outputs=[output1, output2])<br>
+model.<span class="fn">summary</span>()
+  </div>
+
+  <h3>Multi-Input Model</h3>
+  <div class="code">
+<span class="cmt"># Two separate input branches</span><br>
+inputA = <span class="fn">Input</span>(shape=(32,))<br>
+inputB = <span class="fn">Input</span>(shape=(128,))<br><br>
+<span class="cmt"># Branch 1 operates on inputA</span><br>
+x  = <span class="fn">Dense</span>(8,  activation=<span class="str">'relu'</span>)(inputA)<br>
+x1 = <span class="fn">Dense</span>(4,  activation=<span class="str">'relu'</span>)(x)<br><br>
+<span class="cmt"># Branch 2 operates on inputB</span><br>
+y  = <span class="fn">Dense</span>(64, activation=<span class="str">'relu'</span>)(inputB)<br>
+y1 = <span class="fn">Dense</span>(32, activation=<span class="str">'relu'</span>)(y)<br>
+y2 = <span class="fn">Dense</span>(4,  activation=<span class="str">'relu'</span>)(y1)<br><br>
+<span class="cmt"># Merge branches</span><br>
+combined = <span class="fn">concatenate</span>([x1, y2])<br>
+z = <span class="fn">Dense</span>(2,  activation=<span class="str">'relu'</span>)(combined)<br>
+z_out = <span class="fn">Dense</span>(1, activation=<span class="str">'linear'</span>)(z)<br><br>
+model = <span class="fn">Model</span>(inputs=[inputA, inputB], outputs=z_out)
+  </div>
+
+  <h3>Visualizing the Model</h3>
+  <div class="code">
+<span class="kw">from</span> keras.utils <span class="kw">import</span> <span class="fn">plot_model</span><br>
+<span class="fn">plot_model</span>(model, show_shapes=<span class="kw">True</span>)
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 3. RNN INTRODUCTION -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section" id="s3">
+  <div class="section-label">Section 03</div>
+  <h2 data-num="03">Recurrent Neural Networks (RNN)</h2>
+
+  <div class="callout purple">
+    <div class="callout-title">Definition</div>
+    <p><strong>RNN</strong> is a type of sequential model designed to work on <em>sequential data</em> — data where the order/position of elements matters.</p>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h4>Non-Sequential Data</h4>
+      <ul class="blist">
+        <li><strong>ANN</strong> → Tabular data</li>
+        <li><strong>CNN</strong> → Images</li>
+        <li>Sequence/order doesn't matter</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Sequential Data (use RNN)</h4>
+      <ul class="blist green">
+        <li>Text: "Hi, my name is Kinz"</li>
+        <li>Time-series: stock/trading prices</li>
+        <li>Speech / audio waveforms</li>
+        <li>DNA sequences: ACGTCAACAAC</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Why Not ANN for Sequential Data?</h3>
+  <ul class="blist orange">
+    <li><strong>Variable input size</strong> — text length varies; ANN needs fixed-size input</li>
+    <li><strong>No long-term dependency</strong> — ANN can't remember earlier parts of a long sentence</li>
+    <li>Zero-padding workaround → <em>lots of unnecessary computations</em></li>
+    <li><strong>Biggest Problem:</strong> We lose semantics (word order) — inputting all tokens simultaneously destroys sequence info</li>
+  </ul>
+
+  <h3>Applications of RNN</h3>
+  <div class="card-grid">
+    <div class="card"><h5>📝 Next Word Prediction</h5><p>Autocomplete — predict the next token in a sequence.</p></div>
+    <div class="card"><h5>😊 Sentiment Analysis</h5><p>Classify whether a review is positive or negative.</p></div>
+    <div class="card"><h5>🌍 Machine Translation</h5><p>Google Translate — seq-to-seq mappings.</p></div>
+    <div class="card"><h5>🧬 DNA Analysis</h5><p>Sequence classification of nucleotides.</p></div>
+    <div class="card"><h5>🎙️ Speech Recognition</h5><p>Audio time-steps → transcript.</p></div>
+  </div>
+
+  <h3>RNN Architectures</h3>
+
+  <!-- Architecture diagram -->
+  <div class="diagram">
+    <svg viewBox="0 0 600 230" xmlns="http://www.w3.org/2000/svg" width="600" height="230">
+      <defs>
+        <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#4f9cf9"/>
+        </marker>
+      </defs>
+      <!-- ONE-TO-ONE -->
+      <text x="50" y="18" fill="#7a849e" font-size="9" text-anchor="middle" font-family="IBM Plex Mono">One-to-One</text>
+      <rect x="25" y="55" width="50" height="35" rx="5" fill="#1c2030" stroke="#4f9cf9" stroke-width="1.5"/>
+      <text x="50" y="77" text-anchor="middle" fill="#4f9cf9" font-size="9" font-family="IBM Plex Mono">RNN</text>
+      <line x1="50" y1="25" x2="50" y2="53" stroke="#4f9cf9" stroke-width="1.2" marker-end="url(#arr)"/>
+      <text x="50" y="22" fill="#7be495" font-size="9" text-anchor="middle" font-family="IBM Plex Mono">ŷ</text>
+      <line x1="50" y1="100" x2="50" y2="120" stroke="#4f9cf9" stroke-width="1.2"/>
+      <text x="50" y="133" fill="#f97b4f" font-size="9" text-anchor="middle" font-family="IBM Plex Mono">x</text>
+
+      <!-- ONE-TO-MANY -->
+      <text x="175" y="18" fill="#7a849e" font-size="9" text-anchor="middle" font-family="IBM Plex Mono">One-to-Many</text>
+      <rect x="150" y="55" width="50" height="35" rx="5" fill="#1c2030" stroke="#4f9cf9" stroke-width="1.5"/>
+      <rect x="200" y="55" width="40" height="35" rx="5" fill="#1c2030" stroke="#252b3b" stroke-width="1"/>
+      <rect x="240" y="55" width="40" height="35" rx="5" fill="#1c2030" stroke="#252b3b" stroke-width="1"/>
+      <text x="175" y="77" text-anchor="middle" fill="#4f9cf9" font-size="9" font-family="IBM Plex Mono">RNN</text>
+      <line x1="175" y1="100" x2="175" y2="120" stroke="#4f9cf9" stroke-width="1.2"/>
+      <text x="175" y="133" fill="#f97b4f" font-size="9" text-anchor="middle" font-family="IBM Plex Mono">x</text>
+      <line x1="220" y1="55" x2="220" y2="35" stroke="#4f9cf9" stroke-width="1.2" marker-end="url(#arr)"/>
+      <line x1="260" y1="55" x2="260" y2="35" stroke="#4f9cf9" stroke-width="1.2" marker-end="url(#arr)"/>
+      <text x="220" y="30" fill="#7be495" font-size="8" text-anchor="middle" font-family="IBM Plex Mono">ŷ₁</text>
+      <text x="260" y="30" fill="#7be495" font-size="8" text-anchor="middle" font-family="IBM Plex Mono">ŷ₂</text>
+      <line x1="197" y1="72" x2="200" y2="72" stroke="#4f9cf9" stroke-width="1"/>
+      <line x1="237" y1="72" x2="240" y2="72" stroke="#4f9cf9" stroke-width="1"/>
+
+      <!-- MANY-TO-ONE -->
+      <text x="370" y="18" fill="#7a849e" font-size="9" text-anchor="middle" font-family="IBM Plex Mono">Many-to-One</text>
+      <rect x="310" y="55" width="40" height="35" rx="5" fill="#1c2030" stroke="#252b3b" stroke-width="1"/>
+      <rect x="350" y="55" width="40" height="35" rx="5" fill="#1c2030" stroke="#252b3b" stroke-width="1"/>
+      <rect x="390" y="55" width="40" height="35" rx="5" fill="#1c2030" stroke="#4f9cf9" stroke-width="1.5"/>
+      <line x1="347" y1="72" x2="350" y2="72" stroke="#4f9cf9" stroke-width="1"/>
+      <line x1="387" y1="72" x2="390" y2="72" stroke="#4f9cf9" stroke-width="1"/>
+      <line x1="410" y1="55" x2="410" y2="35" stroke="#4f9cf9" stroke-width="1.2" marker-end="url(#arr)"/>
+      <text x="410" y="30" fill="#7be495" font-size="8" text-anchor="middle" font-family="IBM Plex Mono">ŷ</text>
+      <line x1="330" y1="100" x2="330" y2="120" stroke="#4f9cf9" stroke-width="1.2"/>
+      <line x1="370" y1="100" x2="370" y2="120" stroke="#4f9cf9" stroke-width="1.2"/>
+      <line x1="410" y1="100" x2="410" y2="120" stroke="#4f9cf9" stroke-width="1.2"/>
+      <text x="330" y="133" fill="#f97b4f" font-size="8" text-anchor="middle" font-family="IBM Plex Mono">x⁽¹⁾</text>
+      <text x="370" y="133" fill="#f97b4f" font-size="8" text-anchor="middle" font-family="IBM Plex Mono">x⁽²⁾</text>
+      <text x="410" y="133" fill="#f97b4f" font-size="8" text-anchor="middle" font-family="IBM Plex Mono">x⁽ᵀ⁾</text>
+
+      <!-- MANY-TO-MANY -->
+      <text x="90" y="165" fill="#7a849e" font-size="9" text-anchor="middle" font-family="IBM Plex Mono">Many-to-Many (x≠y)</text>
+      <rect x="10" y="175" width="40" height="35" rx="5" fill="#1c2030" stroke="#252b3b" stroke-width="1"/>
+      <rect x="55" y="175" width="40" height="35" rx="5" fill="#1c2030" stroke="#252b3b" stroke-width="1"/>
+      <rect x="100" y="175" width="40" height="35" rx="5" fill="#1c2030" stroke="#252b3b" stroke-width="1"/>
+      <rect x="145" y="175" width="40" height="35" rx="5" fill="#1c2030" stroke="#4f9cf9" stroke-width="1.5"/>
+      <rect x="190" y="175" width="40" height="35" rx="5" fill="#1c2030" stroke="#4f9cf9" stroke-width="1.5"/>
+      <line x1="50" y1="192" x2="55" y2="192" stroke="#4f9cf9" stroke-width="1"/>
+      <line x1="95" y1="192" x2="100" y2="192" stroke="#4f9cf9" stroke-width="1"/>
+      <line x1="140" y1="192" x2="145" y2="192" stroke="#4f9cf9" stroke-width="1"/>
+      <line x1="185" y1="192" x2="190" y2="192" stroke="#4f9cf9" stroke-width="1"/>
+      <line x1="165" y1="175" x2="165" y2="160" stroke="#4f9cf9" stroke-width="1.2" marker-end="url(#arr)"/>
+      <line x1="210" y1="175" x2="210" y2="160" stroke="#4f9cf9" stroke-width="1.2" marker-end="url(#arr)"/>
+      <text x="165" y="156" fill="#7be495" font-size="8" text-anchor="middle" font-family="IBM Plex Mono">ŷ₁</text>
+      <text x="210" y="156" fill="#7be495" font-size="8" text-anchor="middle" font-family="IBM Plex Mono">ŷ₂</text>
+      <text x="30" y="225" fill="#f97b4f" font-size="7" text-anchor="middle" font-family="IBM Plex Mono">x⁽¹⁾</text>
+      <text x="75" y="225" fill="#f97b4f" font-size="7" text-anchor="middle" font-family="IBM Plex Mono">x⁽²⁾</text>
+      <text x="120" y="225" fill="#f97b4f" font-size="7" text-anchor="middle" font-family="IBM Plex Mono">x⁽ᵀˣ⁾</text>
+
+      <!-- labels -->
+      <text x="300" y="168" fill="#7a849e" font-size="9" font-family="IBM Plex Mono">Encoder-Decoder</text>
+      <text x="300" y="182" fill="#7a849e" font-size="8" font-family="IBM Plex Mono">(seq2seq — xlen ≠ ylen)</text>
+      <text x="300" y="210" fill="#7a849e" font-size="8" font-family="IBM Plex Mono">Used in Machine Translation</text>
+    </svg>
+  </div>
+
+  <h3>Keras SimpleRNN — Code</h3>
+  <div class="code">
+<span class="kw">from</span> keras <span class="kw">import</span> Sequential<br>
+<span class="kw">from</span> keras.layers <span class="kw">import</span> Dense, SimpleRNN<br><br>
+model = <span class="fn">Sequential</span>()<br>
+<span class="cmt"># input_shape = (timesteps, features)</span><br>
+model.<span class="fn">add</span>(<span class="fn">SimpleRNN</span>(3, input_shape=(4, 5)))<br>
+model.<span class="fn">add</span>(<span class="fn">Dense</span>(1, activation=<span class="str">'sigmoid'</span>))<br>
+model.<span class="fn">summary</span>()
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 4. HOW RNN WORKS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section" id="s4">
+  <div class="section-label">Section 04</div>
+  <h2 data-num="04">How RNN Works — Internals</h2>
+
+  <h3>Processing Sequence Step by Step</h3>
+  <p>The RNN processes input <strong>one timestep at a time</strong> (t=1, t=2, … t=T), maintaining a <strong>hidden state hₜ</strong> that acts as memory.</p>
+
+  <!-- Hidden state diagram -->
+  <div class="diagram">
+    <svg viewBox="0 0 500 120" xmlns="http://www.w3.org/2000/svg" width="500" height="120">
+      <defs>
+        <marker id="a2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#4f9cf9"/>
+        </marker>
+      </defs>
+      <!-- h0 -->
+      <rect x="10" y="45" width="60" height="35" rx="5" fill="#1c2030" stroke="#252b3b"/>
+      <text x="40" y="67" text-anchor="middle" fill="#7a849e" font-size="9" font-family="IBM Plex Mono">h₀ = 0</text>
+      <!-- RNN cell 1 -->
+      <line x1="70" y1="62" x2="90" y2="62" stroke="#4f9cf9" stroke-width="1.2" marker-end="url(#a2)"/>
+      <rect x="90" y="40" width="80" height="40" rx="5" fill="rgba(79,156,249,0.1)" stroke="#4f9cf9" stroke-width="1.5"/>
+      <text x="130" y="62" text-anchor="middle" fill="#4f9cf9" font-size="10" font-family="IBM Plex Mono">tanh</text>
+      <!-- x1 -->
+      <line x1="130" y1="100" x2="130" y2="82" stroke="#f97b4f" stroke-width="1.2" marker-end="url(#a2)"/>
+      <text x="130" y="113" text-anchor="middle" fill="#f97b4f" font-size="9" font-family="IBM Plex Mono">x₁₁ (t=1)</text>
+      <!-- h1 -->
+      <line x1="170" y1="60" x2="200" y2="60" stroke="#4f9cf9" stroke-width="1.2" marker-end="url(#a2)"/>
+      <text x="185" y="54" fill="#7be495" font-size="8" text-anchor="middle" font-family="IBM Plex Mono">h₁</text>
+
+      <!-- RNN cell 2 -->
+      <rect x="200" y="40" width="80" height="40" rx="5" fill="rgba(79,156,249,0.1)" stroke="#4f9cf9" stroke-width="1.5"/>
+      <text x="240" y="62" text-anchor="middle" fill="#4f9cf9" font-size="10" font-family="IBM Plex Mono">tanh</text>
+      <line x1="240" y1="100" x2="240" y2="82" stroke="#f97b4f" stroke-width="1.2" marker-end="url(#a2)"/>
+      <text x="240" y="113" text-anchor="middle" fill="#f97b4f" font-size="9" font-family="IBM Plex Mono">x₁₂ (t=2)</text>
+      <line x1="280" y1="60" x2="310" y2="60" stroke="#4f9cf9" stroke-width="1.2" marker-end="url(#a2)"/>
+      <text x="295" y="54" fill="#7be495" font-size="8" text-anchor="middle" font-family="IBM Plex Mono">h₂</text>
+
+      <!-- RNN cell 3 -->
+      <rect x="310" y="40" width="80" height="40" rx="5" fill="rgba(79,156,249,0.1)" stroke="#4f9cf9" stroke-width="1.5"/>
+      <text x="350" y="62" text-anchor="middle" fill="#4f9cf9" font-size="10" font-family="IBM Plex Mono">tanh</text>
+      <line x1="350" y1="100" x2="350" y2="82" stroke="#f97b4f" stroke-width="1.2" marker-end="url(#a2)"/>
+      <text x="350" y="113" text-anchor="middle" fill="#f97b4f" font-size="9" font-family="IBM Plex Mono">x₁₃ (t=3)</text>
+      <line x1="390" y1="60" x2="420" y2="60" stroke="#4f9cf9" stroke-width="1.2" marker-end="url(#a2)"/>
+      <text x="430" y="45" fill="#7be495" font-size="9" font-family="IBM Plex Mono">h₃</text>
+      <text x="430" y="60" fill="#4f9cf9" font-size="8" font-family="IBM Plex Mono">→ σ → ŷ</text>
+    </svg>
+  </div>
+
+  <h3>Key Equations</h3>
+
+  <div class="eq">
+    <span class="comment"># Hidden State Update</span><br>
+    <span class="hl">hₜ</span> = tanh(<span class="hl2">Wᵢ · xₜ</span> + <span class="hl3">Wₕ · hₜ₋₁</span> + b)<br><br>
+    <span class="comment"># Output</span><br>
+    <span class="hl">ŷ</span> = softmax / sigmoid (<span class="hl2">Wₒ · hₜ</span> + bᵧ)<br><br>
+    <span class="comment"># Where:</span><br>
+    <span class="comment">  Wᵢ  = input weight matrix</span><br>
+    <span class="comment">  Wₕ  = hidden-to-hidden weight matrix</span><br>
+    <span class="comment">  Wₒ  = output weight matrix</span><br>
+    <span class="comment">  hₜ  = hidden state at time t (the "memory")</span>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-title">Key Insight — Hidden State as Memory</div>
+    <p>The hidden state <strong>hₜ</strong> acts as the network's memory. It summarises all information seen in the sequence up to time t. Each new input <em>updates</em> this memory.</p>
+  </div>
+
+  <h3>Why tanh Activation?</h3>
+  <ul class="blist">
+    <li>Output is <strong>centred around zero</strong> → helps stabilise training</li>
+    <li>However, tanh does <em>not</em> solve the vanishing gradient problem</li>
+    <li>→ LSTM networks were introduced to address this</li>
+  </ul>
+
+  <h3>Weight Dimensions (Example)</h3>
+  <div class="callout">
+    <div class="callout-title">Example: SimpleRNN(3, input_shape=(4,5))</div>
+    <p>3 units, 4 timesteps, 5 features (vocab/input size)</p>
+    <ul class="blist">
+      <li><strong>Wᵢ</strong> shape: (5, 3) → 15 weights</li>
+      <li><strong>Wₕ</strong> shape: (3, 3) → 9 weights</li>
+      <li><strong>Wₒ</strong> shape: (3, 1) → 3 weights</li>
+      <li><strong>Biases</strong>: 4 total (3 hidden + 1 output)</li>
+      <li><strong>Total parameters</strong>: 15 + 9 + 3 + 4 = <em>31</em></li>
+    </ul>
+  </div>
+
+  <h3>Why Share Parameters Across Timesteps?</h3>
+  <ul class="blist green">
+    <li><strong>Reduces total parameter count</strong></li>
+    <li>Learns patterns <em>regardless of position</em> — learns "went for a walk" once, not at every position</li>
+    <li>Enables handling variable-length sequences with fixed weights</li>
+  </ul>
+
+  <h3>Padding in RNNs</h3>
+  <p>Training is done in <strong>batches</strong>, but sequences in a batch have different lengths. Solution: <strong>Padding</strong>.</p>
+  <div class="eq">
+    [1, 2, 3]    → padded to length 5 → <span class="hl">[1, 2, 3, 0, 0]</span><br>
+    [4, 5]       → padded to length 5 → <span class="hl">[4, 5, 0, 0, 0]</span>
+  </div>
+  <p><strong>Bucketing (optimisation):</strong> Group sequences of similar lengths (e.g., 10, 20, 50) and pad only within each group → reduces unnecessary padding.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 5. LANGUAGE REPRESENTATION -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section" id="s5">
+  <div class="section-label">Section 05</div>
+  <h2 data-num="05">Representing Language for Neural Networks</h2>
+
+  <p>Words must be converted to <strong>numeric vectors</strong> before feeding to a neural network.</p>
+
+  <ol class="steps">
+    <li><strong>Generate Vocabulary</strong> — collect all unique words from your dataset.<br>
+      <span style="font-family: 'IBM Plex Mono', monospace; color: var(--yellow); font-size: 0.82rem;">Dataset: "I like to run", "I like to walk"<br>Vocab: ["I", "like", "to", "run", "walk"]</span>
+    </li>
+    <li><strong>Create Indices</strong> — assign a unique integer to each word.<br>
+      <span style="font-family: 'IBM Plex Mono', monospace; color: var(--yellow); font-size: 0.82rem;">"I"→0, "like"→1, "to"→2, "run"→3, "walk"→4</span>
+    </li>
+    <li>
+      <strong>One-Hot Encoding</strong> — represent each word as a sparse vector.<br>
+      <div class="eq" style="margin-top:0.5rem">
+        "I"    → [<span class="hl">1</span>, 0, 0, 0, 0]<br>
+        "like" → [0, <span class="hl">1</span>, 0, 0, 0]<br>
+        "walk" → [0, 0, 0, 0, <span class="hl">1</span>]<br>
+        <span class="comment">Length of vector = vocabulary size</span><br>
+        <span class="comment">Problem: vectors become huge &amp; sparse as vocab grows</span>
+      </div>
+    </li>
+    <li>
+      <strong>Learned Embeddings</strong> (preferred) — map each word to a dense vector of lower dimension (e.g., 50, 100, 300).
+      <div class="callout success" style="margin-top:0.6rem">
+        <div class="callout-title">Advantages of Embeddings</div>
+        <ul class="blist green">
+          <li>Lower dimensionality — compact representation</li>
+          <li>Captures <em>semantic similarity</em> — "run" &amp; "walk" have close vectors</li>
+          <li>Can be used directly as input to RNNs, LSTMs, GRUs</li>
+        </ul>
+        <div class="eq" style="margin-top:0.6rem">
+          "run"  → [0.2, 0.9, -0.1]<br>
+          "walk" → [0.3, 0.85, -0.05]  <span class="comment">← similar!</span>
+        </div>
+      </div>
+    </li>
+  </ol>
+
+  <h3>RNN Input Shape</h3>
+  <div class="eq">
+    Input shape: (<span class="hl">batch_size</span>, <span class="hl2">timesteps</span>, <span class="hl3">features/vocab_size</span>)<br><br>
+    Review 1: [[1,0,0,0,0], [0,1,0,0,0], [0,0,1,0,0]]<br>
+    Shape: (3, 5)  → 3 timesteps, 5 features (one-hot size)
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 6. BACKPROPAGATION THROUGH TIME -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section" id="s6">
+  <div class="section-label">Section 06</div>
+  <h2 data-num="06">Backpropagation Through Time (BPTT)</h2>
+
+  <div class="callout purple">
+    <div class="callout-title">RNN Training = BPTT</div>
+    <p>Training an RNN involves computing loss at each timestep, summing these losses to get total loss, then propagating gradients <em>backward through the entire sequence</em>, updating shared parameters used at every timestep.</p>
+  </div>
+
+  <h3>Forward Pass — Example (Sentiment Analysis)</h3>
+  <div class="eq">
+    <span class="comment"># Vocabulary: {cat→0, mat→1, rat→2}</span><br>
+    Review 1: "cat mat rat"  → [<span class="hl">[1,0,0], [0,1,0], [0,0,1]</span>]  → sentiment: 1<br>
+    Review 2: "rat rat mat"  → [<span class="hl">[0,0,1], [0,0,1], [0,1,0]</span>]  → sentiment: 1<br>
+    Review 3: "mat cat cat"  → [<span class="hl">[0,1,0], [1,0,0], [1,0,0]</span>]  → sentiment: 0<br><br>
+    <span class="comment"># Forward equations:</span><br>
+    h₁ = f(x₁₁·Wᵢ + h₀·Wₕ + b)<br>
+    h₂ = f(x₁₂·Wᵢ + h₁·Wₕ + b)<br>
+    h₃ = f(x₁₃·Wᵢ + h₂·Wₕ + b)<br>
+    ŷ  = f(h₃·Wₒ + bₒ)
+  </div>
+
+  <h3>Loss Function</h3>
+  <div class="eq">
+    L = -yᵢ·log(ŷᵢ) - (1-yᵢ)·log(1-ŷᵢ)   <span class="comment">(Binary Cross-Entropy)</span><br>
+    L = ½(ŷ - y)²                            <span class="comment">(MSE)</span>
+  </div>
+
+  <h3>Gradient Descent Update</h3>
+  <div class="eq">
+    Wᵢ_new = Wᵢ - α · <span class="hl">∂L/∂Wᵢ</span><br>
+    Wₕ_new = Wₕ - α · <span class="hl">∂L/∂Wₕ</span><br>
+    Wₒ_new = Wₒ - α · <span class="hl">∂L/∂Wₒ</span>
+  </div>
+
+  <h3>BPTT Gradient Computation</h3>
+  <p>Because Wᵢ is used at every timestep, its gradient is a <strong>sum over all timesteps</strong>:</p>
+
+  <div class="eq">
+    <span class="hl">∂L/∂Wᵢ</span> = Σⱼ₌₁ⁿ  (∂L/∂ŷ · ∂ŷ/∂hⱼ · ∂hⱼ/∂Wᵢ)<br><br>
+    <span class="comment">↑ 3 terms for 3 timesteps (each sentence has 3 words)</span><br>
+    <span class="comment">  → one term per timestep (n = number of timesteps)</span>
+  </div>
+
+  <div class="eq">
+    <span class="hl">∂L/∂Wₕ</span> = Σᵢ₌₁ⁿ  (∂L/∂ŷ · ∂ŷ/∂hⱼ · ∂hⱼ/∂Wₕ)
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 7. PROBLEMS WITH RNN -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section" id="s7">
+  <div class="section-label">Section 07</div>
+  <h2 data-num="07">Problems with Vanilla RNN</h2>
+
+  <div class="two-col">
+    <div class="card">
+      <h5>❌ Problem 1: Vanishing Gradient</h5>
+      <p>Gradients become exponentially <strong>small</strong> as they're propagated backward through many timesteps → early layers learn very slowly or not at all.</p>
+    </div>
+    <div class="card">
+      <h5>💥 Problem 2: Exploding Gradient</h5>
+      <p>Gradients become exponentially <strong>large</strong> → unstable training, weights overflow to NaN.</p>
+    </div>
+  </div>
+
+  <h3>Why Vanishing Gradient Happens</h3>
+  <p>Each backprop step through a timestep multiplies by <code>tanh'(·)</code> which ranges in (0,1), and by <strong>Wₕ</strong>:</p>
+
+  <div class="eq">
+    hₜ = tanh(xₜ·Wᵢ + hₜ₋₁·Wₕ + b)<br>
+    ∂hₜ/∂Wᵢ = tanh'(xₜ·Wᵢ + hₜ₋₁·Wₕ + b) · Wₕ<br><br>
+    <span class="comment">tanh'(x) = 1 - tanh²(x) → values in (0, 1)</span><br>
+    <span class="comment">For 100 timesteps: multiply ≈0 × ≈0 × … → ≈ 0</span><br>
+    <span class="comment">This term ≈ 0 → gradient disappears → short-term dependency only</span>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-title">Long-Term Dependency Problem</div>
+    <p>Example: <em>"Marathi is spoken in Maharashtra… I couldn't understand <strong>Marathi</strong>."</em><br>
+    → RNN suffers "short-term memory" — by the time it reaches the second "Marathi", gradients from early tokens have vanished and context is lost.</p>
+  </div>
+
+  <h3>Solutions to Vanishing Gradient</h3>
+  <ol class="steps">
+    <li>Use <strong>ReLU / Leaky ReLU</strong> activation instead of tanh</li>
+    <li><strong>Better weight initialisation</strong></li>
+    <li><strong>Better architecture</strong> → Skip/residual RNNs</li>
+    <li><strong>LSTM</strong> — Long Short-Term Memory (best solution)</li>
+  </ol>
+
+  <h3>Solutions to Exploding Gradient</h3>
+  <ol class="steps">
+    <li><strong>Gradient Clipping</strong> — if ||∇|| > threshold, scale it down</li>
+    <li><strong>Controlled Learning Rate</strong> — smaller α prevents overflow</li>
+    <li><strong>LSTM</strong> — gate structure naturally limits gradient explosion</li>
+  </ol>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 8. LSTM INTRO -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section" id="s8">
+  <div class="section-label">Section 08</div>
+  <h2 data-num="08">Long Short-Term Memory (LSTM)</h2>
+
+  <div class="callout purple">
+    <div class="callout-title">Core Idea</div>
+    <p>LSTM introduces a <strong>cell state (Cₜ)</strong> — a separate "conveyor belt" running through all timesteps — allowing gradients to flow without vanishing. The LSTM maintains <strong>two paths</strong>: one for Short-Term Memory (hₜ) and one for Long-Term Memory (Cₜ).</p>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h4>RNN (Simple)</h4>
+      <ul class="blist orange">
+        <li>Single hidden state: hₜ</li>
+        <li>Simple tanh activation</li>
+        <li>Suffers from vanishing gradients</li>
+      </ul>
+    </div>
+    <div>
+      <h4>LSTM</h4>
+      <ul class="blist green">
+        <li>Two states: <strong>hₜ</strong> (STM) + <strong>Cₜ</strong> (LTM)</li>
+        <li>3 gates controlling information flow</li>
+        <li>Long-range dependencies preserved</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- LSTM Architecture Diagram -->
+  <div class="diagram">
+    <svg viewBox="0 0 580 180" xmlns="http://www.w3.org/2000/svg" width="580" height="180">
+      <defs>
+        <marker id="a3" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+          <path d="M0,0 L6,2.5 L0,5 Z" fill="#4f9cf9"/>
+        </marker>
+        <marker id="a3o" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+          <path d="M0,0 L6,2.5 L0,5 Z" fill="#f97b4f"/>
+        </marker>
+      </defs>
+
+      <!-- Cell state highway (top) -->
+      <line x1="30" y1="40" x2="540" y2="40" stroke="#c87bf9" stroke-width="2" stroke-dasharray="6,3"/>
+      <text x="560" y="44" fill="#c87bf9" font-size="9" font-family="IBM Plex Mono">Cₜ</text>
+      <text x="5" y="44" fill="#c87bf9" font-size="9" font-family="IBM Plex Mono">Cₜ₋₁</text>
+
+      <!-- LSTM cell box -->
+      <rect x="100" y="60" width="360" height="90" rx="10" fill="rgba(200,123,249,0.05)" stroke="#c87bf9" stroke-width="1.5" stroke-dasharray="4,2"/>
+
+      <!-- Forget gate -->
+      <circle cx="155" cy="110" r="18" fill="#1c2030" stroke="#f96b6b" stroke-width="1.5"/>
+      <text x="155" y="115" text-anchor="middle" fill="#f96b6b" font-size="12" font-family="IBM Plex Mono">σ</text>
+      <text x="155" y="145" text-anchor="middle" fill="#f96b6b" font-size="8" font-family="IBM Plex Mono">Forget</text>
+
+      <!-- Point-wise multiply (forget×cell) -->
+      <circle cx="220" cy="40" r="12" fill="#1c2030" stroke="#c87bf9" stroke-width="1.5"/>
+      <text x="220" y="45" text-anchor="middle" fill="#c87bf9" font-size="14" font-family="IBM Plex Mono">×</text>
+      <line x1="155" y1="92" x2="155" y2="55" stroke="#f96b6b" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="155" y1="50" x2="208" y2="40" stroke="#f96b6b" stroke-width="1" stroke-dasharray="3,2"/>
+
+      <!-- Input gate -->
+      <circle cx="280" cy="110" r="18" fill="#1c2030" stroke="#4f9cf9" stroke-width="1.5"/>
+      <text x="280" y="115" text-anchor="middle" fill="#4f9cf9" font-size="12" font-family="IBM Plex Mono">σ</text>
+      <text x="280" y="145" text-anchor="middle" fill="#4f9cf9" font-size="8" font-family="IBM Plex Mono">Input</text>
+
+      <!-- Candidate cell -->
+      <rect x="315" y="92" width="36" height="36" rx="5" fill="#1c2030" stroke="#7be495" stroke-width="1.5"/>
+      <text x="333" y="115" text-anchor="middle" fill="#7be495" font-size="9" font-family="IBM Plex Mono">tanh</text>
+      <text x="333" y="145" text-anchor="middle" fill="#7be495" font-size="8" font-family="IBM Plex Mono">C̃ₜ</text>
+
+      <!-- Multiply input × candidate -->
+      <circle cx="370" cy="40" r="12" fill="#1c2030" stroke="#c87bf9" stroke-width="1.5"/>
+      <text x="370" y="45" text-anchor="middle" fill="#c87bf9" font-size="14" font-family="IBM Plex Mono">×</text>
+      <line x1="280" y1="92" x2="280" y2="55" stroke="#4f9cf9" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="280" y1="50" x2="358" y2="40" stroke="#4f9cf9" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="333" y1="92" x2="333" y2="55" stroke="#7be495" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="333" y1="50" x2="370" y2="50" stroke="#7be495" stroke-width="1" stroke-dasharray="3,2"/>
+
+      <!-- Add: forget×C + input×candidate -->
+      <circle cx="420" cy="40" r="12" fill="#1c2030" stroke="#c87bf9" stroke-width="1.5"/>
+      <text x="420" y="45" text-anchor="middle" fill="#c87bf9" font-size="14" font-family="IBM Plex Mono">+</text>
+      <line x1="232" y1="40" x2="408" y2="40" stroke="#c87bf9" stroke-width="1"/>
+      <line x1="382" y1="40" x2="408" y2="40" stroke="#c87bf9" stroke-width="1"/>
+
+      <!-- Output gate -->
+      <circle cx="455" cy="110" r="18" fill="#1c2030" stroke="#f9d74f" stroke-width="1.5"/>
+      <text x="455" y="115" text-anchor="middle" fill="#f9d74f" font-size="12" font-family="IBM Plex Mono">σ</text>
+      <text x="455" y="145" text-anchor="middle" fill="#f9d74f" font-size="8" font-family="IBM Plex Mono">Output</text>
+
+      <!-- tanh of new cell state -->
+      <rect x="470" y="25" width="30" height="22" rx="4" fill="#1c2030" stroke="#7be495" stroke-width="1"/>
+      <text x="485" y="41" text-anchor="middle" fill="#7be495" font-size="8" font-family="IBM Plex Mono">tanh</text>
+      <line x1="432" y1="40" x2="485" y2="40" stroke="#c87bf9" stroke-width="1"/>
+
+      <!-- hₜ output -->
+      <circle cx="510" cy="90" r="12" fill="#1c2030" stroke="#f97b4f" stroke-width="1.5"/>
+      <text x="510" y="95" text-anchor="middle" fill="#f97b4f" font-size="13" font-family="IBM Plex Mono">×</text>
+      <line x1="455" y1="92" x2="455" y2="76" stroke="#f9d74f" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="455" y1="76" x2="498" y2="90" stroke="#f9d74f" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="485" y1="47" x2="510" y2="78" stroke="#7be495" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="522" y1="90" x2="560" y2="90" stroke="#f97b4f" stroke-width="1.5" marker-end="url(#a3o)"/>
+      <text x="565" y="94" fill="#f97b4f" font-size="9" font-family="IBM Plex Mono">hₜ</text>
+
+      <!-- Input hₜ₋₁ and xₜ -->
+      <line x1="30" y1="90" x2="137" y2="110" stroke="#4f9cf9" stroke-width="1.2"/>
+      <text x="10" y="94" fill="#4f9cf9" font-size="9" font-family="IBM Plex Mono">hₜ₋₁</text>
+      <line x1="215" y1="160" x2="280" y2="130" stroke="#7a849e" stroke-width="1"/>
+      <text x="200" y="175" fill="#7a849e" font-size="9" font-family="IBM Plex Mono">xₜ (input)</text>
+    </svg>
+  </div>
+
+  <h3>Two States in LSTM</h3>
+  <div class="formula-row">
+    <div class="formula-chip">hₜ → Short-Term Memory (STM)</div>
+    <div class="formula-chip">Cₜ → Long-Term Memory (LTM)</div>
+  </div>
+  <p>Both <strong>hₜ</strong> and <strong>Cₜ</strong> are vectors of the <em>same dimension</em> (the number of LSTM units you specify). E.g., for 3 units: hₜ = [0.1, 0.45, 0.6], Cₜ = [0.55, 0.6, 0.0]</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 9. LSTM GATES -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section" id="s9">
+  <div class="section-label">Section 09</div>
+  <h2 data-num="09">LSTM Gates — Deep Dive</h2>
+
+  <h3>Gate 1: Forget Gate (fₜ)</h3>
+  <div class="callout warn">
+    <div class="callout-title">Purpose</div>
+    <p>Decides <em>what to remove</em> from long-term memory (Cₜ₋₁). Outputs values between 0 and 1 — 0 = completely forget, 1 = keep completely.</p>
+  </div>
+
+  <div class="eq">
+    <span class="hl">fₜ</span> = σ(Wf · [hₜ₋₁, xₜ] + bf)<br><br>
+    <span class="comment">Inputs:  hₜ₋₁ (prev hidden state), xₜ (current input), ct₋₁ (prev cell state)</span><br>
+    <span class="comment">Wf shape: (num_units × 7)  [assuming 3 units, 4 input features]</span><br>
+    <span class="comment">         = (3×7) = 21 weights + 4 biases</span><br><br>
+    <span class="comment">Then:  Cₜ_partial = fₜ ⊙ Cₜ₋₁  (pointwise multiplication)</span><br><br>
+    <span class="comment">Example:</span><br>
+    Cₜ₋₁ = [4, 5, 6]<br>
+    fₜ   = [½, ½, ½]  → Cₜ_partial = [2, 2.5, 3]   <span class="comment">(partial forget)</span><br>
+    fₜ   = [0, 0, 0]  → Cₜ_partial = [0, 0, 0]       <span class="comment">(forget all)</span><br>
+    fₜ   = [1, 1, 1]  → Cₜ_partial = [4, 5, 6]       <span class="comment">(keep all)</span>
+  </div>
+
+  <h3>Gate 2: Input Gate (iₜ) + Candidate Cell State (C̃ₜ)</h3>
+  <div class="callout">
+    <div class="callout-title">Purpose</div>
+    <p>Decides <em>what new information to add</em> to the long-term memory.</p>
+  </div>
+
+  <div class="eq">
+    <span class="comment">Step 1: Calculate candidate cell state</span><br>
+    <span class="hl">C̃ₜ</span> = tanh(Wc · [hₜ₋₁, xₜ] + bc)<br>
+    <span class="comment">     Shape: Wc = (3×7), result shape = (3×1)</span><br><br>
+    <span class="comment">Step 2: Calculate input gate filter</span><br>
+    <span class="hl2">iₜ</span>  = σ(Wi · [hₜ₋₁, xₜ] + bi)<br>
+    <span class="comment">     Shape: Wi = (3×7), result shape = (3×1)</span><br><br>
+    <span class="comment">Step 3: Filtered candidate = iₜ ⊙ C̃ₜ</span><br><br>
+    <span class="comment">Step 4: Update cell state</span><br>
+    <span class="hl3">Cₜ</span> = fₜ ⊙ Cₜ₋₁ + iₜ ⊙ C̃ₜ<br>
+    <span class="comment">   = (what to keep from past) + (what new to add)</span>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-title">Why This Solves Vanishing Gradient</div>
+    <p>The <strong>cell state update</strong> (Cₜ = fₜ ⊙ Cₜ₋₁ + iₜ ⊙ C̃ₜ) is an <em>additive</em> operation — gradients can flow back without being multiplied by small values, unlike in vanilla RNNs where it's purely multiplicative through tanh.</p>
+  </div>
+
+  <h3>Gate 3: Output Gate (oₜ)</h3>
+  <div class="callout">
+    <div class="callout-title">Purpose</div>
+    <p>Decides what the hidden state (STM) for this timestep will be — i.e., what part of long-term memory to expose as output.</p>
+  </div>
+
+  <div class="eq">
+    <span class="comment">Step 1: Calculate output gate</span><br>
+    <span class="hl">oₜ</span> = σ(Wo · [hₜ₋₁, xₜ] + bo)<br>
+    <span class="comment">     Shape: Wo = (3×7), result = (3×1)</span><br><br>
+    <span class="comment">Step 2: Calculate new hidden state</span><br>
+    <span class="hl2">hₜ</span> = oₜ ⊙ tanh(Cₜ)<br>
+    <span class="comment">     tanh squashes cell state to (-1, 1)</span><br>
+    <span class="comment">     oₜ filters which parts to expose</span>
+  </div>
+
+  <h3>Summary: All LSTM Equations</h3>
+  <div class="eq">
+    <span class="comment">━━━━━━ LSTM EQUATIONS ━━━━━━</span><br>
+    <span class="hl">fₜ</span> = σ(Wf · [hₜ₋₁, xₜ] + bf)          <span class="comment">← Forget gate</span><br>
+    <span class="hl2">iₜ</span> = σ(Wi · [hₜ₋₁, xₜ] + bi)          <span class="comment">← Input gate</span><br>
+    <span class="hl3">C̃ₜ</span> = tanh(Wc · [hₜ₋₁, xₜ] + bc)      <span class="comment">← Candidate cell</span><br>
+    <span class="hl">Cₜ</span> = <span class="hl">fₜ</span> ⊙ Cₜ₋₁ + <span class="hl2">iₜ</span> ⊙ <span class="hl3">C̃ₜ</span>         <span class="comment">← Cell state update</span><br>
+    <span class="hl2">oₜ</span> = σ(Wo · [hₜ₋₁, xₜ] + bo)          <span class="comment">← Output gate</span><br>
+    <span class="hl3">hₜ</span> = <span class="hl2">oₜ</span> ⊙ tanh(<span class="hl">Cₜ</span>)                  <span class="comment">← Hidden state</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Symbol</th><th>Name</th><th>Range</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td><code>fₜ</code></td><td>Forget Gate</td><td>(0,1)</td><td>How much of Cₜ₋₁ to keep</td></tr>
+        <tr><td><code>iₜ</code></td><td>Input Gate</td><td>(0,1)</td><td>How much of C̃ₜ to add</td></tr>
+        <tr><td><code>C̃ₜ</code></td><td>Candidate Cell</td><td>(-1,1)</td><td>Potential new long-term memory</td></tr>
+        <tr><td><code>Cₜ</code></td><td>Cell State</td><td>ℝ</td><td>Long-term memory (LTM)</td></tr>
+        <tr><td><code>oₜ</code></td><td>Output Gate</td><td>(0,1)</td><td>What part of LTM to expose</td></tr>
+        <tr><td><code>hₜ</code></td><td>Hidden State</td><td>(-1,1)</td><td>Short-term memory (STM) / output</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 10. GRU -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section" id="s10">
+  <div class="section-label">Section 10</div>
+  <h2 data-num="10">Gated Recurrent Unit (GRU)</h2>
+
+  <div class="callout success">
+    <div class="callout-title">GRU vs LSTM</div>
+    <p>GRU is a <strong>simpler</strong> variant of LSTM. It uses only <em>2 gates</em> (vs 3 in LSTM) and <strong>merges</strong> the cell state and hidden state into one vector. Performance is roughly equivalent to LSTM but training is faster.</p>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h4>LSTM</h4>
+      <ul class="blist orange">
+        <li>3 gates: forget, input, output</li>
+        <li>Two states: hₜ and Cₜ</li>
+        <li>More parameters → complex</li>
+        <li>Longer training time</li>
+      </ul>
+    </div>
+    <div>
+      <h4>GRU</h4>
+      <ul class="blist green">
+        <li>2 gates: <strong>reset</strong> gate, <strong>update</strong> gate</li>
+        <li>Single hidden state hₜ (no separate Cₜ)</li>
+        <li>Fewer parameters → faster</li>
+        <li>Similar performance to LSTM</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="eq">
+    <span class="comment">━━━━━━ GRU EQUATIONS ━━━━━━</span><br>
+    <span class="hl">zₜ</span> = σ(Wz · [hₜ₋₁, xₜ])    <span class="comment">← Update gate</span><br>
+    <span class="hl2">rₜ</span> = σ(Wr · [hₜ₋₁, xₜ])    <span class="comment">← Reset gate</span><br>
+    <span class="hl3">h̃ₜ</span> = tanh(W · [rₜ ⊙ hₜ₋₁, xₜ])  <span class="comment">← Candidate</span><br>
+    <span class="hl">hₜ</span> = (1 - <span class="hl">zₜ</span>) ⊙ hₜ₋₁ + <span class="hl">zₜ</span> ⊙ <span class="hl3">h̃ₜ</span>  <span class="comment">← New hidden state</span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 11. DEEP / STACKED RNNs -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section" id="s11">
+  <div class="section-label">Section 11</div>
+  <h2 data-num="11">Deep (Stacked) RNNs</h2>
+
+  <p>Just as you can stack layers in an ANN, you can stack multiple RNN/LSTM layers — the output (hidden states) of one layer feeds as input to the next.</p>
+
+  <!-- Deep RNN Diagram -->
+  <div class="diagram">
+    <svg viewBox="0 0 500 160" xmlns="http://www.w3.org/2000/svg" width="500" height="160">
+      <defs>
+        <marker id="a4" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+          <path d="M0,0 L5,2.5 L0,5 Z" fill="#4f9cf9"/>
+        </marker>
+      </defs>
+      <!-- Layer 1 (bottom) -->
+      <text x="5" y="140" fill="#7a849e" font-size="8" font-family="IBM Plex Mono">Layer 1</text>
+      <rect x="80"  y="110" width="50" height="32" rx="4" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <rect x="160" y="110" width="50" height="32" rx="4" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <rect x="240" y="110" width="50" height="32" rx="4" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <rect x="320" y="110" width="50" height="32" rx="4" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <rect x="400" y="110" width="50" height="32" rx="4" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <line x1="130" y1="126" x2="160" y2="126" stroke="#4f9cf9" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="210" y1="126" x2="240" y2="126" stroke="#4f9cf9" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="290" y1="126" x2="320" y2="126" stroke="#4f9cf9" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="370" y1="126" x2="400" y2="126" stroke="#4f9cf9" stroke-width="1" marker-end="url(#a4)"/>
+      <!-- Inputs -->
+      <line x1="105" y1="155" x2="105" y2="145" stroke="#7a849e" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="185" y1="155" x2="185" y2="145" stroke="#7a849e" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="265" y1="155" x2="265" y2="145" stroke="#7a849e" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="345" y1="155" x2="345" y2="145" stroke="#7a849e" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="425" y1="155" x2="425" y2="145" stroke="#7a849e" stroke-width="1" marker-end="url(#a4)"/>
+      <text x="105" y="165" text-anchor="middle" fill="#7a849e" font-size="8" font-family="IBM Plex Mono">x₁</text>
+      <text x="185" y="165" text-anchor="middle" fill="#7a849e" font-size="8" font-family="IBM Plex Mono">x₂</text>
+      <text x="265" y="165" text-anchor="middle" fill="#7a849e" font-size="8" font-family="IBM Plex Mono">x₃</text>
+      <text x="345" y="165" text-anchor="middle" fill="#7a849e" font-size="8" font-family="IBM Plex Mono">x₄</text>
+      <text x="425" y="165" text-anchor="middle" fill="#7a849e" font-size="8" font-family="IBM Plex Mono">x₅</text>
+
+      <!-- Layer 2 (top) -->
+      <text x="5" y="75" fill="#f97b4f" font-size="8" font-family="IBM Plex Mono">Layer 2</text>
+      <rect x="80"  y="55" width="50" height="32" rx="4" fill="rgba(249,123,79,0.08)" stroke="#f97b4f" stroke-width="1"/>
+      <rect x="160" y="55" width="50" height="32" rx="4" fill="rgba(249,123,79,0.08)" stroke="#f97b4f" stroke-width="1"/>
+      <rect x="240" y="55" width="50" height="32" rx="4" fill="rgba(249,123,79,0.08)" stroke="#f97b4f" stroke-width="1"/>
+      <rect x="320" y="55" width="50" height="32" rx="4" fill="rgba(249,123,79,0.08)" stroke="#f97b4f" stroke-width="1"/>
+      <rect x="400" y="55" width="50" height="32" rx="4" fill="rgba(249,123,79,0.08)" stroke="#f97b4f" stroke-width="1"/>
+      <line x1="130" y1="71" x2="160" y2="71" stroke="#f97b4f" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="210" y1="71" x2="240" y2="71" stroke="#f97b4f" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="290" y1="71" x2="320" y2="71" stroke="#f97b4f" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="370" y1="71" x2="400" y2="71" stroke="#f97b4f" stroke-width="1" marker-end="url(#a4)"/>
+      <!-- Connect L1 → L2 -->
+      <line x1="105" y1="110" x2="105" y2="90" stroke="#7be495" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="185" y1="110" x2="185" y2="90" stroke="#7be495" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="265" y1="110" x2="265" y2="90" stroke="#7be495" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="345" y1="110" x2="345" y2="90" stroke="#7be495" stroke-width="1" marker-end="url(#a4)"/>
+      <line x1="425" y1="110" x2="425" y2="90" stroke="#7be495" stroke-width="1" marker-end="url(#a4)"/>
+      <!-- Output from Layer 2 -->
+      <line x1="425" y1="55" x2="425" y2="38" stroke="#f9d74f" stroke-width="1.2" marker-end="url(#a4)"/>
+      <text x="425" y="30" text-anchor="middle" fill="#f9d74f" font-size="9" font-family="IBM Plex Mono">ŷ</text>
+    </svg>
+  </div>
+
+  <h3>Hidden State Equation (Layer l)</h3>
+  <div class="eq">
+    hₜ⁽ˡ⁾ = tanh(W⁽ˡ⁾ · hₜ₋₁⁽ˡ⁾ + U⁽ˡ⁾ · hₜ⁽ˡ⁻¹⁾ + b)<br><br>
+    <span class="comment">Where:  hₜ⁽ˡ⁾   = hidden state at layer l, time t</span><br>
+    <span class="comment">        hₜ⁽ˡ⁻¹⁾ = output from previous layer (acts as input)</span>
+  </div>
+
+  <h3>When to Use Deep RNNs?</h3>
+  <ul class="blist green">
+    <li><strong>Complex tasks</strong> — speech recognition, machine translation</li>
+    <li><strong>Large datasets</strong> — enough data to support more parameters</li>
+    <li><strong>Results not satisfactory</strong> with a shallow model</li>
+    <li>When you have sufficient <strong>computational power</strong></li>
+  </ul>
+
+  <div class="callout warn">
+    <div class="callout-title">Disadvantages</div>
+    <ul class="blist orange">
+      <li>Prone to <strong>overfitting</strong> → apply dropout regularisation</li>
+      <li><strong>Training time increases</strong> significantly</li>
+    </ul>
+  </div>
+
+  <h3>Variants</h3>
+  <div class="card-grid">
+    <div class="card"><h5>Simple RNN</h5><p>Baseline recurrent model. Single hidden state.</p></div>
+    <div class="card"><h5>Deep LSTM</h5><p>Multiple stacked LSTM layers. Best for NLP tasks.</p></div>
+    <div class="card"><h5>Deep GRU</h5><p>Stacked GRU layers. Faster training than Deep LSTM.</p></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 12. BIDIRECTIONAL RNN -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section" id="s12">
+  <div class="section-label">Section 12</div>
+  <h2 data-num="12">Bidirectional RNN (BiRNN)</h2>
+
+  <div class="callout purple">
+    <div class="callout-title">Motivation</div>
+    <p>Some tasks require understanding <em>both past and future context</em>. Example: Named Entity Recognition (NER) — "I love <strong>Amazon</strong>" — is Amazon a <em>website</em> or a <em>river</em>? You need words that come <em>after</em> to decide!</p>
+  </div>
+
+  <h3>Architecture</h3>
+  <p>Two separate RNNs run in parallel: one <strong>left-to-right</strong> (forward), one <strong>right-to-left</strong> (backward). Their hidden states are concatenated at each timestep.</p>
+
+  <!-- BiRNN Diagram -->
+  <div class="diagram">
+    <svg viewBox="0 0 500 170" xmlns="http://www.w3.org/2000/svg" width="500" height="170">
+      <defs>
+        <marker id="af" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+          <path d="M0,0 L5,2.5 L0,5 Z" fill="#4f9cf9"/>
+        </marker>
+        <marker id="ab" markerWidth="5" markerHeight="5" refX="1" refY="2.5" orient="auto">
+          <path d="M5,0 L0,2.5 L5,5 Z" fill="#f97b4f"/>
+        </marker>
+      </defs>
+      <!-- Forward layer -->
+      <rect x="60"  y="35" width="55" height="35" rx="5" fill="rgba(79,156,249,0.1)" stroke="#4f9cf9" stroke-width="1.3"/>
+      <rect x="155" y="35" width="55" height="35" rx="5" fill="rgba(79,156,249,0.1)" stroke="#4f9cf9" stroke-width="1.3"/>
+      <rect x="250" y="35" width="55" height="35" rx="5" fill="rgba(79,156,249,0.1)" stroke="#4f9cf9" stroke-width="1.3"/>
+      <rect x="345" y="35" width="55" height="35" rx="5" fill="rgba(79,156,249,0.1)" stroke="#4f9cf9" stroke-width="1.3"/>
+      <text x="87" y="57" text-anchor="middle" fill="#4f9cf9" font-size="8" font-family="IBM Plex Mono">→ fwd</text>
+      <text x="182" y="57" text-anchor="middle" fill="#4f9cf9" font-size="8" font-family="IBM Plex Mono">→ fwd</text>
+      <text x="277" y="57" text-anchor="middle" fill="#4f9cf9" font-size="8" font-family="IBM Plex Mono">→ fwd</text>
+      <text x="372" y="57" text-anchor="middle" fill="#4f9cf9" font-size="8" font-family="IBM Plex Mono">→ fwd</text>
+      <line x1="115" y1="52" x2="155" y2="52" stroke="#4f9cf9" stroke-width="1" marker-end="url(#af)"/>
+      <line x1="210" y1="52" x2="250" y2="52" stroke="#4f9cf9" stroke-width="1" marker-end="url(#af)"/>
+      <line x1="305" y1="52" x2="345" y2="52" stroke="#4f9cf9" stroke-width="1" marker-end="url(#af)"/>
+      <text x="5" y="57" fill="#4f9cf9" font-size="8" font-family="IBM Plex Mono">h→₀</text>
+      <line x1="30" y1="52" x2="60" y2="52" stroke="#4f9cf9" stroke-width="1" marker-end="url(#af)"/>
+
+      <!-- Backward layer -->
+      <rect x="60"  y="100" width="55" height="35" rx="5" fill="rgba(249,123,79,0.1)" stroke="#f97b4f" stroke-width="1.3"/>
+      <rect x="155" y="100" width="55" height="35" rx="5" fill="rgba(249,123,79,0.1)" stroke="#f97b4f" stroke-width="1.3"/>
+      <rect x="250" y="100" width="55" height="35" rx="5" fill="rgba(249,123,79,0.1)" stroke="#f97b4f" stroke-width="1.3"/>
+      <rect x="345" y="100" width="55" height="35" rx="5" fill="rgba(249,123,79,0.1)" stroke="#f97b4f" stroke-width="1.3"/>
+      <text x="87"  y="122" text-anchor="middle" fill="#f97b4f" font-size="8" font-family="IBM Plex Mono">← bwd</text>
+      <text x="182" y="122" text-anchor="middle" fill="#f97b4f" font-size="8" font-family="IBM Plex Mono">← bwd</text>
+      <text x="277" y="122" text-anchor="middle" fill="#f97b4f" font-size="8" font-family="IBM Plex Mono">← bwd</text>
+      <text x="372" y="122" text-anchor="middle" fill="#f97b4f" font-size="8" font-family="IBM Plex Mono">← bwd</text>
+      <line x1="155" y1="117" x2="115" y2="117" stroke="#f97b4f" stroke-width="1" marker-end="url(#ab)"/>
+      <line x1="250" y1="117" x2="210" y2="117" stroke="#f97b4f" stroke-width="1" marker-end="url(#ab)"/>
+      <line x1="345" y1="117" x2="305" y2="117" stroke="#f97b4f" stroke-width="1" marker-end="url(#ab)"/>
+      <text x="465" y="122" fill="#f97b4f" font-size="8" font-family="IBM Plex Mono">h←₀</text>
+      <line x1="400" y1="117" x2="460" y2="117" stroke="#f97b4f" stroke-width="1" marker-end="url(#ab)"/>
+
+      <!-- Inputs -->
+      <line x1="87"  y1="156" x2="87"  y2="136" stroke="#7a849e" stroke-width="1" marker-end="url(#af)"/>
+      <line x1="182" y1="156" x2="182" y2="136" stroke="#7a849e" stroke-width="1" marker-end="url(#af)"/>
+      <line x1="277" y1="156" x2="277" y2="136" stroke="#7a849e" stroke-width="1" marker-end="url(#af)"/>
+      <line x1="372" y1="156" x2="372" y2="136" stroke="#7a849e" stroke-width="1" marker-end="url(#af)"/>
+      <text x="87"  y="167" text-anchor="middle" fill="#7a849e" font-size="8" font-family="IBM Plex Mono">x₁</text>
+      <text x="182" y="167" text-anchor="middle" fill="#7a849e" font-size="8" font-family="IBM Plex Mono">x₂</text>
+      <text x="277" y="167" text-anchor="middle" fill="#7a849e" font-size="8" font-family="IBM Plex Mono">x₃</text>
+      <text x="372" y="167" text-anchor="middle" fill="#7a849e" font-size="8" font-family="IBM Plex Mono">x₄</text>
+
+      <!-- Outputs -->
+      <line x1="87"  y1="35" x2="87"  y2="18" stroke="#7be495" stroke-width="1" marker-end="url(#af)"/>
+      <line x1="182" y1="35" x2="182" y2="18" stroke="#7be495" stroke-width="1" marker-end="url(#af)"/>
+      <line x1="277" y1="35" x2="277" y2="18" stroke="#7be495" stroke-width="1" marker-end="url(#af)"/>
+      <line x1="372" y1="35" x2="372" y2="18" stroke="#7be495" stroke-width="1" marker-end="url(#af)"/>
+      <text x="87"  y="12" text-anchor="middle" fill="#7be495" font-size="8" font-family="IBM Plex Mono">ŷ₁</text>
+      <text x="182" y="12" text-anchor="middle" fill="#7be495" font-size="8" font-family="IBM Plex Mono">ŷ₂</text>
+      <text x="277" y="12" text-anchor="middle" fill="#7be495" font-size="8" font-family="IBM Plex Mono">ŷ₃</text>
+      <text x="372" y="12" text-anchor="middle" fill="#7be495" font-size="8" font-family="IBM Plex Mono">ŷ₄</text>
+
+      <!-- Connect fwd + bwd to output -->
+      <line x1="87"  y1="100" x2="87"  y2="70"  stroke="#7be495" stroke-width="0.8" stroke-dasharray="3,2"/>
+      <line x1="182" y1="100" x2="182" y2="70"  stroke="#7be495" stroke-width="0.8" stroke-dasharray="3,2"/>
+      <line x1="277" y1="100" x2="277" y2="70"  stroke="#7be495" stroke-width="0.8" stroke-dasharray="3,2"/>
+      <line x1="372" y1="100" x2="372" y2="70"  stroke="#7be495" stroke-width="0.8" stroke-dasharray="3,2"/>
+    </svg>
+  </div>
+
+  <h3>Equations</h3>
+  <div class="eq">
+    <span class="comment">Forward RNN (left → right)</span><br>
+    <span class="hl">h→ₜ</span> = f(Wx·xₜ + Wh·h→ₜ₋₁ + b)<br><br>
+    <span class="comment">Backward RNN (right → left)</span><br>
+    <span class="hl2">h←ₜ</span> = f(Wx'·xₜ + Wh'·h←ₜ₊₁ + b')<br><br>
+    <span class="comment">Final output (concatenation)</span><br>
+    <span class="hl3">yₜ</span> = g(Wo · [<span class="hl">h→ₜ</span> ; <span class="hl2">h←ₜ</span>] + bo)<br><br>
+    <span class="comment">[;] → concatenation of forward and backward states</span>
+  </div>
+
+  <h3>Applications & Drawbacks</h3>
+  <div class="two-col">
+    <div>
+      <h4>✅ Applications</h4>
+      <ul class="blist green">
+        <li>NER — Named Entity Recognition</li>
+        <li>POS tagging — Part-of-Speech</li>
+        <li>Sentiment Analysis</li>
+        <li>Machine Translation</li>
+      </ul>
+    </div>
+    <div>
+      <h4>❌ Drawbacks</h4>
+      <ul class="blist orange">
+        <li>Requires the <strong>entire sequence</strong> before processing → not suitable for real-time/streaming</li>
+        <li>Cannot be used for language generation</li>
+        <li>Double the parameters of a unidirectional RNN</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- EXAM Q&A -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section exam-section" id="exam">
+  <div class="section-label">Exam Prep</div>
+  <h2 data-num="★" style="color:var(--yellow); border-color:rgba(249,215,79,0.25)">Potential Exam Questions & Answers</h2>
+  <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:1.2rem;">Click each question to reveal the answer.</p>
+
+  <div id="qlist"></div>
+</section>
+
+</main>
+
+<script>
+const qs = [
+  {
+    q: "What are the two ways of doing Transfer Learning? Explain each briefly.",
+    a: `<ul class="blist green">
+      <li><strong>Feature Extraction:</strong> Freeze all pretrained layers. Use them only to extract features. Add and train a new classifier head on top. The pretrained weights are never updated.</li>
+      <li><strong>Fine-Tuning:</strong> Freeze early convolutional layers (which learn low-level features). Unfreeze the last few layers and the new head, then retrain on the new dataset. Allows the model to adapt its high-level representations to the new task.</li>
+    </ul>`
+  },
+  {
+    q: "Why does the Keras Sequential model fail for multi-output tasks? How does the Functional API solve this?",
+    a: `<p>The Sequential model supports only a <strong>single input → linear stack of layers → single output</strong>. It cannot fork into multiple output branches.</p>
+    <p>The <strong>Functional API</strong> allows you to define arbitrary computation graphs: you can connect layers explicitly (<code>output1 = Dense(1)(hidden)</code>) and pass multiple outputs to <code>Model(inputs=..., outputs=[out1, out2])</code>.</p>`
+  },
+  {
+    q: "What is sequential data? Give 3 examples where RNN is needed.",
+    a: `<p>Sequential data is data where the <strong>order of elements carries meaning</strong> — rearranging them changes the information.</p>
+    <ul class="blist green">
+      <li><strong>Text/NLP:</strong> "Hi my name is Kinz" — word order defines meaning</li>
+      <li><strong>Time-series:</strong> Stock prices over time — 2001, 2002, 2003 values are ordered</li>
+      <li><strong>Speech/Audio:</strong> Sound waveforms are sequential in time</li>
+      <li><strong>DNA sequences:</strong> ACGTCAACAAC — order determines protein function</li>
+    </ul>`
+  },
+  {
+    q: "List and explain 3 problems of applying ANN (instead of RNN) to sequential/textual data.",
+    a: `<ul class="blist orange">
+      <li><strong>Variable input size:</strong> Text length varies per sentence. ANN requires fixed-size input. Zero-padding wastes computation.</li>
+      <li><strong>No long-term dependency:</strong> ANN cannot "remember" earlier tokens when processing later ones — MLP cannot carry long-term context.</li>
+      <li><strong>Loss of semantics:</strong> All tokens are fed simultaneously at the start. Word order is completely lost → no semantic meaning captured.</li>
+    </ul>`
+  },
+  {
+    q: "Write the hidden state update equation for a vanilla RNN and explain each term.",
+    a: `<div class="eq">hₜ = tanh(Wᵢ·xₜ + Wₕ·hₜ₋₁ + b)</div>
+    <ul class="blist">
+      <li><strong>hₜ</strong> — Hidden state at time t; acts as the memory of the network</li>
+      <li><strong>Wᵢ·xₜ</strong> — Input weight matrix applied to current input vector</li>
+      <li><strong>Wₕ·hₜ₋₁</strong> — Hidden-to-hidden weight applied to previous hidden state (the recurrent connection)</li>
+      <li><strong>b</strong> — Bias term</li>
+      <li><strong>tanh</strong> — Activation function that centres output around zero, helping stabilise gradients</li>
+    </ul>`
+  },
+  {
+    q: "Explain what BPTT (Backpropagation Through Time) is and why it's needed for RNNs.",
+    a: `<p>Because RNNs use the <strong>same weights</strong> at every timestep, when computing the gradient of the loss with respect to any weight (e.g. Wᵢ), we must sum contributions from every timestep where that weight was used:</p>
+    <div class="eq">∂L/∂Wᵢ = Σⱼ₌₁ⁿ (∂L/∂ŷ · ∂ŷ/∂hⱼ · ∂hⱼ/∂Wᵢ)</div>
+    <p>The gradients are propagated backward <strong>through time</strong> (i.e., through all timesteps), hence the name BPTT. Without it, the shared weights could not be updated correctly.</p>`
+  },
+  {
+    q: "Explain the Vanishing Gradient Problem in RNNs. What causes it and how does LSTM solve it?",
+    a: `<p><strong>Cause:</strong> During BPTT, the gradient at an early timestep involves multiplying tanh' (which is in (0,1)) many times over (once per timestep). For 100 timesteps: (0.x)^100 ≈ 0. Gradients disappear → the network cannot learn long-range dependencies.</p>
+    <p><strong>LSTM Solution:</strong> The LSTM introduces an <strong>additive</strong> cell state update:</p>
+    <div class="eq">Cₜ = fₜ ⊙ Cₜ₋₁ + iₜ ⊙ C̃ₜ</div>
+    <p>The '+' (addition) creates a "highway" for gradients to flow back without being repeatedly multiplied by small values. The forget gate can be set close to 1, allowing gradients to pass unchanged.</p>`
+  },
+  {
+    q: "Name and explain the 3 gates of an LSTM. Write their equations.",
+    a: `<ul class="blist green">
+      <li><strong>Forget Gate (fₜ):</strong> Decides what to <em>remove</em> from long-term memory.<br>
+      <code>fₜ = σ(Wf·[hₜ₋₁, xₜ] + bf)</code> → values in (0,1) → 0 = forget all, 1 = keep all</li>
+      <li><strong>Input Gate (iₜ) + C̃ₜ:</strong> Decides what <em>new info to add</em> to LTM.<br>
+      <code>iₜ = σ(Wi·[hₜ₋₁, xₜ] + bi)</code> — filter<br>
+      <code>C̃ₜ = tanh(Wc·[hₜ₋₁, xₜ] + bc)</code> — candidate<br>
+      <code>Cₜ = fₜ⊙Cₜ₋₁ + iₜ⊙C̃ₜ</code></li>
+      <li><strong>Output Gate (oₜ):</strong> Decides what to <em>expose as output (hₜ)</em>.<br>
+      <code>oₜ = σ(Wo·[hₜ₋₁, xₜ] + bo)</code><br>
+      <code>hₜ = oₜ ⊙ tanh(Cₜ)</code></li>
+    </ul>`
+  },
+  {
+    q: "What is the difference between hₜ and Cₜ in an LSTM? What do they represent?",
+    a: `<ul class="blist">
+      <li><strong>hₜ (hidden state)</strong> = Short-Term Memory (STM). Output of the LSTM cell at time t. Updated by the output gate. Contains information relevant to the immediate/recent context.</li>
+      <li><strong>Cₜ (cell state)</strong> = Long-Term Memory (LTM). Flows along a "highway" with minimal transformation (just element-wise operations). Preserves information over many timesteps. Solves the vanishing gradient by providing an additive gradient path.</li>
+      <li>Both are vectors of the same dimension (= number of LSTM units), e.g. [0.1, 0.45, 0.6]</li>
+    </ul>`
+  },
+  {
+    q: "Compare LSTM and GRU. When would you choose GRU over LSTM?",
+    a: `<div class="table-wrap"><table><thead><tr><th>Aspect</th><th>LSTM</th><th>GRU</th></tr></thead>
+    <tbody>
+    <tr><td>Gates</td><td>3 (forget, input, output)</td><td>2 (update, reset)</td></tr>
+    <tr><td>States</td><td>2 (hₜ, Cₜ)</td><td>1 (hₜ only)</td></tr>
+    <tr><td>Parameters</td><td>More</td><td>Fewer (~25% less)</td></tr>
+    <tr><td>Training speed</td><td>Slower</td><td>Faster</td></tr>
+    <tr><td>Performance</td><td>Often better on complex tasks</td><td>Comparable, sometimes better</td></tr>
+    </tbody></table></div>
+    <p>Choose <strong>GRU</strong> when training speed matters, data is limited, or task complexity doesn't warrant the extra expressivity of LSTM.</p>`
+  },
+  {
+    q: "What is one-hot encoding and what is its main limitation for NLP tasks?",
+    a: `<p><strong>One-hot encoding</strong> represents each word as a sparse vector of length = vocabulary size, with a single 1 at the word's index and 0s everywhere else.</p>
+    <p>E.g., Vocab = [I, like, to, run, walk]: "I" → [1,0,0,0,0], "walk" → [0,0,0,0,1]</p>
+    <p><strong>Limitation:</strong> As vocabulary grows (real NLP: 50k–500k words), vectors become <em>huge and sparse</em> — computationally inefficient. Also, no semantic similarity is captured: "run" and "walk" have orthogonal vectors despite being related.</p>
+    <p><strong>Solution:</strong> Learned embeddings — dense low-dimensional vectors (e.g., 300-dim) where similar words have similar vectors.</p>`
+  },
+  {
+    q: "What is padding in RNNs and why is it needed? What is bucketing?",
+    a: `<p>RNNs process sequences step-by-step, but <strong>batch training</strong> requires all sequences in a batch to have the <em>same length</em>.</p>
+    <p><strong>Padding:</strong> Add special tokens (usually 0s) at the end of shorter sequences to match the longest sequence in the batch.</p>
+    <div class="eq">[1,2,3] → [1,2,3,0,0]&nbsp;&nbsp;&nbsp;[4,5] → [4,5,0,0,0]</div>
+    <p><strong>Bucketing:</strong> Group sequences of <em>similar lengths</em> (e.g., 10–15, 20–25 tokens) into the same batch. Pad only within each group. This reduces unnecessary padding and speeds up training.</p>`
+  },
+  {
+    q: "Explain Bidirectional RNN. Give a concrete example of why it is needed.",
+    a: `<p>A BiRNN runs two RNNs in parallel: one reads the sequence <strong>left-to-right</strong> (forward), the other <strong>right-to-left</strong> (backward). The hidden states are <strong>concatenated</strong> at each position to produce the final output.</p>
+    <p><strong>Example — NER:</strong></p>
+    <ul class="blist">
+      <li>"I love <em>Amazon</em>, it's a great website." → Amazon = company</li>
+      <li>"I love <em>Amazon</em>, it's a beautiful river." → Amazon = river</li>
+    </ul>
+    <p>To disambiguate, the model needs to see words <em>after</em> "Amazon". A unidirectional RNN can't see future context → BiRNN solves this.</p>
+    <div class="eq">yₜ = g(Wo · [h→ₜ ; h←ₜ] + bo)</div>`
+  },
+  {
+    q: "What are Deep/Stacked RNNs? Write the hidden state equation for layer l. When should they be used?",
+    a: `<p>Deep RNNs stack multiple RNN/LSTM/GRU layers vertically. The hidden states of layer l become the <em>inputs</em> to layer l+1.</p>
+    <div class="eq">hₜ⁽ˡ⁾ = tanh(W⁽ˡ⁾·hₜ₋₁⁽ˡ⁾ + U⁽ˡ⁾·hₜ⁽ˡ⁻¹⁾ + b)</div>
+    <p>Use Deep RNNs for:</p>
+    <ul class="blist green">
+      <li>Complex tasks (speech recognition, machine translation)</li>
+      <li>Large datasets (overfitting risk is managed by dropout)</li>
+      <li>When a single-layer model gives unsatisfactory results</li>
+    </ul>`
+  },
+  {
+    q: "Calculate the total number of parameters for SimpleRNN(3, input_shape=(4,5)). Explain each component.",
+    a: `<p>SimpleRNN(3) means 3 hidden units. input_shape=(4,5) means 4 timesteps, 5 features per timestep.</p>
+    <ul class="blist">
+      <li><strong>Input weights Wᵢ:</strong> shape (5, 3) → 5×3 = <strong>15</strong> weights</li>
+      <li><strong>Hidden weights Wₕ:</strong> shape (3, 3) → 3×3 = <strong>9</strong> weights</li>
+      <li><strong>Output weights Wₒ:</strong> shape (3, 1) → 3×1 = <strong>3</strong> weights (Dense output layer)</li>
+      <li><strong>Biases:</strong> 3 hidden biases + 1 output bias = <strong>4</strong></li>
+      <li><strong>Total:</strong> 15 + 9 + 3 + 4 = <strong>31 parameters</strong></li>
+    </ul>`
+  },
+  {
+    q: "Explain the Exploding Gradient Problem and its solutions.",
+    a: `<p><strong>Exploding Gradient:</strong> During BPTT, if weights are large (>1), repeated multiplications cause gradients to grow exponentially large → loss becomes NaN, training is unstable.</p>
+    <p><strong>Solutions:</strong></p>
+    <ol class="steps">
+      <li><strong>Gradient Clipping:</strong> If the gradient norm exceeds a threshold τ, rescale: g = g · τ / ||g||. Most common fix.</li>
+      <li><strong>Controlled Learning Rate:</strong> Use a small or adaptive learning rate (Adam, RMSprop)</li>
+      <li><strong>LSTMs / GRUs:</strong> Gate structure prevents unbounded gradient growth</li>
+    </ol>`
+  },
+  {
+    q: "What is the forget gate in LSTM? Show with a numerical example how it removes information.",
+    a: `<p>The forget gate outputs a vector in (0,1) that is element-wise multiplied with the previous cell state Cₜ₋₁, controlling how much of the long-term memory to retain.</p>
+    <div class="eq">fₜ = σ(Wf·[hₜ₋₁, xₜ] + bf)</div>
+    <p><strong>Numerical Example:</strong></p>
+    <div class="eq">
+Cₜ₋₁ = [4, 5, 6]<br>
+fₜ = [0.5, 0.5, 0.5]  →  Cₜ_partial = [2, 2.5, 3]   (partial forget)<br>
+fₜ = [1, 1, 1]        →  Cₜ_partial = [4, 5, 6]       (remember all)<br>
+fₜ = [0, 0, 0]        →  Cₜ_partial = [0, 0, 0]       (forget all)
+    </div>
+    <p>The value of fₜ is learned — the network learns what context to forget based on hₜ₋₁ and xₜ.</p>`
+  }
+];
+
+const container = document.getElementById('qlist');
+qs.forEach((item, i) => {
+  const el = document.createElement('div');
+  el.className = 'q-item';
+  el.innerHTML = `
+    <div class="q-header" onclick="toggleQ(this)">
+      <span class="q-num">Q${String(i+1).padStart(2,'0')}</span>
+      <span class="q-text">${item.q}</span>
+      <span class="q-toggle">▼</span>
+    </div>
+    <div class="q-body">${item.a}</div>
+  `;
+  container.appendChild(el);
+});
+
+function toggleQ(header) {
+  const body = header.nextElementSibling;
+  const toggle = header.querySelector('.q-toggle');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  toggle.classList.toggle('rotated', !isOpen);
+}
+</script>
+
+</body>
+</html>
