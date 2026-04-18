@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Learning Notes — YOLO & Face Recognition</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0b0d18;--surface:#13162a;--card:#1a1e30;--border:#252a44;
+    --a1:#7c6aff;--a2:#ff6a9e;--a3:#6af0c8;--a4:#ffd06a;--a5:#ff9f6a;
+    --text:#e8eaf6;--muted:#8891b8;--tag:#1e2338;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font-size:15px;line-height:1.7;overflow-x:hidden}
+  body::before{content:'';position:fixed;top:-30%;left:-15%;width:550px;height:550px;background:radial-gradient(circle,rgba(124,106,255,.1) 0%,transparent 70%);pointer-events:none;z-index:0;animation:drift 14s ease-in-out infinite alternate}
+  body::after{content:'';position:fixed;bottom:-20%;right:-10%;width:480px;height:480px;background:radial-gradient(circle,rgba(106,240,200,.08) 0%,transparent 70%);pointer-events:none;z-index:0;animation:drift 18s ease-in-out infinite alternate-reverse}
+  @keyframes drift{from{transform:translate(0,0)}to{transform:translate(30px,45px)}}
+  .wrap{max-width:680px;margin:0 auto;padding:0 16px 100px;position:relative;z-index:1}
+
+  /* HEADER */
+  .hdr{text-align:center;padding:44px 0 28px}
+  .hdr-badge{display:inline-block;background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;padding:5px 14px;border-radius:20px;margin-bottom:14px;text-transform:uppercase}
+  .hdr h1{font-family:'Playfair Display',serif;font-size:clamp(28px,7vw,44px);font-weight:900;line-height:1.15;background:linear-gradient(135deg,#fff 30%,var(--a1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+  .hdr p{color:var(--muted);font-size:12.5px;font-family:'DM Mono',monospace}
+
+  /* CHAPTER BANNER */
+  .chapter{display:flex;align-items:center;gap:14px;margin:40px 0 20px;padding:16px 18px;border-radius:14px;position:relative;overflow:hidden}
+  .chapter::before{content:'';position:absolute;inset:0;opacity:.07}
+  .chapter.yolo{background:linear-gradient(135deg,rgba(106,240,200,.12),rgba(124,106,255,.08));border:1px solid rgba(106,240,200,.25)}
+  .chapter.face{background:linear-gradient(135deg,rgba(255,106,158,.10),rgba(255,208,106,.06));border:1px solid rgba(255,106,158,.25)}
+  .chapter-emoji{font-size:28px}
+  .chapter-text h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff}
+  .chapter-text p{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px}
+
+  /* TOC */
+  .toc{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:28px}
+  .toc-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:14px}
+  .toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .toc-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--tag);border-radius:10px;font-size:12px;font-weight:700;color:var(--text);text-decoration:none;transition:all .2s;cursor:pointer}
+  .toc-item:hover{background:var(--border);transform:translateX(3px)}
+  .toc-item .num{font-family:'DM Mono',monospace;font-size:10px;color:var(--a1);min-width:20px}
+  .toc-item.face-link .num{color:var(--a2)}
+
+  /* SECTION LABEL */
+  .sec-lbl{display:flex;align-items:center;gap:10px;margin:30px 0 14px}
+  .sec-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--a3);background:rgba(106,240,200,.1);padding:4px 10px;border-radius:8px;letter-spacing:.5px}
+  .sec-num.pink{color:var(--a2);background:rgba(255,106,158,.1)}
+  .sec-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:#fff}
+
+  /* CARDS */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:12px;position:relative;overflow:hidden}
+  .card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:3px 0 0 3px}
+  .card.c1::before{background:var(--a1)}.card.c2::before{background:var(--a2)}.card.c3::before{background:var(--a3)}.card.c4::before{background:var(--a4)}.card.c5::before{background:var(--a5)}
+  .card-title{font-weight:800;font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .card p{color:var(--muted);font-size:13.5px;margin-bottom:6px}
+  .card p:last-child{margin-bottom:0}
+  .card strong{color:var(--text);font-weight:700}
+
+  /* DEF LIST */
+  .dl{list-style:none}
+  .dl li{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px}
+  .dl li:last-child{border-bottom:none}
+  .dk{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--a3);background:rgba(106,240,200,.08);padding:2px 8px;border-radius:6px;white-space:nowrap;align-self:flex-start;margin-top:2px;min-width:52px;text-align:center}
+  .dk.pu{color:var(--a1);background:rgba(124,106,255,.1)}
+  .dk.pi{color:var(--a2);background:rgba(255,106,158,.1)}
+  .dk.ye{color:var(--a4);background:rgba(255,208,106,.1)}
+  .dv{color:var(--muted)}
+  .dv strong{color:var(--text)}
+
+  /* FORMULA */
+  .fx{background:#080a12;border:1px solid var(--a1);border-radius:12px;padding:14px 16px;margin:10px 0;font-family:'DM Mono',monospace;font-size:12.5px;color:var(--a3);overflow-x:auto;white-space:pre-wrap;word-break:break-word;line-height:1.8}
+  .fx.pink{border-color:var(--a2);color:#ffb8d2}
+  .fx.yellow{border-color:var(--a4);color:var(--a4)}
+
+  /* STEPS */
+  .steps{list-style:none;counter-reset:sc}
+  .steps li{counter-increment:sc;display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--muted);align-items:flex-start}
+  .steps li:last-child{border-bottom:none}
+  .steps li::before{content:counter(sc);background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;min-width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .steps li strong{color:var(--text)}
+  .steps.green li::before{background:linear-gradient(135deg,var(--a3),var(--a1))}
+  .steps.orange li::before{background:linear-gradient(135deg,var(--a5),var(--a4))}
+
+  /* 2-COL GRID */
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:12px}
+  .mc{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .mc .mt{font-size:11.5px;font-weight:800;margin-bottom:5px;font-family:'DM Mono',monospace;letter-spacing:.3px}
+  .mc p{font-size:12.5px;color:var(--muted)}
+  .mc p strong{color:var(--text)}
+
+  /* HIGHLIGHTS */
+  .hl{border-radius:13px;padding:13px 16px;margin:10px 0;font-size:13px}
+  .hl.pu{background:rgba(124,106,255,.09);border:1px solid rgba(124,106,255,.28);color:#c5bcff}
+  .hl.pi{background:rgba(255,106,158,.09);border:1px solid rgba(255,106,158,.28);color:#ffb8d2}
+  .hl.gr{background:rgba(106,240,200,.09);border:1px solid rgba(106,240,200,.28);color:#9afce5}
+  .hl.ye{background:rgba(255,208,106,.09);border:1px solid rgba(255,208,106,.28);color:#ffe09a}
+  .hl.or{background:rgba(255,159,106,.09);border:1px solid rgba(255,159,106,.28);color:#ffd2b3}
+  .hl strong{color:#fff}
+
+  /* TAGS */
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .tag{font-family:'DM Mono',monospace;font-size:11px;padding:3px 10px;border-radius:20px;background:var(--tag);color:var(--muted);border:1px solid var(--border)}
+  .tag.pu{background:rgba(124,106,255,.15);color:var(--a1);border-color:rgba(124,106,255,.3)}
+  .tag.pi{background:rgba(255,106,158,.15);color:var(--a2);border-color:rgba(255,106,158,.3)}
+  .tag.gr{background:rgba(106,240,200,.15);color:var(--a3);border-color:rgba(106,240,200,.3)}
+  .tag.ye{background:rgba(255,208,106,.15);color:var(--a4);border-color:rgba(255,208,106,.3)}
+
+  /* TABLE */
+  .tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin:8px 0;border-radius:12px;overflow:hidden}
+  .tbl th{background:var(--tag);padding:9px 11px;text-align:left;font-family:'DM Mono',monospace;font-size:10.5px;color:var(--a1);letter-spacing:.5px}
+  .tbl td{padding:8px 11px;border-top:1px solid var(--border);color:var(--muted);vertical-align:top}
+  .tbl td strong{color:var(--text)}
+  .tbl tr:hover td{background:rgba(255,255,255,.02)}
+
+  /* DIVIDER */
+  .div{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:36px 0}
+
+  /* Q&A */
+  .qa-item{background:var(--surface);border:1px solid var(--border);border-radius:15px;margin-bottom:10px;overflow:hidden}
+  .qa-q{padding:15px 17px;font-weight:700;font-size:13.5px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;user-select:none;-webkit-tap-highlight-color:transparent}
+  .qa-q:hover{background:var(--card)}
+  .qa-qn{font-family:'DM Mono',monospace;font-size:11px;color:var(--a2);margin-right:5px;flex-shrink:0}
+  .qa-arr{color:var(--muted);font-size:11px;transition:transform .25s;flex-shrink:0;margin-top:3px}
+  .qa-item.open .qa-arr{transform:rotate(180deg);color:var(--a3)}
+  .qa-ans{max-height:0;overflow:hidden;transition:max-height .4s ease}
+  .qa-item.open .qa-ans{max-height:1000px}
+  .qa-ans-in{padding:0 17px 16px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:13px;line-height:1.85}
+  .qa-ans-in strong{color:var(--text);font-weight:700}
+  .qa-ans-in ul{padding-left:16px;margin-top:6px}
+  .qa-ans-in ul li{margin-bottom:4px}
+  .qa-ans-in .fx{font-size:12px;margin:8px 0}
+
+  /* MCQ */
+  .mcq-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px 17px;margin-bottom:10px}
+  .mcq-q{font-weight:700;font-size:13.5px;margin-bottom:11px}
+  .mcq-q .qn{font-family:'DM Mono',monospace;color:var(--a1);font-size:11px;margin-right:5px}
+  .mcq-opts{display:flex;flex-direction:column;gap:7px}
+  .mcq-opt{padding:8px 13px;background:var(--tag);border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--muted);cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+  .mcq-opt:hover{background:var(--border)}
+  .mcq-opt.correct{background:rgba(106,240,200,.15);border-color:var(--a3);color:var(--a3)}
+  .mcq-opt.wrong{background:rgba(255,106,158,.12);border-color:var(--a2);color:var(--a2);text-decoration:line-through}
+  .mcq-opt.disabled{pointer-events:none}
+
+  code{font-family:'DM Mono',monospace;font-size:12px;background:var(--tag);color:var(--a3);padding:1px 6px;border-radius:5px}
+
+  /* BACK TOP */
+  .bk{position:fixed;bottom:22px;right:15px;background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;border:none;width:44px;height:44px;border-radius:50%;font-size:18px;cursor:pointer;z-index:100;box-shadow:0 4px 18px rgba(124,106,255,.4);transition:transform .2s;display:flex;align-items:center;justify-content:center}
+  .bk:hover{transform:scale(1.1)}
+
+  @media(max-width:400px){.g2{grid-template-columns:1fr}.toc-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-badge">Complete Deep Learning Notes</div>
+  <h1>YOLO &amp; Face<br>Recognition</h1>
+  <p>Object Detection · YOLO · IoU · NMS · Anchor Boxes · FaceNet · Triplet Loss</p>
+  <div class="tags" style="justify-content:center;margin-top:14px">
+    <span class="tag pu">Dr. Jawwad A Shamsi</span>
+    <span class="tag gr">FAST-NUCES</span>
+    <span class="tag pi">Q&amp;A + MCQ</span>
+    <span class="tag ye">Mobile Ready</span>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">📋 Contents</div>
+  <div class="toc-grid">
+    <a class="toc-item" href="#s1"><span class="num">01</span>Detection Basics</a>
+    <a class="toc-item" href="#s2"><span class="num">02</span>Sliding Window ⚠️</a>
+    <a class="toc-item" href="#s3"><span class="num">03</span>YOLO Grid</a>
+    <a class="toc-item" href="#s4"><span class="num">04</span>Cell Prediction</a>
+    <a class="toc-item" href="#s5"><span class="num">05</span>Output Tensor</a>
+    <a class="toc-item" href="#s6"><span class="num">06</span>IoU</a>
+    <a class="toc-item" href="#s7"><span class="num">07</span>NMS</a>
+    <a class="toc-item" href="#s8"><span class="num">08</span>Anchor Boxes</a>
+    <a class="toc-item" href="#s9"><span class="num">09</span>BBox Parameterize</a>
+    <a class="toc-item" href="#s10"><span class="num">10</span>YOLO Loss</a>
+    <a class="toc-item" href="#s11"><span class="num">11</span>mAP · P · R</a>
+    <a class="toc-item" href="#s12"><span class="num">12</span>Architecture</a>
+    <a class="toc-item" href="#s13"><span class="num">13</span>YOLO Versions</a>
+    <a class="toc-item face-link" href="#s14"><span class="num">14</span>Face Rec vs Verif</a>
+    <a class="toc-item face-link" href="#s15"><span class="num">15</span>One-Shot</a>
+    <a class="toc-item face-link" href="#s16"><span class="num">16</span>Siamese Nets</a>
+    <a class="toc-item face-link" href="#s17"><span class="num">17</span>Embeddings</a>
+    <a class="toc-item face-link" href="#s18"><span class="num">18</span>Triplet Loss</a>
+    <a class="toc-item face-link" href="#s19"><span class="num">19</span>FaceNet</a>
+    <a class="toc-item" href="#qa"><span class="num">Q&amp;A</span>Questions</a>
+    <a class="toc-item" href="#mcq"><span class="num">MCQ</span>Quiz</a>
+  </div>
+</div>
+
+<!-- ═══ CHAPTER 1: YOLO ═══ -->
+<div class="chapter yolo">
+  <div class="chapter-emoji">🎯</div>
+  <div class="chapter-text">
+    <h2>YOLO — Object Detection</h2>
+    <p>You Only Look Once · Real-Time · Single Forward Pass</p>
+  </div>
+</div>
+
+<!-- S1: Detection Basics -->
+<div class="sec-lbl" id="s1"><span class="sec-num">01</span><span class="sec-title">Object Detection Basics</span></div>
+
+<div class="card c3">
+  <div class="card-title">🧠 Four Core CV Tasks</div>
+  <ul class="dl">
+    <li><span class="dk pu">Classify</span><span class="dv"><strong>Classification</strong> — What is in the image? (label only, no location)</span></li>
+    <li><span class="dk">Localize</span><span class="dv"><strong>Localization</strong> — Where is a <em>single</em> object? (box + label)</span></li>
+    <li><span class="dk ye">Detect</span><span class="dv"><strong>Object Detection</strong> — Multiple objects, each with location + class</span></li>
+    <li><span class="dk pi">Segment</span><span class="dv"><strong>Segmentation</strong> — Pixel-wise mask per object (most precise)</span></li>
+  </ul>
+</div>
+
+<div class="g2">
+  <div class="mc"><div class="mt" style="color:var(--a5)">Two-Stage (R-CNN)</div><p>Region proposals first, then classify each. <strong>High accuracy</strong>, 5–20 FPS. Slower, complex.</p></div>
+  <div class="mc"><div class="mt" style="color:var(--a3)">One-Stage (YOLO)</div><p>Single pass end-to-end. <strong>45+ FPS</strong> real-time. Lower complexity, great speed.</p></div>
+</div>
+
+<!-- S2: Sliding Window -->
+<div class="sec-lbl" id="s2"><span class="sec-num">02</span><span class="sec-title">Sliding Window Bottleneck</span></div>
+
+<div class="card c2">
+  <div class="card-title">🔲 Three Critical Failures</div>
+  <p>Traditional detection scanned images sequentially, creating these problems:</p>
+  <ol class="steps">
+    <li><strong>Multiple objects</strong> caught within a single scanning window — can't separate them</li>
+    <li><strong>Large objects spanning</strong> across multiple separate windows — fragmented detection</li>
+    <li><strong>Unbalanced bounding rectangles</strong> that fail to capture real-world object shapes</li>
+  </ol>
+</div>
+<div class="hl pi"><strong>⚠️ Root Cause:</strong> The CNN runs independently for every window position, stride, and scale — massively redundant computation, no spatial sharing between overlapping regions.</div>
+
+<!-- S3: YOLO Grid -->
+<div class="sec-lbl" id="s3"><span class="sec-num">03</span><span class="sec-title">The YOLO Grid — Single-Shot Solution</span></div>
+
+<div class="card c3">
+  <div class="card-title">🗺️ The S×S Grid</div>
+  <p>Instead of scanning, YOLO divides the entire image into an <strong>S×S grid simultaneously</strong>. The whole image is evaluated in one forward pass.</p>
+  <ul class="dl">
+    <li><span class="dk">YOLOv1</span><span class="dv">Uses a <strong>7×7</strong> grid</span></li>
+    <li><span class="dk">YOLOv3+</span><span class="dv">Uses a <strong>19×19</strong> grid (finer resolution)</span></li>
+  </ul>
+  <div class="hl gr"><strong>🏆 The Golden Rule:</strong> The single grid cell that contains the <em>center</em> of an object is exclusively responsible for detecting it. No other cell predicts that object.</div>
+</div>
+
+<!-- S4: Cell Prediction -->
+<div class="sec-lbl" id="s4"><span class="sec-num">04</span><span class="sec-title">Anatomy of a Cell Prediction</span></div>
+
+<div class="card c1">
+  <div class="card-title">📦 Per-Cell Output Variables</div>
+  <ul class="dl">
+    <li><span class="dk pu">Pc</span><span class="dv"><strong>Confidence Score</strong> — Probability that an object actually exists in this cell (0 to 1)</span></li>
+    <li><span class="dk pu">bx, by</span><span class="dv"><strong>Center coordinates</strong> of the object — strictly bounded 0 to 1 relative to the cell</span></li>
+    <li><span class="dk pu">bw, bh</span><span class="dv"><strong>Width and Height</strong> of the bounding box — relative to the <em>entire image</em>, so it can span multiple cells</span></li>
+    <li><span class="dk pu">C1…Cn</span><span class="dv"><strong>Class probabilities</strong> — one per object class (e.g., car, pedestrian, dog)</span></li>
+  </ul>
+</div>
+<div class="hl ye"><strong>Key distinction:</strong> bx, by are relative to the cell (0–1), but bw, bh are relative to the full image — this allows the bounding box to be larger than the responsible cell.</div>
+
+<!-- S5: Output Tensor -->
+<div class="sec-lbl" id="s5"><span class="sec-num">05</span><span class="sec-title">Output Tensor Dimension</span></div>
+
+<div class="card c4">
+  <div class="card-title">📐 YOLO Output Formula</div>
+  <div class="fx yellow">Output Tensor = S × S × (B × 5 + C)
+
+S = Grid size (e.g., 7)
+B = Bounding boxes predicted per cell
+5 = Core variables: [Pc, bx, by, bw, bh]
+C = Number of object classes</div>
+  <p><strong>Example:</strong> 3×3 grid, B=2 boxes/cell, C=3 classes:</p>
+  <div class="fx">3 × 3 × (2×5 + 3) = 3 × 3 × 13</div>
+  <p>With anchor boxes, each object is assigned to a <strong>(Grid Cell, Anchor Box)</strong> pair:</p>
+  <div class="fx">3 × 3 × 2 anchor boxes × 8 params = 3 × 3 × 2 × 8</div>
+</div>
+
+<!-- S6: IoU -->
+<div class="sec-lbl" id="s6"><span class="sec-num">06</span><span class="sec-title">Intersection Over Union (IoU)</span></div>
+
+<div class="card c3">
+  <div class="card-title">📊 Measuring Prediction Accuracy</div>
+  <p>IoU measures the overlap between the <strong>predicted bounding box</strong> and the <strong>ground truth box</strong>.</p>
+  <div class="fx">IoU = |B_pred ∩ B_gt| / |B_pred ∪ B_gt|
+
+     = Area of Intersection / Area of Union</div>
+  <ul class="dl">
+    <li><span class="dk">1.0</span><span class="dv"><strong>Perfect Match</strong> — predicted box exactly equals ground truth</span></li>
+    <li><span class="dk">≥ 0.5</span><span class="dv"><strong>Correct Detection</strong> — standard threshold used in benchmarks</span></li>
+    <li><span class="dk pi">0.0</span><span class="dv"><strong>No Overlap</strong> — boxes don't touch at all</span></li>
+  </ul>
+  <p style="margin-top:10px"><strong>Final Confidence Score:</strong></p>
+  <div class="fx">Score = P(class | object) × P(object) × IoU</div>
+</div>
+
+<!-- S7: NMS -->
+<div class="sec-lbl" id="s7"><span class="sec-num">07</span><span class="sec-title">Non-Max Suppression (NMS)</span></div>
+
+<div class="card c2">
+  <div class="card-title">🧹 Eliminating Duplicate Detections</div>
+  <p><strong>Problem:</strong> When YOLO uses many grid cells, multiple nearby cells may all claim to detect the same object — producing many overlapping boxes for one object.</p>
+  <p><strong>NMS Algorithm:</strong></p>
+  <ol class="steps green">
+    <li><strong>Filter</strong> — Discard all boxes with confidence score below threshold (e.g., Pc &lt; 0.6)</li>
+    <li><strong>Select</strong> — Pick the box with the <em>highest</em> confidence score</li>
+    <li><strong>Suppress</strong> — Remove all other boxes with IoU ≥ threshold vs the selected box</li>
+    <li><strong>Repeat</strong> — Continue until no overlapping duplicate boxes remain</li>
+  </ol>
+  <div class="hl gr"><strong>Result:</strong> One clean, precise bounding box per detected object.</div>
+</div>
+
+<!-- S8: Anchor Boxes -->
+<div class="sec-lbl" id="s8"><span class="sec-num">08</span><span class="sec-title">Anchor Boxes</span></div>
+
+<div class="card c5">
+  <div class="card-title">⚓ The Overlap Challenge</div>
+  <p><strong>Limitation of standard YOLO:</strong> Each grid cell can only predict <em>one object</em>. If a pedestrian stands directly in front of a car, they share a center point — detection fails for one of them.</p>
+  <p><strong>Solution — Anchor Boxes:</strong> Pre-assumed, common shapes provided to the network. Each grid cell can now predict <em>multiple objects</em> — one per anchor box.</p>
+</div>
+<div class="g2">
+  <div class="mc"><div class="mt" style="color:var(--a1)">Anchor 1: Human</div><p>Tall, narrow shape — matches pedestrian proportions</p></div>
+  <div class="mc"><div class="mt" style="color:var(--a4)">Anchor 2: Car</div><p>Wide, short shape — matches vehicle proportions</p></div>
+</div>
+<div class="hl or"><strong>How anchors are designed:</strong> Hand-selected based on domain knowledge, or automatically derived using <strong>K-means clustering</strong> on the training dataset to find the most frequent object aspect ratios.</div>
+<div class="card c1">
+  <div class="card-title">⚠️ Anchor Box Limitations</div>
+  <ul class="dl">
+    <li><span class="dk pi">Limit 1</span><span class="dv">A cell <strong>cannot detect more objects</strong> than it has anchor boxes</span></li>
+    <li><span class="dk pi">Limit 2</span><span class="dv">Cannot detect two objects of the <strong>exact same anchor shape</strong> in one cell</span></li>
+    <li><span class="dk pi">Limit 3</span><span class="dv">Requires careful selection of anchor sizes for the target domain</span></li>
+  </ul>
+</div>
+
+<!-- S9: BBox Parameterization -->
+<div class="sec-lbl" id="s9"><span class="sec-num">09</span><span class="sec-title">Bounding Box Parameterization</span></div>
+
+<div class="card c4">
+  <div class="card-title">🔧 Offset Predictions</div>
+  <p>The network doesn't output raw coordinates — it predicts <strong>offsets (tx, ty, tw, th)</strong> relative to an anchor box to refine the final box position and size:</p>
+  <div class="fx">bx = σ(tx) + cx     ← sigmoid confines center to the cell
+by = σ(ty) + cy     ← cx, cy = grid cell top-left corner
+
+bw = pw × e^(tw)    ← pw, ph = anchor box dimensions
+bh = ph × e^(th)    ← exponential allows any scale</div>
+  <ul class="dl">
+    <li><span class="dk">cx, cy</span><span class="dv">Top-left corner coordinates of the <strong>grid cell</strong></span></li>
+    <li><span class="dk">pw, ph</span><span class="dv">Width and height of the <strong>anchor box</strong> (prior)</span></li>
+    <li><span class="dk">σ</span><span class="dv"><strong>Sigmoid</strong> function — constrains center offset between 0 and 1</span></li>
+    <li><span class="dk">e^t</span><span class="dv"><strong>Exponential</strong> — allows box to be any positive scale of anchor</span></li>
+  </ul>
+</div>
+
+<!-- S10: YOLO Loss -->
+<div class="sec-lbl" id="s10"><span class="sec-num">10</span><span class="sec-title">The YOLO Loss Function</span></div>
+
+<div class="card c1">
+  <div class="card-title">📉 Three-Pillar Loss</div>
+  <div class="fx yellow">Total Loss = λ₁·Lcoord + λ₂·Lconf + λ₃·Lclass</div>
+  <ul class="dl">
+    <li><span class="dk pu">Lcoord</span><span class="dv"><strong>Localization Loss</strong> — How accurately was the box drawn? Penalizes errors in center coordinates (x, y) and dimensions (w, h). Weight λ is higher (e.g., 5) since precise localization matters most.</span></li>
+    <li><span class="dk pi">Lconf</span><span class="dv"><strong>Confidence Loss</strong> — Is there actually an object here? Penalizes both false positives (claiming object exists) and false negatives (missing an object).</span></li>
+    <li><span class="dk ye">Lclass</span><span class="dv"><strong>Classification Loss</strong> — Did we identify the right class? Penalizes incorrect class predictions using cross-entropy.</span></li>
+  </ul>
+  <div class="hl or">Weighting factors (λ) <strong>balance the three components</strong> — localization errors are typically penalized more heavily than classification errors during training.</div>
+</div>
+
+<!-- S11: mAP -->
+<div class="sec-lbl" id="s11"><span class="sec-num">11</span><span class="sec-title">Evaluating YOLO: mAP, Precision &amp; Recall</span></div>
+
+<div class="g2">
+  <div class="mc">
+    <div class="mt" style="color:var(--a3)">Precision</div>
+    <div class="fx" style="margin:6px 0;font-size:11.5px">TP / (TP + FP)</div>
+    <p>Of all objects YOLO <em>claimed</em> were cars — how many actually were?</p>
+  </div>
+  <div class="mc">
+    <div class="mt" style="color:var(--a2)">Recall</div>
+    <div class="fx" style="margin:6px 0;font-size:11.5px">TP / (TP + FN)</div>
+    <p>Of all <em>actual</em> cars in the image — how many did YOLO find?</p>
+  </div>
+</div>
+<div class="card c3">
+  <div class="card-title">📈 Mean Average Precision (mAP)</div>
+  <p>mAP is the primary benchmark metric for YOLO and object detection models. It is computed by:</p>
+  <ol class="steps green">
+    <li>Computing the <strong>precision-recall curve</strong> for each object class at a given IoU threshold</li>
+    <li>Computing the <strong>Average Precision (AP)</strong> = area under the P-R curve for each class</li>
+    <li>Taking the <strong>mean of AP</strong> across all classes = mAP</li>
+  </ol>
+  <div class="hl gr">A <strong>higher mAP</strong> means the model is both precise (few false positives) and high-recall (few missed detections) across all classes.</div>
+</div>
+
+<!-- S12: Architecture -->
+<div class="sec-lbl" id="s12"><span class="sec-num">12</span><span class="sec-title">YOLO Architecture</span></div>
+
+<div class="card c4">
+  <div class="card-title">🏗️ YOLOv1 Network Structure</div>
+  <ul class="dl">
+    <li><span class="dk ye">Layers</span><span class="dv"><strong>24 Convolutional layers</strong> followed by 2 Fully Connected layers</span></li>
+    <li><span class="dk ye">Input</span><span class="dv">Pre-trained on ImageNet at <strong>224×224</strong>, then fine-tuned at <strong>448×448</strong> for detection</span></li>
+    <li><span class="dk ye">Efficiency</span><span class="dv">Alternating <strong>1×1 conv layers</strong> reduce feature space between 3×3 layers</span></li>
+    <li><span class="dk ye">Learning</span><span class="dv"><strong>Transfer Learning</strong> — backbone weights from ImageNet classification task</span></li>
+  </ul>
+</div>
+<div class="card c5">
+  <div class="card-title">🔄 Three-Part Architecture (Modern YOLO)</div>
+  <ul class="dl">
+    <li><span class="dk">Backbone</span><span class="dv"><strong>Feature Extraction</strong> — CNN capturing edges, textures (early), complex patterns (deep). Examples: Darknet-53, ResNet, CSPDarknet</span></li>
+    <li><span class="dk">Neck</span><span class="dv"><strong>Feature Fusion</strong> — bridges backbone and head; aggregates multi-scale features via upsampling + downsampling (Feature Pyramid Network)</span></li>
+    <li><span class="dk">Head</span><span class="dv"><strong>Detection</strong> — produces final predictions: bounding boxes + class probabilities at multiple scales</span></li>
+  </ul>
+</div>
+<div class="card c1">
+  <div class="card-title">🔄 Complete YOLO Pipeline</div>
+  <ol class="steps">
+    <li><strong>Input Image</strong> — full image passed in (e.g., 448×448×3)</li>
+    <li><strong>Grid Division</strong> — image divided into S×S grid simultaneously</li>
+    <li><strong>ConvNet Processing</strong> — 24-layer network processes entire image in one pass</li>
+    <li><strong>NMS Filtering</strong> — Non-Max Suppression removes duplicate detections</li>
+    <li><strong>Final Bounding Boxes</strong> — clean detections with class labels and confidence</li>
+  </ol>
+  <div class="hl pu"><strong>Key Philosophy:</strong> YOLO frames detection as a single <em>regression problem</em> — one CNN directly predicts boxes and classes. No region proposals, no multi-stage pipeline.</div>
+</div>
+
+<!-- S13: YOLO Versions -->
+<div class="sec-lbl" id="s13"><span class="sec-num">13</span><span class="sec-title">Evolution of YOLO</span></div>
+
+<div class="card c2">
+  <div class="card-title">📅 Version History</div>
+  <table class="tbl">
+    <tr><th>Version</th><th>Year</th><th>Key Innovation</th><th>Performance</th></tr>
+    <tr><td><strong>v1</strong></td><td>2016</td><td>First unified real-time detector</td><td>45 FPS, 63.4% mAP</td></tr>
+    <tr><td><strong>v2</strong></td><td>2017</td><td>Batch norm + anchor boxes</td><td>Better accuracy, multi-scale</td></tr>
+    <tr><td><strong>v3</strong></td><td>2018</td><td>Darknet-53, 3 detection scales (FPN)</td><td>Better small objects</td></tr>
+    <tr><td><strong>v4</strong></td><td>2020</td><td>CSPDarknet, PANet, mosaic augment</td><td>65.7% mAP, 65 FPS</td></tr>
+    <tr><td><strong>v5+</strong></td><td>2020+</td><td>PyTorch, auto-anchor, easier training</td><td>Production-ready</td></tr>
+    <tr><td><strong>v8</strong></td><td>2023</td><td>Anchor-free, multi-task (detect+seg)</td><td>State-of-the-art</td></tr>
+  </table>
+</div>
+
+<div class="div"></div>
+
+<!-- ═══ CHAPTER 2: FACE ═══ -->
+<div class="chapter face">
+  <div class="chapter-emoji">👁️</div>
+  <div class="chapter-text">
+    <h2>Face Recognition</h2>
+    <p>Siamese Networks · One-Shot Learning · Triplet Loss · FaceNet</p>
+  </div>
+</div>
+
+<!-- S14 -->
+<div class="sec-lbl" id="s14"><span class="sec-num pink">14</span><span class="sec-title">Face Verification vs Recognition</span></div>
+
+<div class="g2">
+  <div class="mc"><div class="mt" style="color:var(--a1)">🔐 Verification</div><p><strong>1:1 Matching</strong> — Is this image the claimed person? Binary YES/NO. Phone unlock, banking KYC.</p></div>
+  <div class="mc"><div class="mt" style="color:var(--a2)">👥 Recognition</div><p><strong>1:N Matching</strong> — Who is this among N identities? Search a whole database. Surveillance, attendance.</p></div>
+</div>
+
+<div class="card c2">
+  <div class="card-title">📊 Comparison</div>
+  <table class="tbl">
+    <tr><th>Property</th><th>Verification</th><th>Recognition</th></tr>
+    <tr><td>Match type</td><td><strong>1:1</strong></td><td><strong>1:N</strong></td></tr>
+    <tr><td>Output</td><td>YES / NO</td><td>Identity name</td></tr>
+    <tr><td>Difficulty</td><td>Easier</td><td>Harder (grows with N)</td></tr>
+    <tr><td>Consent</td><td>Active user</td><td>Can be passive</td></tr>
+  </table>
+</div>
+
+<!-- S15 -->
+<div class="sec-lbl" id="s15"><span class="sec-num pink">15</span><span class="sec-title">One-Shot Learning Problem</span></div>
+
+<div class="card c2">
+  <div class="card-title">1️⃣ Only One Photo Per Person</div>
+  <p>In most real systems (employee databases, ID verification, attendance), we only have <strong>one image per person</strong>. Standard deep learning needs thousands — so standard CNNs completely fail.</p>
+  <ol class="steps">
+    <li>Robustness <strong>decreases significantly</strong> as more persons are added to the database</li>
+    <li>Entire network must be <strong>retrained every time</strong> a new person is added — not scalable</li>
+    <li>With one training image, softmax-based CNN has insufficient data to learn discriminative features</li>
+  </ol>
+  <div class="hl ye"><strong>Solution:</strong> Shift from classification to <em>similarity learning</em> — output the degree of difference between two faces instead of a class label.</div>
+</div>
+
+<!-- S16 -->
+<div class="sec-lbl" id="s16"><span class="sec-num pink">16</span><span class="sec-title">Siamese Networks</span></div>
+
+<div class="card c1">
+  <div class="card-title">🔁 Parallel Twin Architecture</div>
+  <p>Two identical CNNs with <strong>shared weights</strong> processing two different images simultaneously. Each produces a 128-d encoding, then their distance is compared:</p>
+  <div class="fx">If d(f(x_i), f(x_j)) < τ  →  Verified Match (same person)
+If d(f(x_i), f(x_j)) ≥ τ  →  No Match (different persons)</div>
+  <div class="hl pu"><strong>Why shared weights?</strong> Both branches must use the same encoding function — so the same face always maps to the same region in embedding space regardless of which branch processes it. Enables one-shot inference without retraining.</div>
+</div>
+
+<div class="card c3">
+  <div class="card-title">📐 The Similarity Condition</div>
+  <p>Train network parameters so that the encoding function <code>f(x)</code> satisfies:</p>
+  <div class="fx">Same person:      ||f(x_i) − f(x_j)||²  →  small
+Different person: ||f(x_i) − f(x_j)||²  →  large</div>
+</div>
+
+<!-- S17 -->
+<div class="sec-lbl" id="s17"><span class="sec-num pink">17</span><span class="sec-title">Facial Embeddings</span></div>
+
+<div class="card c4">
+  <div class="card-title">🔢 128-Dimensional Face Vectors</div>
+  <p>The CNN compresses a face into a <strong>128-byte numerical vector</strong>. The network's true job is <em>compression</em>:</p>
+  <ul class="dl">
+    <li><span class="dk">Compact</span><span class="dv">128 numbers fully represent a face</span></li>
+    <li><span class="dk">Comparable</span><span class="dv">Euclidean distance between vectors measures similarity</span></li>
+    <li><span class="dk">Robust</span><span class="dv">Invariant to pose, lighting, expression</span></li>
+  </ul>
+  <div class="hl gr">Similar faces → <strong>similar 128-byte encodings</strong>. Different faces → <strong>highly distinct representations</strong>.</div>
+</div>
+
+<!-- S18 -->
+<div class="sec-lbl" id="s18"><span class="sec-num pink">18</span><span class="sec-title">Triplet Loss</span></div>
+
+<div class="card c2">
+  <div class="card-title">🔺 The Three Images</div>
+  <div class="g2" style="margin-top:8px">
+    <div class="mc"><div class="mt" style="color:var(--a1)">A — Anchor</div><p>The baseline reference image of a person</p></div>
+    <div class="mc"><div class="mt" style="color:var(--a3)">P — Positive</div><p>Different photo, <strong>same person</strong> as anchor</p></div>
+  </div>
+  <div class="mc" style="margin-top:8px"><div class="mt" style="color:var(--a2)">N — Negative</div><p>Image of a <strong>completely different person</strong></p></div>
+</div>
+
+<div class="card c3">
+  <div class="card-title">⚖️ Triplet Loss Equation</div>
+  <div class="fx">L(A,P,N) = max( ||f(A)−f(P)||² − ||f(A)−f(N)||² + α,  0 )
+
+J = Σ L(Aᵢ, Pᵢ, Nᵢ)  for i = 1 to m</div>
+  <ul class="dl">
+    <li><span class="dk pi">Gap &gt; 0</span><span class="dv">Network is <strong>penalized</strong> — separation insufficient</span></li>
+    <li><span class="dk">Gap ≤ 0</span><span class="dv">Loss = <strong>0</strong> — no penalty, already well separated</span></li>
+    <li><span class="dk ye">α</span><span class="dv"><strong>Margin</strong> — enforces a significant, definitive gap to prevent lazy optimization</span></li>
+  </ul>
+  <div class="hl pi"><strong>Without α:</strong> The network can trivially satisfy the constraint by mapping all faces to the same zero vector. The margin α forces a meaningful minimum separation.</div>
+</div>
+
+<div class="card c5">
+  <div class="card-title">⛏️ Hard Negative Mining</div>
+  <p>Random negatives are too easy → zero loss → no learning. We need <strong>Hard Negatives</strong>:</p>
+  <div class="fx pink">Select negatives where:  d(A,P) ≈ d(A,N)
+— faces that look very similar but are different people</div>
+  <p>Keeping this initial difference low forces the network to detect very subtle, nuanced facial differences. Leads to <strong>faster convergence</strong> and better embeddings.</p>
+</div>
+
+<!-- S19 -->
+<div class="sec-lbl" id="s19"><span class="sec-num pink">19</span><span class="sec-title">FaceNet (Google, 2015)</span></div>
+
+<div class="card c1">
+  <div class="card-title">🌐 Unified Embedding System</div>
+  <table class="tbl">
+    <tr><th>Component</th><th>Detail</th></tr>
+    <tr><td>Architecture</td><td><strong>Inception/ResNet CNN</strong></td></tr>
+    <tr><td>Loss</td><td><strong>Triplet Loss</strong> + Hard Negative Mining</td></tr>
+    <tr><td>Output</td><td><strong>128-d L2-normalized</strong> embedding</td></tr>
+    <tr><td>Benchmark</td><td>State-of-the-art on <strong>LFW</strong> dataset</td></tr>
+  </table>
+</div>
+<div class="card c2">
+  <div class="card-title">🔄 Complete Pipeline</div>
+  <ol class="steps orange">
+    <li><strong>Face Detection</strong> — MTCNN locates and crops the face region</li>
+    <li><strong>Preprocessing</strong> — Resize, normalize, align using facial landmarks</li>
+    <li><strong>CNN Encoding</strong> — Inception/ResNet → 128-d L2-normalized embedding</li>
+    <li><strong>Distance Computation</strong> — Euclidean distance against database embeddings</li>
+    <li><strong>Threshold Decision</strong> — d &lt; τ → match; d ≥ τ → unknown</li>
+  </ol>
+</div>
+
+<div class="div"></div>
+
+<!-- ═══ Q&A ═══ -->
+<div class="sec-lbl" id="qa"><span class="sec-num">Q&A</span><span class="sec-title">Tap to Reveal Answers</span></div>
+
+<!-- YOLO Q&A -->
+<div class="hl or" style="margin-bottom:14px"><strong>📗 YOLO Questions</strong></div>
+
+<div class="qa-item" onclick="toggleQA(this)">
+  <div class="qa-q"><span><span class="qa-qn">Q1.</span>What does "You Only Look Once" mean? How does it differ from R-CNN?</span><span class="qa-arr">▼</span></div>
+  <div class="qa-ans"><div class="qa-ans-in">
+    YOLO processes the entire image in a <strong>single forward pass</strong> through one CNN — it simultaneously predicts all bounding boxes and class probabilities across all grid cells at once. This is where "Look Once" comes from.<br><br>
+    R-CNN (two-stage) first generates thousands of region proposals, then classifies each one separately. This creates massive overhead — 5–20 FPS. YOLO achieves <strong>45+ FPS</strong> by treating detection as a single regression problem rather than a multi-stage pipeline.
+  </div></div>
+</div>
+
+<div class="qa-item" onclick="toggleQA(this)">
+  <div class="qa-q"><span><span class="qa-qn">Q2.</span>Explain the YOLO Golden Rule and the output tensor formula.</span><span class="qa-arr">▼</span></div>
+  <div class="qa-ans"><div class="qa-ans-in">
+    <strong>Golden Rule:</strong> The single grid cell that contains the <em>center</em> of an object is exclusively responsible for detecting it. If a car's center falls in cell (3,4), only that cell predicts the car — even though the car physically spans multiple cells.<br><br>
+    <strong>Output Tensor:</strong>
+    <div class="fx">S × S × (B × 5 + C)
+S = grid size, B = boxes per cell, C = classes
+Example: 3×3 grid, B=2, C=3 → 3×3×13</div>
+    With anchor boxes: <code>S × S × B × (5 + C)</code> where each anchor has its own [Pc, bx, by, bw, bh, C1...Cn].
+  </div></div>
+</div>
+
+<div class="qa-item" onclick="toggleQA(this)">
+  <div class="qa-q"><span><span class="qa-qn">Q3.</span>What is IoU? Why is 0.5 used as a threshold?</span><span class="qa-arr">▼</span></div>
+  <div class="qa-ans"><div class="qa-ans-in">
+    <strong>IoU (Intersection over Union)</strong> measures the overlap between the predicted bounding box and the ground truth box:
+    <div class="fx">IoU = Area of Intersection / Area of Union</div>
+    A value of 1.0 = perfect alignment; 0.0 = no overlap.<br><br>
+    <strong>Why 0.5?</strong> IoU ≥ 0.5 is the standard benchmark threshold from PASCAL VOC. At 0.5, the predicted box overlaps at least 50% of the union area — considered "good enough" to count as a correct detection. More strict benchmarks (like COCO) use IoU = 0.75 or average across thresholds 0.5:0.95.
+  </div></div>
+</div>
+
+<div class="qa-item" onclick="toggleQA(this)">
+  <div class="qa-q"><span><span class="qa-qn">Q4.</span>Explain Non-Max Suppression step by step.</span><span class="qa-arr">▼</span></div>
+  <div class="qa-ans"><div class="qa-ans-in">
+    <strong>Problem:</strong> Multiple grid cells near an object may all predict it with high confidence, generating many overlapping boxes. NMS selects only the best one per object.<br><br>
+    <strong>Algorithm:</strong>
+    <ul>
+      <li>Step 1: Discard all boxes with Pc &lt; threshold (e.g., 0.6) — low confidence boxes gone</li>
+      <li>Step 2: Sort remaining boxes by confidence score (highest first)</li>
+      <li>Step 3: Take the top box — this is a kept detection</li>
+      <li>Step 4: Remove all other boxes with IoU ≥ 0.5 vs the kept box (they detect the same object)</li>
+      <li>Step 5: Repeat from Step 3 until no boxes remain</li>
+    </ul>
+    Run NMS <em>separately per class</em> to avoid suppressing detections of different object types.
+  </div></div>
+</div>
+
+<div class="qa-item" onclick="toggleQA(this)">
+  <div class="qa-q"><span><span class="qa-qn">Q5.</span>What are anchor boxes and why are they needed?</span><span class="qa-arr">▼</span></div>
+  <div class="qa-ans"><div class="qa-ans-in">
+    <strong>Problem:</strong> Standard YOLO allows only one prediction per grid cell. If a pedestrian stands in front of a car (both centers in the same cell), one detection is lost.<br><br>
+    <strong>Anchor boxes</strong> are pre-defined bounding box shapes with specific aspect ratios (e.g., tall narrow for people, wide short for cars). Each cell now predicts B boxes — one per anchor. Objects are assigned to the anchor with the highest IoU overlap with their shape.<br><br>
+    <strong>Selection methods:</strong> Hand-picked based on domain knowledge, or automatically derived via <strong>K-means clustering</strong> on the training dataset's ground truth boxes to find the most common object proportions.
+  </div></div>
+</div>
+
+<div class="qa-item" onclick="toggleQA(this)">
+  <div class="qa-q"><span><span class="qa-qn">Q6.</span>Explain the three components of the YOLO loss function.</span><span class="qa-arr">▼</span></div>
+  <div class="qa-ans"><div class="qa-ans-in">
+    <div class="fx yellow">Total Loss = λ₁·Lcoord + λ₂·Lconf + λ₃·Lclass</div>
+    <ul>
+      <li><strong>Lcoord (Localization Loss):</strong> MSE between predicted and ground truth [bx, by, bw, bh]. Weighted with higher λ (e.g., 5) because precise location matters most. Note: √w and √h are used to equalize contributions from large and small boxes.</li>
+      <li><strong>Lconf (Confidence Loss):</strong> Penalizes both false positives (Pc predicted high but no object) and false negatives (object exists but Pc predicted low). Background cells use a lower weight λ_noobj (e.g., 0.5).</li>
+      <li><strong>Lclass (Classification Loss):</strong> Cross-entropy or MSE on class probabilities C1…Cn for cells that contain an object.</li>
+    </ul>
+  </div></div>
+</div>
+
+<div class="qa-item" onclick="toggleQA(this)">
+  <div class="qa-q"><span><span class="qa-qn">Q7.</span>Explain bounding box parameterization in YOLO. Why use sigmoid and exponential?</span><span class="qa-arr">▼</span></div>
+  <div class="qa-ans"><div class="qa-ans-in">
+    The network predicts offsets (tx, ty, tw, th) rather than absolute coordinates:
+    <div class="fx">bx = σ(tx) + cx   by = σ(ty) + cy
+bw = pw·e^(tw)    bh = ph·e^(th)</div>
+    <strong>Why sigmoid for center?</strong> The center must stay within the responsible grid cell (between 0 and 1 relative to cell). Sigmoid naturally constrains output to [0, 1], preventing the box from jumping to another cell.<br><br>
+    <strong>Why exponential for size?</strong> Box dimensions must be positive and can be any scale relative to the anchor. The exponential function ensures positivity (e^t &gt; 0 always) and allows smooth scaling — negative t shrinks the box, positive t grows it.
+  </div></div>
+</div>
+
+<!-- Face Q&A -->
+<div class="hl pi" style="margin:20px 0 14px"><strong>📘 Face Recognition Questions</strong></div>
+
+<div class="qa-item" onclick="toggleQA(this)">
+  <div class="qa-q"><span><span class="qa-qn">Q8.</span>Why do standard classification CNNs fail at face recognition?</span><span class="qa-arr">▼</span></div>
+  <div class="qa-ans"><div class="qa-ans-in">
+    Standard CNNs with softmax output fail because:
+    <ul>
+      <li><strong>One-shot problem:</strong> Traditional deep learning needs thousands of examples per class. Most real-world systems have only 1 photo per person.</li>
+      <li><strong>Scalability:</strong> Every time a new person joins, the entire network must be retrained from scratch with a new output neuron.</li>
+      <li><strong>Robustness degrades:</strong> As more people are added to the database, accuracy drops — the softmax output space becomes too crowded.</li>
+    </ul>
+    The fix is to learn a <em>similarity function</em> (Siamese Network) instead of a classification function.
+  </div></div>
+</div>
+
+<div class="qa-item" onclick="toggleQA(this)">
+  <div class="qa-q"><span><span class="qa-qn">Q9.</span>Write the Triplet Loss formula and explain every term.</span><span class="qa-arr">▼</span></div>
+  <div class="qa-ans"><div class="qa-ans-in">
+    <div class="fx">L(A,P,N) = max( ||f(A)−f(P)||² − ||f(A)−f(N)||² + α, 0 )</div>
+    <ul>
+      <li><strong>f(A)</strong> — 128-d embedding of the Anchor image (reference)</li>
+      <li><strong>f(P)</strong> — 128-d embedding of the Positive (same person, different photo)</li>
+      <li><strong>f(N)</strong> — 128-d embedding of the Negative (different person)</li>
+      <li><strong>||f(A)−f(P)||²</strong> — squared Euclidean distance between anchor and positive (want small)</li>
+      <li><strong>||f(A)−f(N)||²</strong> — squared Euclidean distance between anchor and negative (want large)</li>
+      <li><strong>α</strong> — margin hyperparameter enforcing a minimum separation gap</li>
+    </ul>
+    Loss is 0 when anchor-positive distance is already much smaller than anchor-negative (by at least α). Otherwise the network is penalized and must adjust weights.
+  </div></div>
+</div>
+
+<div class="qa-item" onclick="toggleQA(this)">
+  <div class="qa-q"><span><span class="qa-qn">Q10.</span>What is Hard Negative Mining and why is it critical for training?</span><span class="qa-arr">▼</span></div>
+  <div class="qa-ans"><div class="qa-ans-in">
+    <strong>Hard Negative Mining</strong> selects training triplets where the negative example is very similar to the anchor — specifically where <code>d(A,P) ≈ d(A,N)</code> (faces from different people that look almost alike).<br><br>
+    <strong>Why critical:</strong>
+    <ul>
+      <li>Random negatives are already far apart → zero loss → <strong>no gradient, no learning</strong></li>
+      <li>Hard negatives produce non-zero loss → meaningful gradient → <strong>real learning</strong></li>
+      <li>Forces the network to detect extremely subtle facial differences (glasses vs no glasses, similar haircuts)</li>
+      <li>Leads to <strong>faster convergence</strong> and significantly better embedding quality</li>
+    </ul>
+  </div></div>
+</div>
+
+<div class="div"></div>
+
+<!-- ═══ MCQ ═══ -->
+<div class="sec-lbl" id="mcq"><span class="sec-num">MCQ</span><span class="sec-title">Multiple Choice Quiz</span></div>
+
+<div class="mcq-item">
+  <div class="mcq-q"><span class="qn">1.</span> YOLO is a ___ detector, meaning it processes the image in ___.</div>
+  <div class="mcq-opts">
+    <div class="mcq-opt" onclick="ans(this,'w')">A) Two-stage; two separate passes</div>
+    <div class="mcq-opt" onclick="ans(this,'c')">B) One-stage; a single forward pass</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">C) Two-stage; one forward pass</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">D) One-stage; multiple forward passes</div>
+  </div>
+</div>
+
+<div class="mcq-item">
+  <div class="mcq-q"><span class="qn">2.</span> In YOLO, which grid cell is responsible for detecting an object?</div>
+  <div class="mcq-opts">
+    <div class="mcq-opt" onclick="ans(this,'w')">A) All cells that the object overlaps with</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">B) The cell with the largest overlap area</div>
+    <div class="mcq-opt" onclick="ans(this,'c')">C) The cell whose region contains the object's center point</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">D) The top-left cell of the object's bounding box</div>
+  </div>
+</div>
+
+<div class="mcq-item">
+  <div class="mcq-q"><span class="qn">3.</span> A YOLO model uses a 7×7 grid, 2 boxes per cell, and 3 classes. What is the output tensor size?</div>
+  <div class="mcq-opts">
+    <div class="mcq-opt" onclick="ans(this,'w')">A) 7 × 7 × 8</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">B) 7 × 7 × 10</div>
+    <div class="mcq-opt" onclick="ans(this,'c')">C) 7 × 7 × 13</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">D) 7 × 7 × 16</div>
+  </div>
+</div>
+
+<div class="mcq-item">
+  <div class="mcq-q"><span class="qn">4.</span> IoU = 0.7 between predicted and ground truth box means:</div>
+  <div class="mcq-opts">
+    <div class="mcq-opt" onclick="ans(this,'w')">A) The predicted box is 70% larger than ground truth</div>
+    <div class="mcq-opt" onclick="ans(this,'c')">B) 70% of the union area is shared intersection — a good detection</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">C) Confidence score is 70%</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">D) 30% of objects were missed</div>
+  </div>
+</div>
+
+<div class="mcq-item">
+  <div class="mcq-q"><span class="qn">5.</span> In Non-Max Suppression, what happens to boxes with high IoU vs the selected box?</div>
+  <div class="mcq-opts">
+    <div class="mcq-opt" onclick="ans(this,'w')">A) They are kept as additional detections</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">B) They are merged into one averaged box</div>
+    <div class="mcq-opt" onclick="ans(this,'c')">C) They are suppressed (removed) as duplicates</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">D) They become the new selected box</div>
+  </div>
+</div>
+
+<div class="mcq-item">
+  <div class="mcq-q"><span class="qn">6.</span> Why does bx use σ(tx) + cx in bounding box parameterization?</div>
+  <div class="mcq-opts">
+    <div class="mcq-opt" onclick="ans(this,'w')">A) To make the center coordinate larger</div>
+    <div class="mcq-opt" onclick="ans(this,'c')">B) Sigmoid constrains the center to stay within the grid cell (0 to 1 relative to cell)</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">C) To allow the center to move to any grid cell</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">D) To make the formula differentiable only</div>
+  </div>
+</div>
+
+<div class="mcq-item">
+  <div class="mcq-q"><span class="qn">7.</span> What is the standard threshold for a "correct detection" in PASCAL VOC benchmark?</div>
+  <div class="mcq-opts">
+    <div class="mcq-opt" onclick="ans(this,'w')">A) IoU ≥ 0.3</div>
+    <div class="mcq-opt" onclick="ans(this,'c')">B) IoU ≥ 0.5</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">C) IoU ≥ 0.7</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">D) IoU ≥ 0.9</div>
+  </div>
+</div>
+
+<div class="mcq-item">
+  <div class="mcq-q"><span class="qn">8.</span> Face verification is ___ while face recognition is ___.</div>
+  <div class="mcq-opts">
+    <div class="mcq-opt" onclick="ans(this,'c')">A) 1:1 matching; 1:N matching</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">B) 1:N matching; 1:1 matching</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">C) Both are 1:1 matching</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">D) Both are 1:N matching</div>
+  </div>
+</div>
+
+<div class="mcq-item">
+  <div class="mcq-q"><span class="qn">9.</span> The margin α in triplet loss is necessary because:</div>
+  <div class="mcq-opts">
+    <div class="mcq-opt" onclick="ans(this,'w')">A) To increase the number of training triplets</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">B) To reduce the embedding dimension</div>
+    <div class="mcq-opt" onclick="ans(this,'c')">C) Without it, the network learns the trivial solution of mapping all faces to zero</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">D) To make the loss function differentiable</div>
+  </div>
+</div>
+
+<div class="mcq-item">
+  <div class="mcq-q"><span class="qn">10.</span> Precision = TP/(TP+FP) measures:</div>
+  <div class="mcq-opts">
+    <div class="mcq-opt" onclick="ans(this,'w')">A) How many actual objects were found</div>
+    <div class="mcq-opt" onclick="ans(this,'c')">B) Of all predicted objects, how many were truly correct</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">C) The total number of correct detections</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">D) The IoU score of all predictions</div>
+  </div>
+</div>
+
+<div class="mcq-item">
+  <div class="mcq-q"><span class="qn">11.</span> Anchor boxes are primarily determined using:</div>
+  <div class="mcq-opts">
+    <div class="mcq-opt" onclick="ans(this,'w')">A) Random initialization</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">B) Fixed aspect ratios (1:1 only)</div>
+    <div class="mcq-opt" onclick="ans(this,'c')">C) K-means clustering on training dataset ground truth boxes</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">D) The output tensor dimensions</div>
+  </div>
+</div>
+
+<div class="mcq-item">
+  <div class="mcq-q"><span class="qn">12.</span> FaceNet produces embeddings of what dimension?</div>
+  <div class="mcq-opts">
+    <div class="mcq-opt" onclick="ans(this,'w')">A) 64</div>
+    <div class="mcq-opt" onclick="ans(this,'c')">B) 128</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">C) 256</div>
+    <div class="mcq-opt" onclick="ans(this,'w')">D) 512</div>
+  </div>
+</div>
+
+</div><!-- end wrap -->
+
+<button class="bk" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+function toggleQA(el){el.classList.toggle('open')}
+function ans(el,type){
+  const opts=el.closest('.mcq-opts').querySelectorAll('.mcq-opt');
+  if(el.classList.contains('disabled'))return;
+  opts.forEach(o=>o.classList.add('disabled'));
+  el.classList.add(type==='c'?'correct':'wrong');
+  el.textContent=(type==='c'?'✓ ':'✗ ')+el.textContent;
+}
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
+</script>
+</body>
+</html>
