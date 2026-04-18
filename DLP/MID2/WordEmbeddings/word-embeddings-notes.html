@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Embeddings & Word2Vec — Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #161c2d;
+    --border: #1e2a45;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --accent3: #f59e0b;
+    --green: #10b981;
+    --pink: #f472b6;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --heading: #f8fafc;
+    --glow: 0 0 20px rgba(0,229,255,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    padding: 60px 20px 50px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(0,229,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(0,229,255,0.3);
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    background: rgba(0,229,255,0.05);
+  }
+
+  header h1 {
+    font-size: clamp(28px, 7vw, 52px);
+    font-weight: 800;
+    color: var(--heading);
+    line-height: 1.1;
+    letter-spacing: -1px;
+  }
+
+  header h1 span { color: var(--accent); }
+
+  header p {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    max-width: 680px;
+    margin: 30px auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
+  }
+
+  .toc-title {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 14px;
+  }
+
+  .toc ol {
+    list-style: none;
+    counter-reset: toc;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .toc li { counter-increment: toc; }
+
+  .toc a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13.5px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .toc a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    min-width: 22px;
+  }
+
+  .toc a:hover { background: rgba(0,229,255,0.07); color: var(--accent); }
+
+  /* ── MAIN CONTAINER ── */
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 16px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    margin-top: 60px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 10px;
+  }
+
+  .section-label::before {
+    content: '';
+    width: 20px; height: 2px;
+    background: var(--accent2);
+  }
+
+  h2 {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 800;
+    color: var(--heading);
+    letter-spacing: -0.5px;
+    margin-bottom: 18px;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 28px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  h3::before {
+    content: '▸';
+    font-size: 12px;
+    opacity: 0.7;
+  }
+
+  h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent3);
+    margin: 20px 0 8px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  p { margin-bottom: 14px; color: var(--text); }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 20px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--accent);
+    border-radius: 4px 0 0 4px;
+  }
+
+  .card.purple::before { background: var(--accent2); }
+  .card.amber::before { background: var(--accent3); }
+  .card.green::before { background: var(--green); }
+  .card.pink::before { background: var(--pink); }
+
+  /* ── PILL BADGES ── */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-cyan { background: rgba(0,229,255,0.1); color: var(--accent); border: 1px solid rgba(0,229,255,0.3); }
+  .badge-amber { background: rgba(245,158,11,0.1); color: var(--accent3); border: 1px solid rgba(245,158,11,0.3); }
+  .badge-green { background: rgba(16,185,129,0.1); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+  .badge-pink { background: rgba(244,114,182,0.1); color: var(--pink); border: 1px solid rgba(244,114,182,0.3); }
+
+  /* ── MATH FORMULA BLOCKS ── */
+  .formula-block {
+    background: #0d1117;
+    border: 1px solid #1e2a45;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace;
+    overflow-x: auto;
+  }
+
+  .formula-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent3);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .formula {
+    font-size: 14px;
+    color: #a5f3fc;
+    line-height: 2;
+  }
+
+  .formula .var { color: var(--accent3); }
+  .formula .op { color: var(--pink); }
+  .formula .num { color: var(--green); }
+
+  /* ── CODE BLOCKS ── */
+  pre {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    margin-top: 16px;
+  }
+
+  .code-header + pre {
+    border-radius: 0 0 12px 12px;
+    margin-top: 0;
+  }
+
+  .code-dots { display: flex; gap: 6px; }
+  .code-dots span {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .dot1 { background: #ff5f57; }
+  .dot2 { background: #febc2e; }
+  .dot3 { background: #28c840; }
+
+  .code-lang {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .kw { color: #c084fc; }
+  .fn { color: #67e8f9; }
+  .str { color: #86efac; }
+  .cm { color: #64748b; }
+  .num { color: #fbbf24; }
+  .var { color: #e2e8f0; }
+
+  /* ── TABLES ── */
+  .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: 12px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  thead tr {
+    background: var(--surface2);
+    border-bottom: 2px solid var(--accent);
+  }
+
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  tbody tr:hover { background: rgba(0,229,255,0.04); }
+
+  .cell-pos { color: var(--green); }
+  .cell-neg { color: var(--pink); }
+  .cell-neu { color: var(--muted); }
+
+  /* ── VECTOR VISUAL ── */
+  .vector-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+
+  .vector-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent3);
+    min-width: 70px;
+  }
+
+  .vector-cells {
+    display: flex;
+    gap: 4px;
+  }
+
+  .v-cell {
+    width: 32px; height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--surface2);
+    transition: all 0.3s;
+  }
+
+  .v-cell.active {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(0,229,255,0.4);
+  }
+
+  /* ── COMPARISON GRID ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 20px 0;
+  }
+
+  @media (max-width: 520px) {
+    .compare-grid { grid-template-columns: 1fr; }
+  }
+
+  .compare-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+
+  .compare-card.left { border-top: 3px solid var(--pink); }
+  .compare-card.right { border-top: 3px solid var(--green); }
+
+  .compare-title {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 14px;
+  }
+
+  .compare-card.left .compare-title { color: var(--pink); }
+  .compare-card.right .compare-title { color: var(--green); }
+
+  .compare-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .compare-list li {
+    font-size: 13px;
+    padding-left: 18px;
+    position: relative;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .compare-list li::before {
+    content: '×';
+    position: absolute;
+    left: 0;
+    color: var(--pink);
+    font-weight: 700;
+  }
+
+  .compare-card.right .compare-list li::before { content: '✓'; color: var(--green); }
+
+  /* ── PROCESS STEPS ── */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 20px 0;
+  }
+
+  .step {
+    display: flex;
+    gap: 16px;
+    position: relative;
+  }
+
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 44px;
+    width: 2px;
+    height: calc(100% - 10px);
+    background: linear-gradient(to bottom, var(--accent2), transparent);
+  }
+
+  .step-num {
+    width: 40px; height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 2px solid var(--accent2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent2);
+    z-index: 1;
+  }
+
+  .step-body {
+    padding: 8px 0 28px;
+    flex: 1;
+  }
+
+  .step-title {
+    font-weight: 700;
+    color: var(--heading);
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .step-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── NN DIAGRAM (SVG) ── */
+  .diagram-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 16px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+
+  .diagram-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  /* ── WORD2VEC VARIANTS ── */
+  .variants-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  @media (max-width: 500px) {
+    .variants-grid { grid-template-columns: 1fr; }
+  }
+
+  .variant-card {
+    border-radius: 16px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .variant-card.cbow {
+    background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(0,229,255,0.06));
+    border: 1px solid rgba(124,58,237,0.3);
+  }
+
+  .variant-card.skipgram {
+    background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(244,114,182,0.06));
+    border: 1px solid rgba(245,158,11,0.3);
+  }
+
+  .variant-name {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 6px;
+  }
+
+  .cbow .variant-name { color: var(--accent2); }
+  .skipgram .variant-name { color: var(--accent3); }
+
+  .variant-card h4 {
+    font-size: 16px;
+    margin: 0 0 12px;
+    color: var(--heading);
+    font-family: 'Syne', sans-serif;
+    letter-spacing: 0;
+  }
+
+  .cbow h4 { color: #a78bfa; }
+  .skipgram h4 { color: var(--accent3); }
+
+  .variant-card p {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+
+  .example-box {
+    background: rgba(0,0,0,0.3);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .ex-label { color: var(--muted); font-size: 10px; letter-spacing: 1px; }
+  .ex-sent { color: var(--text); margin: 4px 0; }
+  .ex-arrow { color: var(--accent); }
+  .ex-target { color: var(--accent3); font-weight: 700; }
+  .ex-context { color: var(--green); }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .callout.info {
+    background: rgba(0,229,255,0.07);
+    border: 1px solid rgba(0,229,255,0.2);
+  }
+
+  .callout.warn {
+    background: rgba(245,158,11,0.07);
+    border: 1px solid rgba(245,158,11,0.2);
+  }
+
+  .callout.success {
+    background: rgba(16,185,129,0.07);
+    border: 1px solid rgba(16,185,129,0.2);
+  }
+
+  .callout-icon {
+    font-size: 18px;
+    min-width: 24px;
+    line-height: 1;
+  }
+
+  .callout-body { flex: 1; }
+
+  .callout-title {
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .callout.info .callout-title { color: var(--accent); }
+  .callout.warn .callout-title { color: var(--accent3); }
+  .callout.success .callout-title { color: var(--green); }
+
+  .callout p { font-size: 13px; margin: 0; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 50px 0 0;
+  }
+
+  /* ── INLINE CODE ── */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.15);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 30px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── SCROLL PROGRESS ── */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    z-index: 999;
+    transition: width 0.1s;
+    box-shadow: 0 0 10px var(--accent);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    h2 { font-size: 20px; }
+    .card { padding: 16px; }
+    .formula { font-size: 12px; }
+    table { font-size: 11px; }
+    th, td { padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-tag">Study Notes • NLP • Deep Learning</div>
+  <h1>Word <span>Embeddings</span><br>&amp; Word2Vec</h1>
+  <p>// Jawwad A. Shamsi • April 4, 2025 • Complete Chapter Notes</p>
+</header>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc" style="max-width:780px; margin: 30px auto; padding: 0 16px;">
+  <div class="toc-inner" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 28px;">
+    <div class="toc-title">// Table of Contents</div>
+    <ol class="toc">
+      <li><a href="#sec1">Introduction to Word Encodings</a></li>
+      <li><a href="#sec2">One-Hot Encoding</a></li>
+      <li><a href="#sec3">Distance Metrics</a></li>
+      <li><a href="#sec4">Issues with One-Hot Encoding</a></li>
+      <li><a href="#sec5">Word Embeddings</a></li>
+      <li><a href="#sec6">Featurized Representation</a></li>
+      <li><a href="#sec7">Neural Network for Embeddings</a></li>
+      <li><a href="#sec8">Word2Vec</a></li>
+      <li><a href="#sec9">CBOW vs Skip-gram</a></li>
+      <li><a href="#sec10">Tokenization &amp; Preprocessing</a></li>
+    </ol>
+  </div>
+</div>
+
+<main>
+
+  <!-- SECTION 1: INTRO -->
+  <section id="sec1">
+    <div class="section-label">01 — Foundation</div>
+    <h2>Introduction to Word Encodings</h2>
+
+    <p>Neural networks require data in <strong>numerical form</strong>. For images, we use pixel values. For text, we need a strategy — that strategy is <strong>word encoding</strong>.</p>
+
+    <div class="card">
+      <h4>Definition</h4>
+      <p><strong>Word Encoding</strong> is the process of representing words (or any text) in a numerical form that can be fed into a neural network.</p>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card left">
+        <div class="compare-title">Images</div>
+        <ul class="compare-list" style="list-style:none;gap:8px;display:flex;flex-direction:column;">
+          <li style="padding-left:18px;position:relative;font-size:13px;">Pixel values (0–255)</li>
+          <li style="padding-left:18px;position:relative;font-size:13px;">RGB channels</li>
+          <li style="padding-left:18px;position:relative;font-size:13px;">Directly numerical</li>
+        </ul>
+      </div>
+      <div class="compare-card right">
+        <div class="compare-title">Text</div>
+        <ul class="compare-list">
+          <li>Needs encoding strategy</li>
+          <li>Categorical by nature</li>
+          <li>Requires numerical mapping</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 2: ONE-HOT -->
+  <section id="sec2">
+    <div class="section-label">02 — Technique</div>
+    <h2>One-Hot Encoding</h2>
+
+    <p>One-hot encoding is the most fundamental technique. Each word is represented as a <strong>binary vector</strong> with a single <code>1</code> at its position and <code>0</code>s everywhere else.</p>
+
+    <div class="card amber">
+      <h4>Key Rule</h4>
+      <p>For a vocabulary of <strong>N</strong> unique words, each word becomes a vector of length <strong>N</strong> — with exactly one <code>1</code>.</p>
+    </div>
+
+    <!-- Animated One-Hot Example -->
+    <div class="diagram-container">
+      <div class="diagram-title">// One-Hot Encoding — Animal Example</div>
+
+      <div class="vector-display">
+        <span class="vector-label">Lion</span>
+        <div class="vector-cells">
+          <div class="v-cell active">1</div>
+          <div class="v-cell">0</div>
+          <div class="v-cell">0</div>
+        </div>
+        <span class="badge badge-pink">Position 0</span>
+      </div>
+
+      <div class="vector-display">
+        <span class="vector-label">Tiger</span>
+        <div class="vector-cells">
+          <div class="v-cell">0</div>
+          <div class="v-cell active">1</div>
+          <div class="v-cell">0</div>
+        </div>
+        <span class="badge badge-amber">Position 1</span>
+      </div>
+
+      <div class="vector-display">
+        <span class="vector-label">Fish</span>
+        <div class="vector-cells">
+          <div class="v-cell">0</div>
+          <div class="v-cell">0</div>
+          <div class="v-cell active">1</div>
+        </div>
+        <span class="badge badge-green">Position 2</span>
+      </div>
+    </div>
+
+    <!-- One-Hot Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Dim 1</th>
+            <th>Dim 2</th>
+            <th>Dim 3</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Lion</td>
+            <td class="cell-pos">1</td>
+            <td class="cell-neu">0</td>
+            <td class="cell-neu">0</td>
+          </tr>
+          <tr>
+            <td>Tiger</td>
+            <td class="cell-neu">0</td>
+            <td class="cell-pos">1</td>
+            <td class="cell-neu">0</td>
+          </tr>
+          <tr>
+            <td>Fish</td>
+            <td class="cell-neu">0</td>
+            <td class="cell-neu">0</td>
+            <td class="cell-pos">1</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Large Vocabulary Example -->
+    <h3>Large Vocabulary Example</h3>
+    <p>For a vocabulary of 10,000 words (e.g., [a, apple, ball, Man, Woman, Zulu…]):</p>
+
+    <div class="card purple">
+      <p>If <strong>Man</strong> is at index <strong>4276</strong>, then its one-hot vector has a <code>1</code> only at position 4276 and <code>0</code> everywhere else — a vector of length 10,000.</p>
+      <div class="formula-block" style="margin-top:14px;">
+        <span class="formula-label">One-Hot Vector O₄₂₇₆</span>
+        <div class="formula">[0, 0, 0, ..., <span class="var">1</span> (pos 4276), ..., 0, 0]</div>
+        <div class="formula" style="font-size:12px;color:var(--muted);">← Length: 10,000 →</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 3: DISTANCE METRICS -->
+  <section id="sec3">
+    <div class="section-label">03 — Mathematics</div>
+    <h2>Distance Metrics Between Vectors</h2>
+
+    <p>To measure how similar or different two word vectors are, we use the following distance/similarity functions where <strong>A</strong> and <strong>B</strong> are vectors:</p>
+
+    <!-- Cosine Similarity -->
+    <div class="card">
+      <h3 style="margin-top:0;">1. Cosine Similarity</h3>
+      <p style="font-size:13px;">Measures the <strong>angle</strong> between two vectors. Returns a value between -1 and 1 (1 = identical direction).</p>
+      <div class="formula-block">
+        <span class="formula-label">Formula</span>
+        <div class="formula">
+          cos(θ) <span class="op">=</span> <span class="var">A · B</span> <span class="op">/</span> (<span class="var">‖A‖ · ‖B‖</span>)
+        </div>
+        <div class="formula" style="margin-top:8px;">
+          <span class="op">=</span> Σ(AᵢBᵢ) <span class="op">/</span> √Σ(Aᵢ²) · √Σ(Bᵢ²)
+        </div>
+      </div>
+      <div class="callout info" style="margin-top:12px;">
+        <div class="callout-icon">📐</div>
+        <div class="callout-body">
+          <div class="callout-title">Worked Example</div>
+          <p><code>X = (5,9,3,0,2,0,0,2,0,0)</code><br><code>Y = (3,0,2,0,1,1,0,1,0,1)</code><br><strong>Cosine Similarity ≈ 0.94</strong> (very similar!)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jaccard Similarity -->
+    <div class="card green">
+      <h3 style="margin-top:0;">2. Jaccard Similarity</h3>
+      <p style="font-size:13px;">Measures overlap between two sets. Ratio of intersection to union.</p>
+      <div class="formula-block">
+        <span class="formula-label">Formula</span>
+        <div class="formula">
+          J(A, B) <span class="op">=</span> <span class="var">|A ∩ B|</span> <span class="op">/</span> <span class="var">|A ∪ B|</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Euclidean Distance -->
+    <div class="card pink">
+      <h3 style="margin-top:0;">3. Euclidean Distance</h3>
+      <p style="font-size:13px;">Straight-line distance between two points in n-dimensional space.</p>
+      <div class="formula-block">
+        <span class="formula-label">Formula</span>
+        <div class="formula">
+          d(A, B) <span class="op">=</span> √ Σᵢ (Aᵢ <span class="op">−</span> Bᵢ)²
+        </div>
+      </div>
+    </div>
+
+    <!-- Manhattan Distance -->
+    <div class="card amber">
+      <h3 style="margin-top:0;">4. Manhattan Distance</h3>
+      <p style="font-size:13px;">Sum of absolute differences — like navigating a city grid.</p>
+      <div class="formula-block">
+        <span class="formula-label">Formula</span>
+        <div class="formula">
+          d(A, B) <span class="op">=</span> Σᵢ <span class="var">|Aᵢ − Bᵢ|</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 4: ISSUES -->
+  <section id="sec4">
+    <div class="section-label">04 — Limitations</div>
+    <h2>Issues with One-Hot Encoding</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <div class="step-title">Sparse &amp; High-Dimensional</div>
+          <div class="step-desc">The vector length equals the total number of unique words in the vocabulary. For 10,000 words, every vector has 9,999 zeros and one 1. Extremely wasteful in memory.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <div class="step-title">No Semantic Relationship</div>
+          <div class="step-desc">Distance between Lion and Tiger is the same as between Lion and Fish. The encoding carries zero meaning about word similarity.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <div class="step-title">Zero Dot Products</div>
+          <div class="step-desc">Any dot product between two different one-hot vectors is always 0. The model cannot learn word relationships from this.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Apple vs Orange Example -->
+    <div class="callout warn">
+      <div class="callout-icon">⚠️</div>
+      <div class="callout-body">
+        <div class="callout-title">Classic Problem</div>
+        <p>Consider:<br>
+        <em>"I want a glass of <strong>Orange</strong> ____"</em><br>
+        <em>"I want a glass of <strong>Apple</strong> ____"</em><br><br>
+        Both likely end in "juice". But with one-hot encoding, <strong>Orange</strong> and <strong>Apple</strong> appear completely unrelated — their vectors have zero similarity. The model can't generalize across these synonymous contexts.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 5: WORD EMBEDDINGS -->
+  <section id="sec5">
+    <div class="section-label">05 — Core Concept</div>
+    <h2>Word Embeddings</h2>
+
+    <p>Word embeddings are <strong>dense, lower-dimensional vector representations</strong> of words that capture both semantic and syntactic relationships.</p>
+
+    <!-- Embedding SVG Diagram -->
+    <div class="diagram-container">
+      <div class="diagram-title">// High-Dimensional → Dense Embedding Space</div>
+      <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:700px;display:block;margin:0 auto;">
+        <!-- One-Hot side -->
+        <rect x="10" y="20" width="100" height="160" rx="8" fill="none" stroke="#1e2a45" stroke-width="1.5"/>
+        <text x="60" y="14" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#64748b">ONE-HOT</text>
+        <text x="60" y="28" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">10,000 dims</text>
+        <!-- Cells -->
+        <rect x="20" y="32" width="80" height="10" rx="2" fill="#0d1117" stroke="#1e2a45"/>
+        <rect x="20" y="46" width="80" height="10" rx="2" fill="#0d1117" stroke="#1e2a45"/>
+        <rect x="20" y="60" width="80" height="10" rx="2" fill="#0d1117" stroke="#1e2a45"/>
+        <rect x="20" y="74" width="80" height="10" rx="2" fill="#0d1117" stroke="#1e2a45"/>
+        <rect x="20" y="88" width="80" height="10" rx="2" fill="#00e5ff" stroke="#00e5ff" opacity="0.7"/>
+        <rect x="20" y="102" width="80" height="10" rx="2" fill="#0d1117" stroke="#1e2a45"/>
+        <rect x="20" y="116" width="80" height="10" rx="2" fill="#0d1117" stroke="#1e2a45"/>
+        <rect x="20" y="130" width="80" height="10" rx="2" fill="#0d1117" stroke="#1e2a45"/>
+        <text x="60" y="97" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#000" font-weight="bold">1</text>
+        <text x="80" y="162" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">⋮</text>
+
+        <!-- Arrow -->
+        <path d="M 120 100 L 200 100" stroke="#7c3aed" stroke-width="2" marker-end="url(#arrow)"/>
+        <text x="160" y="92" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#7c3aed">Embed</text>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#7c3aed"/>
+          </marker>
+        </defs>
+
+        <!-- Embedding side -->
+        <rect x="210" y="60" width="100" height="80" rx="8" fill="none" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="260" y="54" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#a78bfa">EMBEDDING</text>
+        <text x="260" y="66" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">300 dims</text>
+        <rect x="220" y="72" width="80" height="10" rx="2" fill="#1e0a3c"/>
+        <rect x="220" y="86" width="80" height="10" rx="2" fill="#2a0e52"/>
+        <rect x="220" y="100" width="80" height="10" rx="2" fill="#1e0a3c"/>
+        <rect x="220" y="114" width="80" height="10" rx="2" fill="#2a0e52"/>
+        <text x="260" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#c4b5fd">0.71</text>
+        <text x="260" y="94" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#c4b5fd">-0.30</text>
+        <text x="260" y="108" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#c4b5fd">0.95</text>
+        <text x="260" y="122" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#c4b5fd">0.12</text>
+
+        <!-- Vector Space -->
+        <rect x="360" y="20" width="320" height="160" rx="8" fill="none" stroke="#1e2a45" stroke-width="1.5"/>
+        <text x="520" y="14" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#64748b">SEMANTIC VECTOR SPACE</text>
+
+        <!-- Word dots -->
+        <circle cx="420" cy="70" r="5" fill="#f472b6"/>
+        <text x="420" y="60" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#f472b6">King</text>
+        <circle cx="460" cy="65" r="5" fill="#f472b6"/>
+        <text x="460" y="55" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#f472b6">Queen</text>
+        <line x1="420" y1="70" x2="460" y2="65" stroke="#f472b6" stroke-width="1" opacity="0.4" stroke-dasharray="3"/>
+
+        <circle cx="415" cy="130" r="5" fill="#a78bfa"/>
+        <text x="415" y="150" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#a78bfa">Man</text>
+        <circle cx="460" cy="125" r="5" fill="#a78bfa"/>
+        <text x="460" y="145" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#a78bfa">Woman</text>
+        <line x1="415" y1="130" x2="460" y2="125" stroke="#a78bfa" stroke-width="1" opacity="0.4" stroke-dasharray="3"/>
+
+        <circle cx="560" cy="80" r="5" fill="#67e8f9"/>
+        <text x="560" y="70" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#67e8f9">Apple</text>
+        <circle cx="610" cy="85" r="5" fill="#67e8f9"/>
+        <text x="610" y="75" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#67e8f9">Orange</text>
+        <line x1="560" y1="80" x2="610" y2="85" stroke="#67e8f9" stroke-width="1" opacity="0.4" stroke-dasharray="3"/>
+
+        <line x1="430" y1="100" x2="415" y2="130" stroke="#ffffff" stroke-width="0.5" opacity="0.15" stroke-dasharray="2"/>
+        <line x1="460" y1="65" x2="460" y2="125" stroke="#ffffff" stroke-width="0.5" opacity="0.15" stroke-dasharray="2"/>
+      </svg>
+    </div>
+
+    <h3>Why Use Word Embeddings?</h3>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;">
+        <div style="font-size:22px;margin-bottom:8px;">🧠</div>
+        <div style="font-size:13px;font-weight:700;color:var(--heading);margin-bottom:4px;">Semantic Meaning</div>
+        <div style="font-size:12px;color:var(--muted);">Similar words cluster closer in vector space</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;">
+        <div style="font-size:22px;margin-bottom:8px;">📉</div>
+        <div style="font-size:13px;font-weight:700;color:var(--heading);margin-bottom:4px;">Dimensionality Reduction</div>
+        <div style="font-size:12px;color:var(--muted);">10,000 dims → 300 dims (much denser)</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;">
+        <div style="font-size:22px;margin-bottom:8px;">🔁</div>
+        <div style="font-size:13px;font-weight:700;color:var(--heading);margin-bottom:4px;">Transfer Learning</div>
+        <div style="font-size:12px;color:var(--muted);">Pre-trained embeddings reusable across NLP tasks</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;">
+        <div style="font-size:22px;margin-bottom:8px;">📈</div>
+        <div style="font-size:13px;font-weight:700;color:var(--heading);margin-bottom:4px;">Better Generalization</div>
+        <div style="font-size:12px;color:var(--muted);">Models learn from word relationships</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 6: FEATURIZED REPRESENTATION -->
+  <section id="sec6">
+    <div class="section-label">06 — Representation</div>
+    <h2>Featurized Representation</h2>
+
+    <p>Each word gets a <strong>300-dimensional feature vector</strong> where each dimension captures some linguistic property (gender, royalty, age, food, size, cost…).</p>
+
+    <div class="callout info">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Key Idea</div>
+        <p>The embedding matrix <strong>E</strong> has dimensions <code>300 × 10,000</code>. For any word with one-hot vector <code>Oⱼ</code>, multiplying <code>E · Oⱼ</code> extracts the 300-dim feature vector <code>eⱼ</code> for that word.</p>
+      </div>
+    </div>
+
+    <!-- Feature Matrix Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Man</th>
+            <th>Woman</th>
+            <th>King</th>
+            <th>Queen</th>
+            <th>Apple</th>
+            <th>Orange</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gender</td>
+            <td class="cell-neg">−1</td>
+            <td class="cell-pos">+1</td>
+            <td class="cell-neg">−0.95</td>
+            <td class="cell-pos">+0.97</td>
+            <td class="cell-neu">0.00</td>
+            <td class="cell-neu">0.01</td>
+          </tr>
+          <tr>
+            <td>Royal</td>
+            <td class="cell-neu">0.01</td>
+            <td class="cell-neu">0.02</td>
+            <td class="cell-pos">0.93</td>
+            <td class="cell-pos">0.95</td>
+            <td class="cell-neg">−0.01</td>
+            <td class="cell-neu">0.00</td>
+          </tr>
+          <tr>
+            <td>Age</td>
+            <td class="cell-neu">0.03</td>
+            <td class="cell-neu">0.02</td>
+            <td class="cell-pos">0.70</td>
+            <td class="cell-pos">0.69</td>
+            <td class="cell-neu">0.03</td>
+            <td class="cell-neg">−0.02</td>
+          </tr>
+          <tr>
+            <td>Food</td>
+            <td class="cell-neu">…</td>
+            <td class="cell-neu">…</td>
+            <td class="cell-neu">…</td>
+            <td class="cell-neu">…</td>
+            <td class="cell-neu">…</td>
+            <td class="cell-neu">…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:13px;color:var(--muted);margin-top:8px;">✦ Notice: Man/Woman share similar Age &amp; differ strongly in Gender. King/Queen share high Royalty scores. Apple/Orange are near-zero in Gender &amp; Royalty.</p>
+
+    <!-- Analogy Box -->
+    <div class="card purple">
+      <h4>Famous Word Analogy</h4>
+      <div class="formula-block">
+        <div class="formula">
+          <span class="var">e</span><sub>King</sub> <span class="op">−</span> <span class="var">e</span><sub>Man</sub> <span class="op">+</span> <span class="var">e</span><sub>Woman</sub> <span class="op">≈</span> <span class="var">e</span><sub>Queen</sub>
+        </div>
+        <div class="formula" style="font-size:12px;margin-top:8px;color:var(--muted);">
+          Also: Boy − Man + Woman ≈ Girl
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-top:10px;">If the feature vectors are learned correctly, they encode linear relationships between semantic concepts.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 7: NEURAL NETWORK -->
+  <section id="sec7">
+    <div class="section-label">07 — Architecture</div>
+    <h2>Neural Network for Learning Embeddings</h2>
+
+    <p>Given the sentence <em>"I want a glass of Orange ___"</em>, we learn embeddings by training a language model to predict the next word.</p>
+
+    <div class="card">
+      <h4>Input Encoding Process</h4>
+      <pre><code>I(4343) → O₄₃₄₃ → E → e₄₃₄₃
+want(9665) → O₉₆₆₅ → E → e₉₆₆₅
+a(1) → O₁ → E → e₁
+glass(3852) → O₃₈₅₂ → E → e₃₈₅₂
+of(6163) → O₆₁₆₃ → E → e₆₁₆₃
+orange(6257) → O₆₂₅₇ → E → e₆₂₅₇</code></pre>
+    </div>
+
+    <!-- NN Architecture Diagram -->
+    <div class="diagram-container">
+      <div class="diagram-title">// Embedding Neural Network Architecture</div>
+      <svg viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:680px;display:block;margin:0 auto;">
+        <!-- Layer labels -->
+        <text x="60" y="18" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#64748b">INPUT</text>
+        <text x="60" y="28" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">One-Hot</text>
+
+        <text x="210" y="18" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#00e5ff">EMBEDDING E</text>
+        <text x="210" y="28" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">300×10,000</text>
+
+        <text x="380" y="18" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#a78bfa">FEATURE e</text>
+        <text x="380" y="28" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">1800 (6×300)</text>
+
+        <text x="540" y="18" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fbbf24">SOFTMAX</text>
+        <text x="540" y="28" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">10,000 classes</text>
+
+        <!-- Input nodes (6 words) -->
+        <g fill="#1e2a45" stroke="#00e5ff" stroke-width="1.5">
+          <rect x="10" y="40" width="90" height="24" rx="4"/>
+          <rect x="10" y="72" width="90" height="24" rx="4"/>
+          <rect x="10" y="104" width="90" height="24" rx="4"/>
+          <rect x="10" y="136" width="90" height="24" rx="4"/>
+          <rect x="10" y="168" width="90" height="24" rx="4"/>
+          <rect x="10" y="200" width="90" height="24" rx="4"/>
+        </g>
+        <text x="55" y="57" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#67e8f9">O_I</text>
+        <text x="55" y="89" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#67e8f9">O_want</text>
+        <text x="55" y="121" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#67e8f9">O_a</text>
+        <text x="55" y="153" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#67e8f9">O_glass</text>
+        <text x="55" y="185" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#67e8f9">O_of</text>
+        <text x="55" y="217" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#67e8f9">O_orange</text>
+
+        <!-- Embedding E (single big matrix) -->
+        <rect x="150" y="35" width="110" height="200" rx="8" fill="rgba(0,229,255,0.05)" stroke="#00e5ff" stroke-width="1.5"/>
+        <text x="205" y="140" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="28" fill="#00e5ff" font-weight="bold" opacity="0.7">E</text>
+
+        <!-- Arrows input to E -->
+        <line x1="100" y1="52" x2="150" y2="100" stroke="#1e2a45" stroke-width="1"/>
+        <line x1="100" y1="84" x2="150" y2="110" stroke="#1e2a45" stroke-width="1"/>
+        <line x1="100" y1="116" x2="150" y2="130" stroke="#1e2a45" stroke-width="1"/>
+        <line x1="100" y1="148" x2="150" y2="150" stroke="#1e2a45" stroke-width="1"/>
+        <line x1="100" y1="180" x2="150" y2="170" stroke="#1e2a45" stroke-width="1"/>
+        <line x1="100" y1="212" x2="150" y2="190" stroke="#1e2a45" stroke-width="1"/>
+
+        <!-- Feature vectors e -->
+        <g fill="#1a0e3c" stroke="#a78bfa" stroke-width="1.5">
+          <rect x="285" y="40" width="90" height="18" rx="4"/>
+          <rect x="285" y="66" width="90" height="18" rx="4"/>
+          <rect x="285" y="92" width="90" height="18" rx="4"/>
+          <rect x="285" y="118" width="90" height="18" rx="4"/>
+          <rect x="285" y="144" width="90" height="18" rx="4"/>
+          <rect x="285" y="170" width="90" height="18" rx="4"/>
+        </g>
+        <text x="330" y="53" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">e_I (300d)</text>
+        <text x="330" y="79" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">e_want (300d)</text>
+        <text x="330" y="105" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">e_a (300d)</text>
+        <text x="330" y="131" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">e_glass (300d)</text>
+        <text x="330" y="157" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">e_of (300d)</text>
+        <text x="330" y="183" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">e_orange (300d)</text>
+
+        <!-- Arrow E to e -->
+        <line x1="260" y1="135" x2="285" y2="135" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrow2)"/>
+        <defs>
+          <marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#a78bfa"/>
+          </marker>
+          <marker id="arrow3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#fbbf24"/>
+          </marker>
+        </defs>
+
+        <!-- Concat label -->
+        <text x="330" y="210" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#64748b">concat → 1800-dim</text>
+
+        <!-- Dense + Softmax -->
+        <rect x="415" y="70" width="55" height="130" rx="8" fill="rgba(245,158,11,0.05)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="442" y="140" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fbbf24">Dense</text>
+        <text x="442" y="155" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">FC</text>
+
+        <!-- Arrow concat to dense -->
+        <line x1="375" y1="135" x2="415" y2="135" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow3)"/>
+
+        <!-- Softmax circle -->
+        <circle cx="545" cy="135" r="40" fill="rgba(16,185,129,0.05)" stroke="#10b981" stroke-width="1.5"/>
+        <text x="545" y="130" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#10b981">Softmax</text>
+        <text x="545" y="144" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">10,000</text>
+
+        <!-- Arrow dense to softmax -->
+        <line x1="470" y1="135" x2="505" y2="135" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrow4)"/>
+        <defs>
+          <marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#10b981"/>
+          </marker>
+        </defs>
+
+        <!-- Output -->
+        <rect x="600" y="110" width="70" height="50" rx="8" fill="rgba(244,114,182,0.08)" stroke="#f472b6" stroke-width="1.5"/>
+        <text x="635" y="133" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#f472b6">juice</text>
+        <text x="635" y="148" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">P=0.94</text>
+
+        <line x1="585" y1="135" x2="600" y2="135" stroke="#f472b6" stroke-width="1.5" marker-end="url(#arrow5)"/>
+        <defs>
+          <marker id="arrow5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#f472b6"/>
+          </marker>
+        </defs>
+
+        <!-- Backprop arrow -->
+        <path d="M 635 175 Q 635 260 330 255 Q 205 255 205 235" stroke="#64748b" stroke-width="1" stroke-dasharray="5,3" fill="none" marker-end="url(#arrow6)"/>
+        <text x="420" y="272" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#64748b">Backpropagation (learns E)</text>
+        <defs>
+          <marker id="arrow6" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#64748b"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <!-- Layer Breakdown -->
+    <h3>Layer Breakdown</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="border-color:var(--accent);color:var(--accent);">L1</div>
+        <div class="step-body">
+          <div class="step-title">Input Layer — One-Hot Encodings</div>
+          <div class="step-desc">Each input word is represented as a one-hot vector of length 10,000. For 6 input words, we have 6 such vectors.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="border-color:#a78bfa;color:#a78bfa;">L2</div>
+        <div class="step-body">
+          <div class="step-title">Embedding Layer — Matrix E</div>
+          <div class="step-desc">The embedding matrix <strong>E</strong> (300 × 10,000) maps each one-hot vector to a dense 300-dim feature vector. This layer has 10,000 neurons.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="border-color:var(--accent3);color:var(--accent3);">L3</div>
+        <div class="step-body">
+          <div class="step-title">Feature Vector Layer — e</div>
+          <div class="step-desc">Each word produces a 300-dim embedding. For 6 input words, this concatenates to a <strong>1800-dim</strong> vector. The weights here represent the word features.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="border-color:var(--green);color:var(--green);">L4</div>
+        <div class="step-body">
+          <div class="step-title">Output Layer — Softmax</div>
+          <div class="step-desc">Softmax over 10,000 vocabulary words gives probability distribution over the next word. The target is a one-hot vector of "juice".</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout success">
+      <div class="callout-icon">🎯</div>
+      <div class="callout-body">
+        <div class="callout-title">Training Insight</div>
+        <p>The weights learned during backpropagation <strong>are</strong> the embedding vectors. We use a <strong>fixed-size window</strong> to handle variable sentence lengths. The goal is to learn <strong>E</strong> — the embedding matrix.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 8: WORD2VEC -->
+  <section id="sec8">
+    <div class="section-label">08 — Algorithm</div>
+    <h2>Word2Vec</h2>
+
+    <p>Word2Vec is a <strong>Google-developed algorithm</strong> for generating word embeddings using shallow neural networks. It comes in two variants:</p>
+
+    <div class="diagram-container" style="margin-bottom:20px;">
+      <div class="diagram-title">// Word2Vec — Two Variants</div>
+      <svg viewBox="0 0 600 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;display:block;margin:0 auto;">
+        <!-- CBOW -->
+        <rect x="20" y="20" width="240" height="60" rx="10" fill="rgba(124,58,237,0.1)" stroke="#7c3aed" stroke-width="1.5"/>
+        <text x="140" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#a78bfa" font-weight="bold">CBOW</text>
+        <text x="140" y="62" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#64748b">Context → Target Word</text>
+        <text x="140" y="75" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#64748b">["The","sat","on"] → "cat"</text>
+
+        <!-- Skip-gram -->
+        <rect x="340" y="20" width="240" height="60" rx="10" fill="rgba(245,158,11,0.1)" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="460" y="44" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#fbbf24" font-weight="bold">Skip-gram</text>
+        <text x="460" y="62" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#64748b">Target Word → Context</text>
+        <text x="460" y="75" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#64748b">"cat" → ["The","sat","on"]</text>
+
+        <!-- vs label -->
+        <text x="300" y="57" text-anchor="middle" font-family="Syne,sans-serif" font-size="14" fill="#64748b" font-weight="700">vs</text>
+      </svg>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 9: CBOW vs SKIP-GRAM -->
+  <section id="sec9">
+    <div class="section-label">09 — Deep Dive</div>
+    <h2>CBOW vs Skip-gram</h2>
+
+    <div class="variants-grid">
+      <!-- CBOW -->
+      <div class="variant-card cbow">
+        <div class="variant-name">Variant 01</div>
+        <h4>Continuous Bag of Words</h4>
+        <p>Predicts the <strong>target/center word</strong> from surrounding context words using a sliding window.</p>
+        <div class="example-box">
+          <div class="ex-label">SENTENCE</div>
+          <div class="ex-sent">The cat sat on the mat</div>
+          <div class="ex-label" style="margin-top:8px;">WINDOW</div>
+          <div><span class="ex-context">["The", "sat", "on", "the"]</span></div>
+          <div><span class="ex-arrow">→ predict →</span> <span class="ex-target">"cat"</span></div>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#a78bfa;font-family:'JetBrains Mono',monospace;margin-bottom:6px;">Advantages</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7;">✓ Faster to train<br>✓ Works well with frequent words</div>
+        </div>
+      </div>
+
+      <!-- Skip-gram -->
+      <div class="variant-card skipgram">
+        <div class="variant-name">Variant 02</div>
+        <h4>Skip-gram</h4>
+        <p>Given a <strong>target word</strong>, predicts the surrounding context words in a fixed window. Predicts multiple words.</p>
+        <div class="example-box">
+          <div class="ex-label">SENTENCE</div>
+          <div class="ex-sent">The cat sat on the mat</div>
+          <div class="ex-label" style="margin-top:8px;">TARGET</div>
+          <div><span class="ex-target">"cat"</span> <span class="ex-arrow">→ predict →</span></div>
+          <div><span class="ex-context">["The", "sat", "on", "the"]</span></div>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent3);font-family:'JetBrains Mono',monospace;margin-bottom:6px;">Advantages</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7;">✓ Better for rare words<br>✓ Captures complex relationships</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side-by-side diagram -->
+    <div class="diagram-container">
+      <div class="diagram-title">// CBOW vs Skip-gram — Architecture Comparison</div>
+      <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:640px;display:block;margin:0 auto;">
+        <!-- ===== CBOW LEFT ===== -->
+        <text x="150" y="18" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#a78bfa" font-weight="bold">CBOW</text>
+
+        <!-- Context words -->
+        <g fill="rgba(124,58,237,0.12)" stroke="#7c3aed" stroke-width="1.5">
+          <rect x="10" y="30" width="80" height="22" rx="4"/>
+          <rect x="10" y="62" width="80" height="22" rx="4"/>
+          <rect x="10" y="130" width="80" height="22" rx="4"/>
+          <rect x="10" y="162" width="80" height="22" rx="4"/>
+        </g>
+        <text x="50" y="45" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">The</text>
+        <text x="50" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">sat</text>
+        <text x="50" y="145" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">on</text>
+        <text x="50" y="177" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">the</text>
+        <text x="50" y="110" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="14" fill="#64748b">⋮</text>
+        <text x="8" y="105" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">Context</text>
+
+        <!-- Hidden layer CBOW -->
+        <circle cx="175" cy="105" r="30" fill="rgba(0,229,255,0.05)" stroke="#00e5ff" stroke-width="1.5"/>
+        <text x="175" y="102" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#67e8f9">Hidden</text>
+        <text x="175" y="114" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">300d avg</text>
+
+        <!-- Lines context to hidden -->
+        <line x1="90" y1="41" x2="145" y2="90" stroke="#7c3aed" stroke-width="1" opacity="0.6"/>
+        <line x1="90" y1="73" x2="145" y2="96" stroke="#7c3aed" stroke-width="1" opacity="0.6"/>
+        <line x1="90" y1="141" x2="145" y2="114" stroke="#7c3aed" stroke-width="1" opacity="0.6"/>
+        <line x1="90" y1="173" x2="145" y2="120" stroke="#7c3aed" stroke-width="1" opacity="0.6"/>
+
+        <!-- Output CBOW -->
+        <rect x="230" y="84" width="75" height="42" rx="6" fill="rgba(244,114,182,0.1)" stroke="#f472b6" stroke-width="1.5"/>
+        <text x="267" y="102" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#f472b6">cat</text>
+        <text x="267" y="118" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">Target word</text>
+        <line x1="205" y1="105" x2="230" y2="105" stroke="#f472b6" stroke-width="1.5" marker-end="url(#arr)"/>
+        <defs>
+          <marker id="arr" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#f472b6"/>
+          </marker>
+          <marker id="arr2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#67e8f9"/>
+          </marker>
+        </defs>
+
+        <!-- Vertical divider -->
+        <line x1="330" y1="0" x2="330" y2="220" stroke="#1e2a45" stroke-width="1.5" stroke-dasharray="6"/>
+
+        <!-- ===== SKIP-GRAM RIGHT ===== -->
+        <text x="490" y="18" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#fbbf24" font-weight="bold">SKIP-GRAM</text>
+
+        <!-- Input target word -->
+        <rect x="340" y="84" width="75" height="42" rx="6" fill="rgba(245,158,11,0.1)" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="377" y="102" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fbbf24">cat</text>
+        <text x="377" y="118" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">Target word</text>
+
+        <!-- Hidden layer skip-gram -->
+        <circle cx="465" cy="105" r="30" fill="rgba(0,229,255,0.05)" stroke="#00e5ff" stroke-width="1.5"/>
+        <text x="465" y="102" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#67e8f9">Hidden</text>
+        <text x="465" y="114" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">300d</text>
+        <line x1="415" y1="105" x2="435" y2="105" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+        <!-- Output context words -->
+        <g fill="rgba(124,58,237,0.12)" stroke="#7c3aed" stroke-width="1.5">
+          <rect x="520" y="30" width="80" height="22" rx="4"/>
+          <rect x="520" y="62" width="80" height="22" rx="4"/>
+          <rect x="520" y="130" width="80" height="22" rx="4"/>
+          <rect x="520" y="162" width="80" height="22" rx="4"/>
+        </g>
+        <text x="560" y="45" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">The</text>
+        <text x="560" y="77" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">sat</text>
+        <text x="560" y="145" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">on</text>
+        <text x="560" y="177" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#c4b5fd">the</text>
+        <text x="560" y="110" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="14" fill="#64748b">⋮</text>
+        <text x="606" y="105" font-family="JetBrains Mono,monospace" font-size="8" fill="#64748b">Context</text>
+
+        <!-- Lines hidden to context -->
+        <line x1="495" y1="90" x2="520" y2="41" stroke="#7c3aed" stroke-width="1" opacity="0.6"/>
+        <line x1="495" y1="96" x2="520" y2="73" stroke="#7c3aed" stroke-width="1" opacity="0.6"/>
+        <line x1="495" y1="114" x2="520" y2="141" stroke="#7c3aed" stroke-width="1" opacity="0.6"/>
+        <line x1="495" y1="120" x2="520" y2="173" stroke="#7c3aed" stroke-width="1" opacity="0.6"/>
+      </svg>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th>CBOW</th>
+            <th>Skip-gram</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Direction</td>
+            <td>Context → Word</td>
+            <td>Word → Context</td>
+          </tr>
+          <tr>
+            <td>Training Speed</td>
+            <td class="cell-pos">Faster</td>
+            <td class="cell-neg">Slower</td>
+          </tr>
+          <tr>
+            <td>Rare Words</td>
+            <td class="cell-neg">Weaker</td>
+            <td class="cell-pos">Stronger</td>
+          </tr>
+          <tr>
+            <td>Outputs per step</td>
+            <td>1 word</td>
+            <td>Multiple words</td>
+          </tr>
+          <tr>
+            <td>Best for</td>
+            <td>Frequent words</td>
+            <td>Complex relationships</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SECTION 10: TOKENIZATION -->
+  <section id="sec10">
+    <div class="section-label">10 — Preprocessing</div>
+    <h2>Tokenization &amp; Preprocessing</h2>
+
+    <p>Before training Word2Vec, text must be preprocessed. Here's the pipeline with a worked example:</p>
+
+    <div class="callout info">
+      <div class="callout-icon">📄</div>
+      <div class="callout-body">
+        <div class="callout-title">Dataset</div>
+        <p><em>"Deep learning is amazing. Machine learning is powerful."</em></p>
+      </div>
+    </div>
+
+    <!-- Step 1: Tokenize -->
+    <h3>Step 1 — Tokenize</h3>
+    <p>Convert the text into a list of individual words (tokens):</p>
+    <div class="code-header">
+      <div class="code-dots"><span class="dot1"></span><span class="dot2"></span><span class="dot3"></span></div>
+      <span class="code-lang">Python</span>
+    </div>
+    <pre><code><span class="cm"># Input sentence</span>
+<span class="var">text</span> = <span class="str">"Deep learning is amazing. Machine learning is powerful."</span>
+
+<span class="cm"># Tokenize into list of words</span>
+<span class="var">corpus</span> = [<span class="str">"Deep"</span>, <span class="str">"learning"</span>, <span class="str">"is"</span>, <span class="str">"amazing"</span>,
+           <span class="str">"Machine"</span>, <span class="str">"learning"</span>, <span class="str">"is"</span>, <span class="str">"powerful"</span>]</code></pre>
+
+    <!-- Step 2: Vocabulary -->
+    <h3>Step 2 — Build Vocabulary</h3>
+    <p>Extract all <strong>unique words</strong> and sort them:</p>
+    <div class="code-header">
+      <div class="code-dots"><span class="dot1"></span><span class="dot2"></span><span class="dot3"></span></div>
+      <span class="code-lang">Python</span>
+    </div>
+    <pre><code><span class="var">vocab</span> = <span class="fn">sorted</span>(<span class="fn">set</span>(corpus))
+<span class="fn">print</span>(vocab)
+
+<span class="cm"># Output:</span>
+<span class="cm"># ['Deep', 'Machine', 'amazing', 'is', 'learning', 'powerful']</span>
+<span class="cm">#  ← 6 unique words in vocabulary →</span></code></pre>
+
+    <!-- Step 3: Index Mapping -->
+    <h3>Step 3 — Assign Word Indices</h3>
+    <p>Create two bidirectional dictionaries:</p>
+    <div class="code-header">
+      <div class="code-dots"><span class="dot1"></span><span class="dot2"></span><span class="dot3"></span></div>
+      <span class="code-lang">Python</span>
+    </div>
+    <pre><code><span class="cm"># Word to index mapping</span>
+<span class="var">word2idx</span> = {<span class="var">word</span>: <span class="var">idx</span> <span class="kw">for</span> <span class="var">idx</span>, <span class="var">word</span> <span class="kw">in</span> <span class="fn">enumerate</span>(vocab)}
+
+<span class="cm"># Index to word mapping</span>
+<span class="var">idx2word</span> = {<span class="var">idx</span>: <span class="var">word</span> <span class="kw">for</span> <span class="var">word</span>, <span class="var">idx</span> <span class="kw">in</span> word2idx.items()}
+
+<span class="cm"># Result:</span>
+<span class="cm"># word2idx = {'Deep':0, 'Machine':1, 'amazing':2,</span>
+<span class="cm">#              'is':3,  'learning':4, 'powerful':5 }</span>
+<span class="cm"># idx2word = {0:'Deep', 1:'Machine', 2:'amazing',</span>
+<span class="cm">#              3:'is',   4:'learning', 5:'powerful'}</span></code></pre>
+
+    <!-- Index Mapping Visual -->
+    <div class="diagram-container">
+      <div class="diagram-title">// Word ↔ Index Mapping Visualization</div>
+      <svg viewBox="0 0 600 120" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:600px;display:block;margin:0 auto;">
+        <defs>
+          <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#161c2d"/>
+            <stop offset="100%" style="stop-color:#0d1117"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Words -->
+        <text x="0" y="14" font-family="JetBrains Mono,monospace" font-size="9" fill="#64748b" letter-spacing="2">WORDS</text>
+        <g>
+          <rect x="0" y="20" width="75" height="28" rx="6" fill="url(#cardGrad)" stroke="#7c3aed" stroke-width="1.5"/>
+          <text x="37" y="38" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#c4b5fd">Deep</text>
+
+          <rect x="85" y="20" width="80" height="28" rx="6" fill="url(#cardGrad)" stroke="#7c3aed" stroke-width="1.5"/>
+          <text x="125" y="38" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#c4b5fd">Machine</text>
+
+          <rect x="175" y="20" width="80" height="28" rx="6" fill="url(#cardGrad)" stroke="#7c3aed" stroke-width="1.5"/>
+          <text x="215" y="38" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#c4b5fd">amazing</text>
+
+          <rect x="265" y="20" width="55" height="28" rx="6" fill="url(#cardGrad)" stroke="#7c3aed" stroke-width="1.5"/>
+          <text x="292" y="38" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#c4b5fd">is</text>
+
+          <rect x="330" y="20" width="85" height="28" rx="6" fill="url(#cardGrad)" stroke="#7c3aed" stroke-width="1.5"/>
+          <text x="372" y="38" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#c4b5fd">learning</text>
+
+          <rect x="425" y="20" width="80" height="28" rx="6" fill="url(#cardGrad)" stroke="#7c3aed" stroke-width="1.5"/>
+          <text x="465" y="38" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#c4b5fd">powerful</text>
+        </g>
+
+        <!-- Arrows -->
+        <line x1="37" y1="48" x2="37" y2="68" stroke="#00e5ff" stroke-width="1" stroke-dasharray="3"/>
+        <line x1="125" y1="48" x2="125" y2="68" stroke="#00e5ff" stroke-width="1" stroke-dasharray="3"/>
+        <line x1="215" y1="48" x2="215" y2="68" stroke="#00e5ff" stroke-width="1" stroke-dasharray="3"/>
+        <line x1="292" y1="48" x2="292" y2="68" stroke="#00e5ff" stroke-width="1" stroke-dasharray="3"/>
+        <line x1="372" y1="48" x2="372" y2="68" stroke="#00e5ff" stroke-width="1" stroke-dasharray="3"/>
+        <line x1="465" y1="48" x2="465" y2="68" stroke="#00e5ff" stroke-width="1" stroke-dasharray="3"/>
+
+        <!-- Indices -->
+        <text x="0" y="65" font-family="JetBrains Mono,monospace" font-size="9" fill="#64748b" letter-spacing="2">INDEX</text>
+        <g>
+          <rect x="22" y="72" width="30" height="28" rx="6" fill="rgba(0,229,255,0.1)" stroke="#00e5ff" stroke-width="1.5"/>
+          <text x="37" y="90" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#00e5ff" font-weight="bold">0</text>
+          <rect x="110" y="72" width="30" height="28" rx="6" fill="rgba(0,229,255,0.1)" stroke="#00e5ff" stroke-width="1.5"/>
+          <text x="125" y="90" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#00e5ff" font-weight="bold">1</text>
+          <rect x="200" y="72" width="30" height="28" rx="6" fill="rgba(0,229,255,0.1)" stroke="#00e5ff" stroke-width="1.5"/>
+          <text x="215" y="90" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#00e5ff" font-weight="bold">2</text>
+          <rect x="277" y="72" width="30" height="28" rx="6" fill="rgba(0,229,255,0.1)" stroke="#00e5ff" stroke-width="1.5"/>
+          <text x="292" y="90" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#00e5ff" font-weight="bold">3</text>
+          <rect x="357" y="72" width="30" height="28" rx="6" fill="rgba(0,229,255,0.1)" stroke="#00e5ff" stroke-width="1.5"/>
+          <text x="372" y="90" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#00e5ff" font-weight="bold">4</text>
+          <rect x="450" y="72" width="30" height="28" rx="6" fill="rgba(0,229,255,0.1)" stroke="#00e5ff" stroke-width="1.5"/>
+          <text x="465" y="90" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#00e5ff" font-weight="bold">5</text>
+        </g>
+
+        <text x="300" y="115" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#64748b">↕  Bidirectional mapping: word2idx &amp; idx2word  ↕</text>
+      </svg>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SUMMARY SECTION -->
+  <section id="summary" style="margin-top:60px;">
+    <div class="section-label">✦ — Summary</div>
+    <h2>Quick Revision</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Concept</th>
+            <th>Key Idea</th>
+            <th>Dimension</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-pink">One-Hot</span></td>
+            <td>Binary, sparse, no semantics</td>
+            <td>N (vocab size)</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-cyan">Embedding</span></td>
+            <td>Dense, learned, semantic</td>
+            <td>300 (typical)</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-amber">Word2Vec</span></td>
+            <td>NN-trained embeddings (Google)</td>
+            <td>CBOW / Skip-gram</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-green">CBOW</span></td>
+            <td>Context → center word</td>
+            <td>Fast, frequent words</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-pink">Skip-gram</span></td>
+            <td>Word → context words</td>
+            <td>Slow, rare words</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout success" style="margin-top:28px;">
+      <div class="callout-icon">🏆</div>
+      <div class="callout-body">
+        <div class="callout-title">Core Takeaway</div>
+        <p>Word embeddings solve the two fundamental flaws of one-hot encoding — <strong>sparse dimensionality</strong> and <strong>lack of semantic relationships</strong> — by learning dense, meaningful vector representations through a neural network trained to predict words in context.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>// Word Embeddings &amp; Word2Vec — Notes based on Jawwad A. Shamsi's lecture slides (April 2025)</p>
+</footer>
+
+<script>
+  // Progress bar
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const scrolled = window.scrollY;
+    const total = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (scrolled / total * 100) + '%';
+  });
+
+  // Stagger section animations
+  const sections = document.querySelectorAll('section');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        e.target.style.animationDelay = '0s';
+        e.target.style.opacity = 1;
+      }
+    });
+  }, { threshold: 0.08 });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>
