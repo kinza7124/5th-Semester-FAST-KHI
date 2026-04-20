@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transformer Variants – Deep Dive Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #161b28;
+    --border: #1e2535;
+    --border2: #2a3248;
+    --enc: #00c9a7;
+    --enc-dim: #00c9a720;
+    --enc-mid: #00c9a740;
+    --dec: #f59e0b;
+    --dec-dim: #f59e0b20;
+    --dec-mid: #f59e0b40;
+    --encdec: #a78bfa;
+    --encdec-dim: #a78bfa20;
+    --encdec-mid: #a78bfa40;
+    --text: #e8eaf0;
+    --text2: #9aa3b8;
+    --text3: #5a6382;
+    --accent: #3b82f6;
+    --red: #f87171;
+    --green: #4ade80;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: .4;
+  }
+
+  /* ── STICKY NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,13,20,.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    display: flex; align-items: center; gap: 6px;
+    overflow-x: auto; scrollbar-width: none;
+    height: 52px;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav a {
+    color: var(--text2); text-decoration: none;
+    font-size: 12px; font-weight: 500; letter-spacing: .04em;
+    padding: 6px 12px; border-radius: 20px;
+    white-space: nowrap; transition: all .2s;
+    border: 1px solid transparent;
+  }
+  nav a:hover { color: var(--text); background: var(--surface2); border-color: var(--border2); }
+  nav .nav-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--border2); flex-shrink: 0; }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 860px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+  section { padding: 60px 0 40px; }
+  section + section { border-top: 1px solid var(--border); }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 70px 20px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, #3b82f620 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: .12em;
+    color: var(--accent);
+    background: #3b82f615;
+    border: 1px solid #3b82f640;
+    padding: 4px 14px; border-radius: 20px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 7vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #ffffff 30%, #9aa3b8 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 18px;
+  }
+  .hero p {
+    color: var(--text2); font-size: 15px; max-width: 580px; margin: 0 auto 30px;
+  }
+  .hero-tags { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+  .hero-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    padding: 4px 12px; border-radius: 6px; font-weight: 600;
+  }
+  .tag-enc  { background: var(--enc-dim); color: var(--enc); border: 1px solid var(--enc-mid); }
+  .tag-dec  { background: var(--dec-dim); color: var(--dec); border: 1px solid var(--dec-mid); }
+  .tag-ed   { background: var(--encdec-dim); color: var(--encdec); border: 1px solid var(--encdec-mid); }
+
+  /* ── SECTION HEADERS ── */
+  .sec-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--text3); margin-bottom: 8px;
+  }
+  .sec-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 5vw, 2.2rem);
+    font-weight: 700; margin-bottom: 28px;
+    color: var(--text);
+  }
+
+  /* ── TRANSFORMER CARDS ── */
+  .transformer-card {
+    border-radius: 16px;
+    border: 1px solid var(--border2);
+    overflow: hidden;
+    margin-bottom: 32px;
+    background: var(--surface);
+  }
+  .card-header {
+    padding: 22px 24px 18px;
+    display: flex; align-items: flex-start; gap: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.6rem; font-weight: 900; line-height: 1;
+    opacity: .15; flex-shrink: 0; margin-top: -4px;
+  }
+  .card-header-text h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem; font-weight: 700; margin-bottom: 4px;
+  }
+  .card-header-text p { font-size: 13px; color: var(--text2); }
+  .enc-card .card-num, .enc-card h2 { color: var(--enc); }
+  .dec-card .card-num, .dec-card h2 { color: var(--dec); }
+  .ed-card .card-num, .ed-card h2  { color: var(--encdec); }
+  .enc-card { border-color: var(--enc-mid); }
+  .dec-card { border-color: var(--dec-mid); }
+  .ed-card  { border-color: var(--encdec-mid); }
+  .enc-card .card-header { background: var(--enc-dim); }
+  .dec-card .card-header { background: var(--dec-dim); }
+  .ed-card  .card-header { background: var(--encdec-dim); }
+
+  .card-body { padding: 22px 24px; }
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 600px) { .card-grid { grid-template-columns: 1fr; } }
+
+  .card-section h4 {
+    font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text3); margin-bottom: 10px;
+  }
+  .card-section ul { list-style: none; }
+  .card-section ul li {
+    font-size: 13.5px; color: var(--text2);
+    padding: 5px 0 5px 18px; position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-section ul li:last-child { border: none; }
+  .card-section ul li::before {
+    content: '▸'; position: absolute; left: 0;
+    font-size: 10px; top: 8px;
+  }
+  .enc-card .card-section ul li::before { color: var(--enc); }
+  .dec-card .card-section ul li::before { color: var(--dec); }
+  .ed-card  .card-section ul li::before { color: var(--encdec); }
+
+  .card-section ul li strong { color: var(--text); font-weight: 600; }
+
+  .examples-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .model-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; padding: 3px 10px;
+    border-radius: 20px; font-weight: 600;
+  }
+  .enc-pill  { background: var(--enc-dim); color: var(--enc); border: 1px solid var(--enc-mid); }
+  .dec-pill  { background: var(--dec-dim); color: var(--dec); border: 1px solid var(--dec-mid); }
+  .ed-pill   { background: var(--encdec-dim); color: var(--encdec); border: 1px solid var(--encdec-mid); }
+
+  /* ── HOW IT WORKS BOX ── */
+  .how-box {
+    margin: 16px 0 0;
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 13.5px;
+  }
+  .enc-how { background: var(--enc-dim); border: 1px solid var(--enc-mid); }
+  .dec-how { background: var(--dec-dim); border: 1px solid var(--dec-mid); }
+  .ed-how  { background: var(--encdec-dim); border: 1px solid var(--encdec-mid); }
+  .how-box h4 { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; color: var(--text3); margin-bottom: 8px; }
+  .how-box li { color: var(--text2); padding: 3px 0; list-style: none; padding-left: 16px; position: relative; }
+  .how-box li::before { content: '→'; position: absolute; left: 0; font-size: 11px; }
+  .enc-how li::before { color: var(--enc); }
+  .dec-how li::before { color: var(--dec); }
+  .ed-how li::before  { color: var(--encdec); }
+
+  /* ── ARCHITECTURE SVG DIAGRAMS ── */
+  .arch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+  @media (max-width: 680px) { .arch-grid { grid-template-columns: 1fr; } }
+  .arch-box {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .arch-box h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .enc-arch h4 { color: var(--enc); }
+  .dec-arch h4 { color: var(--dec); }
+  .ed-arch h4  { color: var(--encdec); }
+  .arch-box svg { max-width: 100%; height: auto; }
+
+  /* ── COMPARISON TABLE ── */
+  .table-wrap { overflow-x: auto; margin-top: 16px; border-radius: 12px; border: 1px solid var(--border2); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+  thead tr { background: var(--surface2); }
+  thead th {
+    padding: 12px 14px; text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--text3); font-weight: 600;
+    border-bottom: 1px solid var(--border2);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:last-child { border: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 11px 14px; color: var(--text2); vertical-align: top; }
+  tbody td:first-child { font-weight: 600; }
+  .enc-row td:first-child { color: var(--enc); }
+  .dec-row td:first-child { color: var(--dec); }
+  .ed-row  td:first-child { color: var(--encdec); }
+
+  /* ── CHATBOT FLOW ── */
+  .flow-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 20px; }
+  .flow-step {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 12px; padding: 16px;
+    position: relative;
+  }
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--accent);
+    letter-spacing: .1em; margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .flow-step h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .flow-step p { font-size: 13px; color: var(--text2); }
+
+  /* ── ATTENTION MASK TABLE ── */
+  .mask-wrap { overflow-x: auto; margin-top: 12px; }
+  .mask-table { border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .mask-table th, .mask-table td { padding: 8px 12px; text-align: center; border: 1px solid var(--border2); }
+  .mask-table th { background: var(--surface2); color: var(--text3); font-size: 10px; }
+  .mask-table .yes { color: var(--green); }
+  .mask-table .no  { color: var(--red); }
+
+  /* ── GENERATION LOOP ── */
+  .gen-loop {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 14px; padding: 24px;
+    margin-top: 16px;
+  }
+  .loop-steps { display: flex; gap: 0; overflow-x: auto; padding-bottom: 8px; }
+  .loop-step {
+    flex: 1; min-width: 120px;
+    text-align: center; padding: 0 12px;
+    position: relative;
+  }
+  .loop-step:not(:last-child)::after {
+    content: '→';
+    position: absolute; right: -8px; top: 22px;
+    color: var(--text3); font-size: 16px;
+  }
+  .loop-icon {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--dec-dim); border: 2px solid var(--dec-mid);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 8px; font-size: 18px;
+  }
+  .loop-step p { font-size: 11px; color: var(--text2); line-height: 1.4; }
+
+  /* ── INTERVIEW Q&A ── */
+  .qa-list { margin-top: 16px; }
+  .qa-item {
+    border: 1px solid var(--border2);
+    border-radius: 12px; overflow: hidden;
+    margin-bottom: 12px;
+    background: var(--surface);
+  }
+  .qa-question {
+    padding: 14px 18px;
+    cursor: pointer;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    background: var(--surface2);
+    transition: background .15s;
+    user-select: none;
+  }
+  .qa-question:hover { background: #1e2535; }
+  .qa-q-text {
+    font-size: 13.5px; font-weight: 600; color: var(--text);
+    flex: 1; line-height: 1.5;
+  }
+  .qa-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--accent);
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .qa-arrow {
+    font-size: 10px; color: var(--text3); flex-shrink: 0; margin-top: 4px;
+    transition: transform .2s;
+  }
+  .qa-item.open .qa-arrow { transform: rotate(180deg); }
+  .qa-answer {
+    display: none; padding: 14px 18px;
+    font-size: 13.5px; color: var(--text2); line-height: 1.7;
+    border-top: 1px solid var(--border);
+  }
+  .qa-item.open .qa-answer { display: block; }
+  .qa-answer code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--surface2); color: var(--enc);
+    padding: 1px 6px; border-radius: 4px; font-size: 12px;
+  }
+  .qa-answer strong { color: var(--text); }
+
+  .qa-category {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--text3); margin: 24px 0 10px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+
+  /* ── CALLOUT BOX ── */
+  .callout {
+    border-radius: 10px; padding: 14px 16px;
+    font-size: 13.5px; margin: 16px 0;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+  .callout-blue { background: #3b82f615; border: 1px solid #3b82f640; color: var(--text2); }
+  .callout-amber { background: var(--dec-dim); border: 1px solid var(--dec-mid); color: var(--text2); }
+  .callout-purple { background: var(--encdec-dim); border: 1px solid var(--encdec-mid); color: var(--text2); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center; padding: 40px 20px;
+    font-size: 12px; color: var(--text3);
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── KEY CONCEPT CHIPS ── */
+  .concept-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .concept {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; color: var(--text2);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── SCROLL FADE-IN ── */
+  .fade-in { opacity: 0; transform: translateY(18px); transition: opacity .5s ease, transform .5s ease; }
+  .fade-in.visible { opacity: 1; transform: none; }
+
+  /* ── INLINE FIGURE ── */
+  .figure-box {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 12px; padding: 20px;
+    margin: 20px 0; text-align: center;
+  }
+  .figure-caption {
+    font-size: 12px; color: var(--text3);
+    margin-top: 10px; font-style: italic;
+  }
+
+  /* ── TRAINING STEPS ── */
+  .training-row { display: flex; align-items: center; gap: 0; overflow-x: auto; margin-top: 16px; padding-bottom: 8px; }
+  .train-step {
+    flex-shrink: 0;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 12px 14px;
+    font-size: 12px; text-align: center; min-width: 110px;
+  }
+  .train-step .t-icon { font-size: 20px; margin-bottom: 4px; }
+  .train-step p { color: var(--text2); }
+  .train-arrow { color: var(--dec); font-size: 20px; padding: 0 8px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#overview">Overview</a>
+  <div class="nav-dot"></div>
+  <a href="#encoder">Encoder-Only</a>
+  <div class="nav-dot"></div>
+  <a href="#decoder">Decoder-Only</a>
+  <div class="nav-dot"></div>
+  <a href="#encdec">Enc–Dec</a>
+  <div class="nav-dot"></div>
+  <a href="#comparison">Compare</a>
+  <div class="nav-dot"></div>
+  <a href="#chatbot">Chatbot Flow</a>
+  <div class="nav-dot"></div>
+  <a href="#interview">Interview Q&A</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="container">
+    <div class="hero-badge">Deep Learning · NLP · LLMs</div>
+    <h1>Transformer Variants</h1>
+    <p>A complete reference covering Encoder-Only, Decoder-Only, and Encoder–Decoder architectures — how they work, when to use them, and what they power.</p>
+    <div class="hero-tags">
+      <span class="hero-tag tag-enc">Encoder-Only</span>
+      <span class="hero-tag tag-dec">Decoder-Only</span>
+      <span class="hero-tag tag-ed">Encoder–Decoder</span>
+    </div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="container fade-in">
+    <div class="sec-label">Foundation</div>
+    <div class="sec-title">What is a Transformer?</div>
+
+    <p style="color:var(--text2); font-size:14.5px; max-width:680px; margin-bottom:18px;">
+      Transformers are neural network architectures built on the <strong style="color:var(--text)">self-attention mechanism</strong>. Unlike RNNs that process tokens sequentially, transformers process the entire sequence in parallel, attending to all positions simultaneously. Three structural variants arise from how the encoder and decoder blocks are combined.
+    </p>
+
+    <div class="callout callout-blue">
+      <span class="callout-icon">💡</span>
+      <span>The key innovation: <strong style="color:var(--text)">Attention</strong> allows each token to directly "look at" any other token in the sequence, weighted by relevance. This removes the bottleneck of fixed-size hidden states in RNNs and enables capturing long-range dependencies.</span>
+    </div>
+
+    <!-- WHAT IS SELF-ATTENTION SVG -->
+    <div class="figure-box">
+      <svg viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg" style="max-width:680px;width:100%;">
+        <!-- tokens -->
+        <defs>
+          <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#3b82f6" opacity=".6"/>
+          </marker>
+          <marker id="arr2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#9aa3b8" opacity=".4"/>
+          </marker>
+        </defs>
+        <!-- title -->
+        <text x="340" y="22" text-anchor="middle" fill="#5a6382" font-family="JetBrains Mono" font-size="10" letter-spacing="2">SELF-ATTENTION: EACH TOKEN ATTENDS TO ALL OTHERS</text>
+        <!-- token boxes -->
+        <g font-family="JetBrains Mono" font-size="12">
+          <rect x="30" y="50" width="80" height="30" rx="6" fill="#00c9a720" stroke="#00c9a740"/>
+          <text x="70" y="70" text-anchor="middle" fill="#00c9a7">The</text>
+          <rect x="150" y="50" width="80" height="30" rx="6" fill="#00c9a720" stroke="#00c9a740"/>
+          <text x="190" y="70" text-anchor="middle" fill="#00c9a7">cat</text>
+          <rect x="270" y="50" width="80" height="30" rx="6" fill="#3b82f630" stroke="#3b82f650"/>
+          <text x="310" y="70" text-anchor="middle" fill="#3b82f6">sat</text>
+          <rect x="390" y="50" width="80" height="30" rx="6" fill="#00c9a720" stroke="#00c9a740"/>
+          <text x="430" y="70" text-anchor="middle" fill="#00c9a7">on</text>
+          <rect x="510" y="50" width="80" height="30" rx="6" fill="#00c9a720" stroke="#00c9a740"/>
+          <text x="550" y="70" text-anchor="middle" fill="#00c9a7">mat</text>
+        </g>
+        <!-- attention arrows FROM "sat" to others (strong = blue, weak = gray) -->
+        <line x1="310" y1="50" x2="70" y2="50" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,3" opacity=".5" marker-end="url(#arr2)"/>
+        <line x1="310" y1="50" x2="190" y2="50" stroke="#3b82f6" stroke-width="2" opacity=".9" marker-end="url(#arr)"/>
+        <line x1="310" y1="50" x2="430" y2="50" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4,3" opacity=".5" marker-end="url(#arr2)"/>
+        <line x1="310" y1="50" x2="550" y2="50" stroke="#3b82f6" stroke-width="2.5" opacity=".95" marker-end="url(#arr)"/>
+        <!-- weight labels -->
+        <text x="130" y="46" text-anchor="middle" fill="#5a6382" font-family="JetBrains Mono" font-size="9">0.1</text>
+        <text x="250" y="46" text-anchor="middle" fill="#3b82f6" font-family="JetBrains Mono" font-size="9">0.4</text>
+        <text x="370" y="46" text-anchor="middle" fill="#5a6382" font-family="JetBrains Mono" font-size="9">0.1</text>
+        <text x="470" y="46" text-anchor="middle" fill="#3b82f6" font-family="JetBrains Mono" font-size="9">0.4</text>
+        <!-- label -->
+        <text x="310" y="110" text-anchor="middle" fill="#3b82f6" font-family="JetBrains Mono" font-size="10">Query token: "sat" attends most to "cat" and "mat"</text>
+        <text x="310" y="128" text-anchor="middle" fill="#5a6382" font-family="JetBrains Mono" font-size="9">Attention weight = softmax(QKᵀ / √dₖ) · V</text>
+      </svg>
+      <div class="figure-caption">Figure 1 — Self-attention: token "sat" attends to all other tokens, with higher weights for semantically related words.</div>
+    </div>
+
+    <div class="concept-row">
+      <span class="concept">Self-Attention</span>
+      <span class="concept">Multi-Head Attention</span>
+      <span class="concept">Positional Encoding</span>
+      <span class="concept">Feed-Forward Network</span>
+      <span class="concept">Add &amp; Norm (Residual)</span>
+      <span class="concept">Layer Normalization</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ ENCODER-ONLY ═══════════════ -->
+<section id="encoder">
+  <div class="container fade-in">
+    <div class="sec-label">Variant 01</div>
+    <div class="sec-title" style="color:var(--enc)">Encoder-Only Transformer</div>
+
+    <div class="transformer-card enc-card">
+      <div class="card-header">
+        <div class="card-num">01</div>
+        <div class="card-header-text">
+          <h2>Encoder-Only</h2>
+          <p>Reads the full input bidirectionally · Produces rich contextual embeddings · Understands, doesn't generate</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-grid">
+          <div class="card-section">
+            <h4>Architecture</h4>
+            <ul>
+              <li><strong>Structure:</strong> Stack of N encoder layers only</li>
+              <li><strong>Attention:</strong> Bidirectional — each token can attend to ALL other tokens (left and right)</li>
+              <li><strong>Output:</strong> Contextualized embeddings for every token</li>
+              <li><strong>Training:</strong> Masked Language Modeling (MLM) — randomly mask 15% of tokens, predict them</li>
+              <li><strong>No autoregressive:</strong> Not designed for text generation</li>
+            </ul>
+          </div>
+          <div class="card-section">
+            <h4>Applications</h4>
+            <ul>
+              <li><strong>Text Classification</strong> — sentiment, topic</li>
+              <li><strong>Named Entity Recognition (NER)</strong></li>
+              <li><strong>Question Answering</strong> (extractive)</li>
+              <li><strong>Semantic Similarity</strong> / embedding search</li>
+              <li><strong>Coreference Resolution</strong></li>
+              <li><strong>Token Classification</strong> tasks</li>
+            </ul>
+          </div>
+        </div>
+        <div class="how-box enc-how">
+          <h4>How it works</h4>
+          <ul>
+            <li>Entire input sequence fed simultaneously (no left-to-right constraint)</li>
+            <li>Each encoder layer applies bidirectional multi-head self-attention</li>
+            <li>Produces one embedding vector per input token, enriched with full-context information</li>
+            <li>Final [CLS] token embedding used for classification tasks; per-token embeddings used for span tasks</li>
+          </ul>
+        </div>
+        <div style="margin-top:16px;">
+          <h4 class="card-section" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Real-World Models</h4>
+          <div class="examples-list">
+            <span class="model-pill enc-pill">BERT</span>
+            <span class="model-pill enc-pill">RoBERTa</span>
+            <span class="model-pill enc-pill">DistilBERT</span>
+            <span class="model-pill enc-pill">ALBERT</span>
+            <span class="model-pill enc-pill">ELECTRA</span>
+            <span class="model-pill enc-pill">DeBERTa</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Architecture Diagram -->
+    <div class="figure-box">
+      <svg viewBox="0 0 300 420" xmlns="http://www.w3.org/2000/svg" style="max-width:260px;width:100%;">
+        <defs>
+          <marker id="a1" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto">
+            <path d="M0,0 L5,2.5 L0,5 Z" fill="#00c9a7"/>
+          </marker>
+        </defs>
+        <!-- title -->
+        <text x="150" y="20" text-anchor="middle" fill="#00c9a7" font-family="JetBrains Mono" font-size="10" letter-spacing="1">ENCODER-ONLY</text>
+
+        <!-- Output label -->
+        <text x="150" y="46" text-anchor="middle" fill="#9aa3b8" font-family="JetBrains Mono" font-size="9">Output Embeddings</text>
+        <line x1="150" y1="50" x2="150" y2="65" stroke="#00c9a7" stroke-width="1.5" marker-end="url(#a1)"/>
+
+        <!-- Add & Norm -->
+        <rect x="60" y="66" width="180" height="32" rx="6" fill="#00c9a730" stroke="#00c9a750"/>
+        <text x="150" y="87" text-anchor="middle" fill="#00c9a7" font-family="DM Sans" font-size="12" font-weight="600">Add &amp; Norm</text>
+        <line x1="150" y1="98" x2="150" y2="113" stroke="#00c9a7" stroke-width="1.5" marker-end="url(#a1)"/>
+
+        <!-- FFN -->
+        <rect x="60" y="114" width="180" height="32" rx="6" fill="#3b82f625" stroke="#3b82f645"/>
+        <text x="150" y="135" text-anchor="middle" fill="#9aa3b8" font-family="DM Sans" font-size="12" font-weight="600">Feed Forward Network</text>
+        <line x1="150" y1="146" x2="150" y2="161" stroke="#00c9a7" stroke-width="1.5" marker-end="url(#a1)"/>
+
+        <!-- Add & Norm 2 -->
+        <rect x="60" y="162" width="180" height="32" rx="6" fill="#00c9a730" stroke="#00c9a750"/>
+        <text x="150" y="183" text-anchor="middle" fill="#00c9a7" font-family="DM Sans" font-size="12" font-weight="600">Add &amp; Norm</text>
+        <line x1="150" y1="194" x2="150" y2="209" stroke="#00c9a7" stroke-width="1.5" marker-end="url(#a1)"/>
+
+        <!-- Multi-Head Self-Attention -->
+        <rect x="50" y="210" width="200" height="42" rx="6" fill="#00c9a715" stroke="#00c9a760"/>
+        <text x="150" y="228" text-anchor="middle" fill="#00c9a7" font-family="DM Sans" font-size="12" font-weight="600">Multi-Head</text>
+        <text x="150" y="244" text-anchor="middle" fill="#00c9a7" font-family="DM Sans" font-size="11">Self-Attention (Bidirectional)</text>
+
+        <!-- Nx bracket -->
+        <rect x="28" y="64" width="244" height="192" rx="8" fill="none" stroke="#00c9a730" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="272" y="170" fill="#00c9a760" font-family="JetBrains Mono" font-size="10">Nx</text>
+
+        <line x1="150" y1="252" x2="150" y2="267" stroke="#00c9a7" stroke-width="1.5" marker-end="url(#a1)"/>
+
+        <!-- Positional Encoding -->
+        <rect x="60" y="268" width="180" height="28" rx="6" fill="#f59e0b15" stroke="#f59e0b30"/>
+        <text x="150" y="287" text-anchor="middle" fill="#f59e0b" font-family="DM Sans" font-size="11">+ Positional Encoding</text>
+        <line x1="150" y1="296" x2="150" y2="311" stroke="#00c9a7" stroke-width="1.5" marker-end="url(#a1)"/>
+
+        <!-- Input Embedding -->
+        <rect x="60" y="312" width="180" height="28" rx="6" fill="#a78bfa15" stroke="#a78bfa30"/>
+        <text x="150" y="331" text-anchor="middle" fill="#a78bfa" font-family="DM Sans" font-size="11">Input Embedding</text>
+        <line x1="150" y1="340" x2="150" y2="355" stroke="#00c9a7" stroke-width="1.5" marker-end="url(#a1)"/>
+
+        <!-- Input Tokens -->
+        <text x="150" y="373" text-anchor="middle" fill="#9aa3b8" font-family="JetBrains Mono" font-size="9">Input Tokens</text>
+        <text x="150" y="389" text-anchor="middle" fill="#5a6382" font-family="JetBrains Mono" font-size="8">[The] [cat] [sat] ...</text>
+
+        <!-- bidirectional arrows annotation -->
+        <text x="150" y="412" text-anchor="middle" fill="#00c9a760" font-family="JetBrains Mono" font-size="8">← → bidirectional attention</text>
+      </svg>
+      <div class="figure-caption">Figure 2 — Encoder-Only architecture: bidirectional self-attention allows full context access.</div>
+    </div>
+
+    <div class="callout callout-blue">
+      <span class="callout-icon">🔑</span>
+      <span><strong style="color:var(--enc)">Key Insight:</strong> Because every token can see every other token during training AND inference, the encoder builds extremely rich semantic representations. BERT's breakthrough was showing these representations could be fine-tuned with minimal task-specific layers to achieve state-of-the-art on 11 NLP benchmarks simultaneously.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ DECODER-ONLY ═══════════════ -->
+<section id="decoder">
+  <div class="container fade-in">
+    <div class="sec-label">Variant 02</div>
+    <div class="sec-title" style="color:var(--dec)">Decoder-Only Transformer</div>
+
+    <div class="transformer-card dec-card">
+      <div class="card-header">
+        <div class="card-num">02</div>
+        <div class="card-header-text">
+          <h2>Decoder-Only</h2>
+          <p>Generates text one token at a time · Causal (masked) attention · Powers all major LLMs (GPT, LLaMA, Claude)</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-grid">
+          <div class="card-section">
+            <h4>Architecture</h4>
+            <ul>
+              <li><strong>Structure:</strong> Stack of N decoder layers only</li>
+              <li><strong>Attention:</strong> Causal (masked) — each token attends only to itself and <em>past</em> tokens</li>
+              <li><strong>Output:</strong> One token at a time (autoregressive)</li>
+              <li><strong>Training:</strong> Next-token prediction on shifted sequence</li>
+              <li><strong>Input:</strong> Entire prompt + history fed as single sequence</li>
+            </ul>
+          </div>
+          <div class="card-section">
+            <h4>Applications</h4>
+            <ul>
+              <li><strong>Chatbots &amp; Conversational AI</strong></li>
+              <li><strong>Code Generation</strong> (Copilot, Codex)</li>
+              <li><strong>Story / Creative Writing</strong></li>
+              <li><strong>Reasoning &amp; Chain-of-Thought</strong></li>
+              <li><strong>Summarization</strong> (generative)</li>
+              <li><strong>Instruction Following</strong></li>
+            </ul>
+          </div>
+        </div>
+        <div class="how-box dec-how">
+          <h4>How it works</h4>
+          <ul>
+            <li>Prompt is tokenized and embedded with positional encodings</li>
+            <li>Each layer applies masked multi-head self-attention (future tokens masked out)</li>
+            <li>Final hidden state → linear projection → softmax → probability distribution over vocabulary</li>
+            <li>Sample/argmax the next token; append to sequence; repeat until end token or max length</li>
+          </ul>
+        </div>
+        <div style="margin-top:16px;">
+          <h4 style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Real-World Models</h4>
+          <div class="examples-list">
+            <span class="model-pill dec-pill">GPT-4</span>
+            <span class="model-pill dec-pill">GPT-3</span>
+            <span class="model-pill dec-pill">LLaMA 3</span>
+            <span class="model-pill dec-pill">Mistral</span>
+            <span class="model-pill dec-pill">Falcon</span>
+            <span class="model-pill dec-pill">Claude</span>
+            <span class="model-pill dec-pill">Gemini</span>
+            <span class="model-pill dec-pill">Phi-3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Causal Attention Mask -->
+    <div class="figure-box">
+      <h4 style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dec);margin-bottom:12px;">Causal (Masked) Self-Attention</h4>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">Each position can only attend to current and <em>previous</em> positions — never future ones. This enables autoregressive generation.</p>
+      <div class="mask-wrap">
+        <table class="mask-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>T1 "The"</th>
+              <th>T2 "cat"</th>
+              <th>T3 "sat"</th>
+              <th>T4 "on"</th>
+              <th>T5 "mat"</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="color:var(--dec)">T1</td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+            <tr><td style="color:var(--dec)">T2</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+            <tr><td style="color:var(--dec)">T3</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td></tr>
+            <tr><td style="color:var(--dec)">T4</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td></tr>
+            <tr><td style="color:var(--dec)">T5</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="figure-caption">Figure 3 — Lower-triangular attention mask: T5 can see all tokens; T1 can only see itself.</div>
+    </div>
+
+    <!-- Autoregressive generation diagram -->
+    <div class="figure-box">
+      <h4 style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dec);margin-bottom:14px;">Token-by-Token Generation</h4>
+      <svg viewBox="0 0 660 120" xmlns="http://www.w3.org/2000/svg" style="max-width:660px;width:100%;">
+        <defs>
+          <marker id="ga" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto">
+            <path d="M0,0 L5,2.5 L0,5 Z" fill="#f59e0b"/>
+          </marker>
+        </defs>
+        <!-- Step 0 -->
+        <rect x="10" y="20" width="90" height="28" rx="5" fill="#f59e0b15" stroke="#f59e0b40"/>
+        <text x="55" y="39" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono" font-size="10">[PROMPT]</text>
+        <line x1="100" y1="34" x2="114" y2="34" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#ga)"/>
+        <!-- Step 1 -->
+        <rect x="115" y="20" width="90" height="28" rx="5" fill="#f59e0b20" stroke="#f59e0b50"/>
+        <text x="160" y="39" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono" font-size="10">+ "Cloud"</text>
+        <line x1="205" y1="34" x2="219" y2="34" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#ga)"/>
+        <!-- Step 2 -->
+        <rect x="220" y="20" width="110" height="28" rx="5" fill="#f59e0b25" stroke="#f59e0b55"/>
+        <text x="275" y="39" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono" font-size="10">+ "computing"</text>
+        <line x1="330" y1="34" x2="344" y2="34" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#ga)"/>
+        <!-- Step 3 -->
+        <rect x="345" y="20" width="70" height="28" rx="5" fill="#f59e0b30" stroke="#f59e0b60"/>
+        <text x="380" y="39" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono" font-size="10">+ "is"</text>
+        <line x1="415" y1="34" x2="429" y2="34" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#ga)"/>
+        <!-- Step 4 -->
+        <rect x="430" y="20" width="70" height="28" rx="5" fill="#f59e0b35" stroke="#f59e0b70"/>
+        <text x="465" y="39" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono" font-size="10">+ "a"</text>
+        <line x1="500" y1="34" x2="514" y2="34" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#ga)"/>
+        <!-- continue -->
+        <text x="535" y="39" fill="#5a6382" font-family="JetBrains Mono" font-size="14">···</text>
+
+        <!-- labels below -->
+        <text x="55" y="70" text-anchor="middle" fill="#5a6382" font-family="JetBrains Mono" font-size="8">step 0</text>
+        <text x="160" y="70" text-anchor="middle" fill="#5a6382" font-family="JetBrains Mono" font-size="8">step 1  p=0.38</text>
+        <text x="275" y="70" text-anchor="middle" fill="#5a6382" font-family="JetBrains Mono" font-size="8">step 2  p=0.72</text>
+        <text x="380" y="70" text-anchor="middle" fill="#5a6382" font-family="JetBrains Mono" font-size="8">step 3  p=0.81</text>
+        <text x="465" y="70" text-anchor="middle" fill="#5a6382" font-family="JetBrains Mono" font-size="8">step 4  p=0.36</text>
+
+        <!-- curved feedback arrow -->
+        <path d="M 540 48 C 580 48, 590 100, 350 100 C 110 100, 30 80, 30 50" fill="none" stroke="#f59e0b40" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ga)"/>
+        <text x="330" y="116" text-anchor="middle" fill="#f59e0b60" font-family="JetBrains Mono" font-size="9">entire sequence fed back each step</text>
+      </svg>
+      <div class="figure-caption">Figure 4 — Autoregressive generation: each predicted token is appended and re-fed into the model.</div>
+    </div>
+
+    <div class="callout callout-amber">
+      <span class="callout-icon">⚡</span>
+      <span><strong style="color:var(--dec)">Why it scales so well:</strong> The decoder-only design allows training on any raw text corpus with a simple next-token prediction objective — no labeling required. This means models can scale to trillions of tokens of training data, explaining why GPT-family models grew from 117M to >1T parameters.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ ENCODER-DECODER ═══════════════ -->
+<section id="encdec">
+  <div class="container fade-in">
+    <div class="sec-label">Variant 03</div>
+    <div class="sec-title" style="color:var(--encdec)">Encoder–Decoder Transformer</div>
+
+    <div class="transformer-card ed-card">
+      <div class="card-header">
+        <div class="card-num">03</div>
+        <div class="card-header-text">
+          <h2>Encoder–Decoder</h2>
+          <p>Bidirectional encoding + autoregressive decoding · Two separate stacks · Seq2Seq tasks where input ≠ output</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-grid">
+          <div class="card-section">
+            <h4>Architecture</h4>
+            <ul>
+              <li><strong>Encoder Stack:</strong> Bidirectional self-attention on source</li>
+              <li><strong>Decoder Stack:</strong> (1) Masked self-attention within decoder, (2) <em>Cross-attention</em> to encoder outputs</li>
+              <li><strong>Cross-Attention:</strong> Decoder queries from encoder's key/value projections</li>
+              <li><strong>Training:</strong> Next-token prediction on target sequence (shifted right)</li>
+              <li><strong>Input → Output:</strong> Different sequences (translation, summarization)</li>
+            </ul>
+          </div>
+          <div class="card-section">
+            <h4>Applications</h4>
+            <ul>
+              <li><strong>Machine Translation</strong> (en → fr, etc.)</li>
+              <li><strong>Text Summarization</strong> (abstractive)</li>
+              <li><strong>Image Captioning</strong></li>
+              <li><strong>Question Generation</strong></li>
+              <li><strong>Document Generation</strong></li>
+              <li><strong>Speech Recognition</strong> (Whisper)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="how-box ed-how">
+          <h4>How it works</h4>
+          <ul>
+            <li>Encoder processes entire source sequence with bidirectional attention → hidden representations</li>
+            <li>Decoder generates output tokens one at a time (autoregressive)</li>
+            <li>At each decoder step: masked self-attention over decoded tokens so far, then cross-attention over encoder outputs</li>
+            <li>Cross-attention: decoder's Q attends to encoder's K, V — enabling the decoder to "consult" the source at each generation step</li>
+          </ul>
+        </div>
+        <div style="margin-top:16px;">
+          <h4 style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Real-World Models</h4>
+          <div class="examples-list">
+            <span class="model-pill ed-pill">T5</span>
+            <span class="model-pill ed-pill">BART</span>
+            <span class="model-pill ed-pill">MarianMT</span>
+            <span class="model-pill ed-pill">PEGASUS</span>
+            <span class="model-pill ed-pill">mT5</span>
+            <span class="model-pill ed-pill">MASS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cross-Attention Diagram -->
+    <div class="figure-box">
+      <svg viewBox="0 0 660 230" xmlns="http://www.w3.org/2000/svg" style="max-width:660px;width:100%;">
+        <defs>
+          <marker id="ea" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto">
+            <path d="M0,0 L5,2.5 L0,5 Z" fill="#a78bfa"/>
+          </marker>
+          <marker id="ea2" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto">
+            <path d="M0,0 L5,2.5 L0,5 Z" fill="#00c9a7"/>
+          </marker>
+        </defs>
+        <!-- Encoder side -->
+        <text x="160" y="18" text-anchor="middle" fill="#00c9a7" font-family="JetBrains Mono" font-size="10" letter-spacing="1">ENCODER</text>
+        <rect x="50" y="25" width="220" height="36" rx="7" fill="#00c9a720" stroke="#00c9a750"/>
+        <text x="160" y="43" text-anchor="middle" fill="#00c9a7" font-family="DM Sans" font-size="12" font-weight="600">Bidirectional Self-Attention</text>
+        <text x="160" y="56" text-anchor="middle" fill="#5a6382" font-family="JetBrains Mono" font-size="9">Source: "Le chat est assis"</text>
+
+        <!-- K, V projections from encoder -->
+        <line x1="200" y1="61" x2="200" y2="90" stroke="#00c9a7" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ea2)"/>
+        <line x1="240" y1="61" x2="240" y2="90" stroke="#00c9a7" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ea2)"/>
+        <text x="195" y="80" fill="#00c9a7" font-family="JetBrains Mono" font-size="9">K</text>
+        <text x="235" y="80" fill="#00c9a7" font-family="JetBrains Mono" font-size="9">V</text>
+
+        <!-- Decoder side -->
+        <text x="500" y="18" text-anchor="middle" fill="#a78bfa" font-family="JetBrains Mono" font-size="10" letter-spacing="1">DECODER</text>
+        <rect x="390" y="25" width="220" height="36" rx="7" fill="#a78bfa20" stroke="#a78bfa50"/>
+        <text x="500" y="43" text-anchor="middle" fill="#a78bfa" font-family="DM Sans" font-size="12" font-weight="600">Masked Self-Attention</text>
+        <text x="500" y="56" text-anchor="middle" fill="#5a6382" font-family="JetBrains Mono" font-size="9">Target so far: "The cat is"</text>
+
+        <!-- Q projection from decoder -->
+        <line x1="460" y1="61" x2="380" y2="90" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ea)"/>
+        <text x="405" y="80" fill="#a78bfa" font-family="JetBrains Mono" font-size="9">Q</text>
+
+        <!-- Cross-Attention box -->
+        <rect x="130" y="92" width="400" height="46" rx="8" fill="#a78bfa15" stroke="#a78bfa60"/>
+        <text x="330" y="112" text-anchor="middle" fill="#a78bfa" font-family="DM Sans" font-size="13" font-weight="700">Cross-Attention</text>
+        <text x="330" y="130" text-anchor="middle" fill="#9aa3b8" font-family="JetBrains Mono" font-size="10">Q (decoder) · K,V (encoder) → context</text>
+
+        <!-- output -->
+        <line x1="330" y1="138" x2="330" y2="155" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ea)"/>
+        <rect x="200" y="156" width="260" height="34" rx="7" fill="#f59e0b20" stroke="#f59e0b50"/>
+        <text x="330" y="178" text-anchor="middle" fill="#f59e0b" font-family="DM Sans" font-size="12" font-weight="600">Output: "sitting" (next predicted token)</text>
+
+        <!-- legend -->
+        <text x="330" y="215" text-anchor="middle" fill="#5a6382" font-family="JetBrains Mono" font-size="9">Cross-attention lets decoder "ask" the encoder: which source tokens are relevant right now?</text>
+      </svg>
+      <div class="figure-caption">Figure 5 — Cross-attention mechanism: decoder's Query attends to encoder's Key/Value at every generation step.</div>
+    </div>
+
+    <div class="callout callout-purple">
+      <span class="callout-icon">🔀</span>
+      <span><strong style="color:var(--encdec)">Key Insight:</strong> T5 ("Text-to-Text Transfer Transformer") showed that nearly every NLP task can be framed as text-in → text-out. By converting classification, Q&A, summarization, and translation into text generation tasks, a single encoder–decoder model can be trained on all of them simultaneously.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ COMPARISON ═══════════════ -->
+<section id="comparison">
+  <div class="container fade-in">
+    <div class="sec-label">Side-by-Side</div>
+    <div class="sec-title">Comparison Summary</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Variant</th>
+            <th>Components</th>
+            <th>Attention Type</th>
+            <th>Input → Output</th>
+            <th>Main Strength</th>
+            <th>Typical Use Cases</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="enc-row">
+            <td>Encoder-Only</td>
+            <td>Encoder stack</td>
+            <td>Bidirectional self-attention</td>
+            <td>Input → Representations</td>
+            <td>Rich contextual embeddings</td>
+            <td>Classification, NER, QA (extractive), Similarity</td>
+          </tr>
+          <tr class="dec-row">
+            <td>Decoder-Only</td>
+            <td>Decoder stack</td>
+            <td>Causal (masked) self-attention</td>
+            <td>Input → Autoregressive output</td>
+            <td>Generation, scalability for LLMs</td>
+            <td>Chatbots, code generation, creative writing</td>
+          </tr>
+          <tr class="ed-row">
+            <td>Encoder–Decoder</td>
+            <td>Encoder + Decoder stacks</td>
+            <td>Bidirectional (enc) + Masked + Cross-attention (dec)</td>
+            <td>Input → Different output</td>
+            <td>Conditional generation, seq mapping</td>
+            <td>Translation, summarization, captioning</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- When to use what -->
+    <div style="margin-top:28px;">
+      <div class="sec-label" style="margin-bottom:12px;">Decision Guide</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+        <div style="background:var(--surface2);border:1px solid var(--enc-mid);border-radius:12px;padding:16px;">
+          <div style="color:var(--enc);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Use Encoder-Only when…</div>
+          <ul style="list-style:none;font-size:13px;color:var(--text2);">
+            <li style="padding:3px 0">→ You need to <strong style="color:var(--text)">understand</strong> text</li>
+            <li style="padding:3px 0">→ Task = classification or span detection</li>
+            <li style="padding:3px 0">→ You want dense semantic embeddings</li>
+            <li style="padding:3px 0">→ Fast inference over many documents</li>
+          </ul>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--dec-mid);border-radius:12px;padding:16px;">
+          <div style="color:var(--dec);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Use Decoder-Only when…</div>
+          <ul style="list-style:none;font-size:13px;color:var(--text2);">
+            <li style="padding:3px 0">→ You need to <strong style="color:var(--text)">generate</strong> open-ended text</li>
+            <li style="padding:3px 0">→ Building a chatbot / assistant</li>
+            <li style="padding:3px 0">→ Scaling to billions of parameters</li>
+            <li style="padding:3px 0">→ In-context learning / few-shot prompting</li>
+          </ul>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--encdec-mid);border-radius:12px;padding:16px;">
+          <div style="color:var(--encdec);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Use Encoder–Decoder when…</div>
+          <ul style="list-style:none;font-size:13px;color:var(--text2);">
+            <li style="padding:3px 0">→ Input and output are <strong style="color:var(--text)">different sequences</strong></li>
+            <li style="padding:3px 0">→ Translation or summarization tasks</li>
+            <li style="padding:3px 0">→ You need full source context at each decode step</li>
+            <li style="padding:3px 0">→ Structured output from unstructured input</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ CHATBOT FLOW ═══════════════ -->
+<section id="chatbot">
+  <div class="container fade-in">
+    <div class="sec-label">Deep Dive</div>
+    <div class="sec-title">Chatbot Using Decoder-Only Transformer</div>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:24px;">End-to-end walkthrough of how a GPT / LLaMA-style chatbot turns user input into an intelligent response.</p>
+
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num">Step 01 · User Interaction</div>
+        <h4>User sends a message</h4>
+        <p>User types a query. The system packages it with conversation history and a system prompt into a single text string.</p>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">Step 02 · Conversation Context</div>
+        <h4>Full history maintained</h4>
+        <p>The entire conversation (system + past turns + current message) is kept as context. No separate memory — it's all in the prompt.</p>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">Step 03 · Prompt Formation</div>
+        <h4>Special tokens applied</h4>
+        <p>Format: <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);color:var(--dec);padding:1px 5px;border-radius:3px;">&lt;s&gt;[SYSTEM]…[USER]…[ASSISTANT]</code> — role tags tell the model who is speaking.</p>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">Step 04 · Tokenization</div>
+        <h4>Text → Token IDs</h4>
+        <p>BPE/SentencePiece splits text into sub-word units. "Give an example" → [345, 621, 2367, 13]. Each ID maps to an embedding vector.</p>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">Step 05 · Positional Encoding</div>
+        <h4>Position added to embeddings</h4>
+        <p>Since transformers have no inherent order, sinusoidal or learned positional encodings are added to each token embedding before the first layer.</p>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">Step 06 · Decoder Layers (Nx)</div>
+        <h4>Masked multi-head self-attention</h4>
+        <p>N identical layers: each applies causal attention + feed-forward network. The final hidden state represents "what comes next" in context.</p>
+      </div>
+    </div>
+
+    <!-- Output Head & Generation Loop -->
+    <div class="gen-loop" style="margin-top:24px;">
+      <h4 style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dec);margin-bottom:16px;">Step 07 · Generation Loop (Inference)</h4>
+      <div class="loop-steps">
+        <div class="loop-step">
+          <div class="loop-icon">🔮</div>
+          <p><strong style="color:var(--text)">Predict</strong><br>Model outputs next-token probability distribution over full vocabulary</p>
+        </div>
+        <div class="loop-step">
+          <div class="loop-icon">🎲</div>
+          <p><strong style="color:var(--text)">Sample</strong><br>Select token via top-p / top-k / temperature sampling</p>
+        </div>
+        <div class="loop-step">
+          <div class="loop-icon">➕</div>
+          <p><strong style="color:var(--text)">Append</strong><br>Append selected token to the running sequence</p>
+        </div>
+        <div class="loop-step">
+          <div class="loop-icon">🔄</div>
+          <p><strong style="color:var(--text)">Repeat</strong><br>Feed updated sequence back; loop until &lt;/s&gt; or max length</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sampling strategies -->
+    <div style="margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;">
+        <div style="color:var(--dec);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Greedy Decoding</div>
+        <p style="font-size:13px;color:var(--text2);">Always pick the highest-probability token. Fast, deterministic, but repetitive.</p>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;">
+        <div style="color:var(--dec);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Top-k Sampling</div>
+        <p style="font-size:13px;color:var(--text2);">Sample from the k most likely tokens. Controls diversity; k=50 is common.</p>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;">
+        <div style="color:var(--dec);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Top-p (Nucleus)</div>
+        <p style="font-size:13px;color:var(--text2);">Sample from smallest set of tokens whose cumulative prob ≥ p. Adapts to each step.</p>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;">
+        <div style="color:var(--dec);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Temperature</div>
+        <p style="font-size:13px;color:var(--text2);">T &lt; 1 = sharper (more focused); T &gt; 1 = flatter (more creative). Scales logits before softmax.</p>
+      </div>
+    </div>
+
+    <!-- Training at a glance -->
+    <div style="margin-top:24px;">
+      <div class="sec-label" style="margin-bottom:12px;">Training at a Glance</div>
+      <div class="training-row">
+        <div class="train-step"><div class="t-icon">📚</div><p>Large Text Corpus (internet, books, code)</p></div>
+        <div class="train-arrow">→</div>
+        <div class="train-step"><div class="t-icon">✂️</div><p>Tokenization (BPE / SentencePiece)</p></div>
+        <div class="train-arrow">→</div>
+        <div class="train-step"><div class="t-icon">🧠</div><p>Decoder-Only Transformer (forward pass)</p></div>
+        <div class="train-arrow">→</div>
+        <div class="train-step"><div class="t-icon">📉</div><p>Next-Token Prediction Loss (cross-entropy)</p></div>
+        <div class="train-arrow">→</div>
+        <div class="train-step"><div class="t-icon">🔁</div><p>Backprop + AdamW optimizer</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ INTERVIEW Q&A ═══════════════ -->
+<section id="interview">
+  <div class="container fade-in">
+    <div class="sec-label">Exam Prep</div>
+    <div class="sec-title">Interview Q &amp; A</div>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:20px;">Tap any question to reveal the answer. Covers foundational, architectural, and comparative questions.</p>
+
+    <!-- FUNDAMENTALS -->
+    <div class="qa-category">01 · Fundamentals</div>
+    <div class="qa-list">
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q1</span>
+          <span class="qa-q-text">What is self-attention and how does it differ from traditional attention?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          Self-attention (intra-attention) computes attention <strong>within a single sequence</strong> — every token attends to every other token in the same sequence. Traditional (cross) attention attends between two different sequences (e.g., encoder output and decoder state in seq2seq RNNs). Self-attention is computed as: <code>Attention(Q,K,V) = softmax(QKᵀ / √dₖ) · V</code> where Q, K, V are linear projections of the same input sequence.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q2</span>
+          <span class="qa-q-text">Why is positional encoding necessary in transformers?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          Transformers process all tokens in parallel with no inherent notion of order — unlike RNNs which process sequentially. Without positional encoding, "the cat sat" and "sat the cat" would produce identical representations. Positional encodings (sinusoidal or learned) are added to token embeddings to inject position information. Sinusoidal PE uses <code>sin/cos</code> at different frequencies, allowing the model to generalize to sequence lengths longer than seen in training.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q3</span>
+          <span class="qa-q-text">What is multi-head attention and why use multiple heads?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          Multi-head attention runs <code>h</code> parallel attention heads, each with its own Q, K, V projection matrices (dimension <code>dₖ = d_model / h</code>). The outputs are concatenated and linearly projected. Using multiple heads allows the model to simultaneously attend to <strong>different aspects</strong> of the sequence — one head might capture syntactic relationships, another semantic ones, another co-reference. It gives the model richer representational capacity than a single large attention operation.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q4</span>
+          <span class="qa-q-text">What is the role of the Feed-Forward Network (FFN) in each transformer layer?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          The FFN is applied <strong>independently to each token position</strong> after the attention sub-layer. It consists of two linear transformations with a non-linearity: <code>FFN(x) = max(0, xW₁ + b₁)W₂ + b₂</code>. The inner dimension is typically 4× the model dimension (e.g., 3072 for d_model=768). While attention captures token interactions, the FFN acts as a per-token "memory" that stores and retrieves factual associations. Recent research suggests much factual knowledge is stored in FFN weights.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q5</span>
+          <span class="qa-q-text">What is residual connection and layer normalization, and why are they used?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          <strong>Residual connections</strong> add the input of a sub-layer to its output: <code>output = x + Sublayer(x)</code>. This enables gradient flow through deep networks (avoiding vanishing gradients) and lets layers learn residual refinements rather than full transformations. <strong>Layer Normalization</strong> normalizes activations across the feature dimension (not batch dimension), stabilizing training. Together they enable training transformers with 100+ layers. Pre-norm (LayerNorm before sublayer) is used in modern LLMs for more stable training.
+        </div>
+      </div>
+    </div>
+
+    <!-- ENCODER-ONLY -->
+    <div class="qa-category">02 · Encoder-Only (BERT-family)</div>
+    <div class="qa-list">
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q6</span>
+          <span class="qa-q-text">How does BERT's Masked Language Modeling (MLM) training objective work?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          In MLM, 15% of input tokens are randomly selected. Of these: 80% are replaced with <code>[MASK]</code>, 10% with a random token, and 10% kept unchanged. The model must predict the original token at masked positions. This forces bidirectional context learning — the model must use both left and right context to fill in masked tokens. The 10/10 strategy prevents the model from "knowing" when it needs to predict, making all representations useful.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q7</span>
+          <span class="qa-q-text">Why can't BERT generate text directly?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          BERT uses <strong>bidirectional attention</strong> — each token sees all other tokens including future ones. For autoregressive generation, the model must predict the next token conditioned only on past tokens. If BERT tried to generate token at position t, it would "cheat" by seeing future tokens t+1, t+2… during training, making generation meaningless. Autoregressive generation requires causal (masked) attention — which is what decoder-only models use. BERT is fundamentally an understanding model, not a generation model.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q8</span>
+          <span class="qa-q-text">What is the [CLS] token in BERT and how is it used?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          <code>[CLS]</code> (classification token) is prepended to every input sequence. Because of bidirectional attention, by the final layer its representation has "attended to" the entire sequence and aggregates global information. For classification tasks (sentiment, NLI), the <code>[CLS]</code> embedding is fed into a classification head (linear layer + softmax). For tasks like NER or QA, per-token embeddings are used instead. The <code>[SEP]</code> token separates paired sequences (e.g., sentence A and B in NSP).
+        </div>
+      </div>
+    </div>
+
+    <!-- DECODER-ONLY -->
+    <div class="qa-category">03 · Decoder-Only (GPT-family)</div>
+    <div class="qa-list">
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q9</span>
+          <span class="qa-q-text">What is the causal (autoregressive) language modeling objective?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          Causal LM trains the model to maximize the probability of each token given all <em>preceding</em> tokens: <code>L = Σ log P(xₜ | x₁, x₂, ..., xₜ₋₁)</code>. During training, the target is the input shifted right by one position — at each step t, the model predicts token t given tokens 1…t-1. Crucially, a causal mask ensures no future tokens are attended to, making training and inference consistent. This simple objective, applied at scale, produces powerful general-purpose language models.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q10</span>
+          <span class="qa-q-text">What is temperature in text generation and how does it affect output?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          Temperature <code>T</code> scales logits before softmax: <code>P(xᵢ) = exp(logit_i / T) / Σ exp(logit_j / T)</code>. With <strong>T &lt; 1</strong> (e.g., 0.7): distribution sharpens, high-probability tokens become even more likely — output is focused, deterministic, less creative. With <strong>T &gt; 1</strong> (e.g., 1.5): distribution flattens, low-probability tokens get more chance — output is more varied and creative but potentially less coherent. T=1 is the raw model distribution. T→0 approaches greedy decoding.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q11</span>
+          <span class="qa-q-text">What is KV-cache and why is it important for efficient inference?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          During autoregressive generation, each new token requires attention over all previous tokens. Without caching, all K and V projections would be recomputed for every past token at each step — O(n²) computation. <strong>KV-cache</strong> stores the computed Key and Value tensors from previous steps, so at step t only the new token's K, V are computed and appended to the cache. This reduces generation time from O(n²) to O(n) for the cached portion. KV-cache is the primary reason inference is feasible for long sequences, but it consumes significant GPU memory (the "KV-cache memory" bottleneck).
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q12</span>
+          <span class="qa-q-text">What is instruction tuning / RLHF and why is it needed after pretraining?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          A pretrained decoder-only model is a "next-token predictor" — it will complete any text in a plausible way, but doesn't know how to <em>follow instructions</em> or be <em>helpful/safe</em>. <strong>Instruction tuning</strong> (SFT) fine-tunes on (instruction, response) pairs, teaching the model to answer questions and follow directives. <strong>RLHF</strong> (Reinforcement Learning from Human Feedback) then uses a reward model trained on human preference comparisons to further align the model via PPO or similar algorithms. Together they transform a raw LM into a usable assistant (ChatGPT, Claude, etc.).
+        </div>
+      </div>
+    </div>
+
+    <!-- ENCODER-DECODER -->
+    <div class="qa-category">04 · Encoder–Decoder</div>
+    <div class="qa-list">
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q13</span>
+          <span class="qa-q-text">Explain cross-attention in the encoder–decoder architecture.</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          In each decoder layer, after masked self-attention, there is a <strong>cross-attention</strong> sub-layer. The Query (Q) vectors come from the previous decoder layer, while the Key (K) and Value (V) vectors come from the encoder's final output. This allows each decoder step to "look at" all encoder representations and decide which source tokens are most relevant for generating the next target token. For machine translation, when generating "cloud," cross-attention might attend strongly to the source word "nuage."
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q14</span>
+          <span class="qa-q-text">How does T5's "text-to-text" framework unify NLP tasks?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          T5 (Text-to-Text Transfer Transformer) reformulates every NLP task as mapping an input text string to an output text string. Classification becomes: input <code>"sst2 sentence: The movie was great"</code> → output <code>"positive"</code>. Translation: input <code>"translate English to French: Hello"</code> → output <code>"Bonjour"</code>. Summarization: input <code>"summarize: ..."</code> → output summary. This unification means one model architecture and one training procedure handles everything — only the prefix text indicates the task. It makes multi-task training trivially easy.
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPARATIVE -->
+    <div class="qa-category">05 · Comparative &amp; Advanced</div>
+    <div class="qa-list">
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q15</span>
+          <span class="qa-q-text">Why have modern LLMs moved to decoder-only instead of encoder–decoder?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          Several reasons: (1) <strong>Simplicity</strong> — decoder-only uses one stack, half the parameters for the same capacity. (2) <strong>In-context learning</strong> — autoregressive models can use prompts to condition behavior without fine-tuning. (3) <strong>Scaling</strong> — the causal LM objective is extremely data-efficient; any raw text is valid training data. (4) <strong>Emergent capabilities</strong> — at sufficient scale, decoder-only models develop classification, reasoning, and translation capabilities without explicit architectural support. Encoder–decoder excels at fixed seq2seq tasks, but decoder-only is more general-purpose.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q16</span>
+          <span class="qa-q-text">What is the difference between top-k and top-p (nucleus) sampling?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          <strong>Top-k</strong> keeps the k highest-probability tokens and samples from them (k is fixed, e.g., 50). Problem: when the distribution is sharp, k may still include low-probability noise; when flat, k may exclude reasonable options. <strong>Top-p (nucleus)</strong> dynamically keeps the smallest set of tokens whose cumulative probability ≥ p (e.g., 0.9). If the model is confident, the nucleus is small (maybe just 2-3 tokens); if uncertain, the nucleus is large (many tokens). Top-p adapts to the distribution shape at each step, generally producing higher-quality text.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q17</span>
+          <span class="qa-q-text">What is the attention complexity problem and how does Flash Attention address it?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          Standard attention has O(n²) time and memory complexity with sequence length n — for n=10,000 the attention matrix alone requires 100M entries. <strong>Flash Attention</strong> (Dao et al., 2022) reformulates attention to be <strong>IO-aware</strong>: it tiles the QK computation to stay in SRAM rather than reading/writing the full attention matrix to HBM (slow GPU memory). Result: same mathematical output, but O(n) memory and significantly faster wall-clock time. Flash Attention v2/v3 further optimizes for multi-head and GQA setups, enabling 100k+ context windows in models like Claude.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q18</span>
+          <span class="qa-q-text">What is tokenization and why do all transformers use sub-word tokenization?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          Tokenization converts raw text into integer IDs. <strong>Word-level</strong> tokenization has huge vocabularies and can't handle OOV words. <strong>Character-level</strong> creates very long sequences. <strong>Sub-word</strong> methods (BPE, WordPiece, SentencePiece) find a middle ground: common words are single tokens ("the" → 1), rare words split into sub-words ("unbelievable" → ["un", "believ", "able"]). This limits vocabulary to ~30k-100k tokens while handling any text, balancing sequence length vs. vocabulary coverage. BPE (Byte-Pair Encoding) is most common — it iteratively merges the most frequent adjacent pairs.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q19</span>
+          <span class="qa-q-text">What is Grouped Query Attention (GQA) and why is it used in LLaMA 2/3?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          Standard Multi-Head Attention (MHA) has h query heads, h key heads, and h value heads. <strong>Multi-Query Attention (MQA)</strong> uses one shared K, V pair for all query heads — reduces KV-cache memory by h× but reduces quality. <strong>Grouped Query Attention (GQA)</strong> is a middle ground: G groups of query heads share one K, V pair each (G between 1 and h). LLaMA 2 70B uses G=8. Benefits: KV-cache is h/G× smaller → longer context, faster inference; quality close to MHA. It's the standard design in modern production LLMs.
+        </div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span class="qa-num">Q20</span>
+          <span class="qa-q-text">Compare BERT vs GPT for a sentiment classification task. Which would you use and why?</span>
+          <span class="qa-arrow">▼</span>
+        </div>
+        <div class="qa-answer">
+          For sentiment classification, <strong>BERT (encoder-only) is the better choice</strong>. Reasons: (1) BERT's bidirectional attention captures full context — important for negation ("not bad" vs "bad"). (2) Sentence-level classification uses the [CLS] embedding naturally. (3) BERT can be fine-tuned with minimal task-specific parameters (just a linear head). (4) Much smaller and faster than comparable GPT models. GPT could be used via prompting ("Is this review positive or negative: ...") but requires much larger models to match fine-tuned BERT performance, and is slower at inference time.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p style="margin-bottom:6px;">Based on infographics by <strong style="color:var(--text2)">Jawwad Shamsi</strong></p>
+    <p>Transformer Variants Reference · Encoder-Only · Decoder-Only · Encoder–Decoder</p>
+  </div>
+</footer>
+
+<script>
+  // Toggle Q&A
+  function toggleQA(el) {
+    const item = el.parentElement;
+    item.classList.toggle('open');
+  }
+
+  // Fade-in on scroll
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
