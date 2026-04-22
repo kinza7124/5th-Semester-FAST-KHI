@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep RL Notes — Hurdle Jump Problem</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #4f8ef7;
+    --accent2: #7c3aed;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --cyan: #06b6d4;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Sora', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1040 60%, #0b1e3d 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(79,142,247,0.15) 0%, transparent 70%);
+  }
+  .header-tag {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    border: 1px solid rgba(79,142,247,0.3);
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2px;
+    margin-bottom: 0.9rem;
+  }
+  header h1 {
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    position: relative;
+  }
+  header h1 span { color: var(--accent); }
+  header p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    font-family: var(--mono);
+    position: relative;
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+  /* ── Section ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .section-header:hover { background: var(--surface2); }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--accent);
+    background: rgba(79,142,247,0.1);
+    border: 1px solid rgba(79,142,247,0.25);
+    border-radius: 4px;
+    padding: 0.15rem 0.45rem;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    flex: 1;
+    letter-spacing: 0.01em;
+  }
+  .toggle-icon {
+    font-size: 0.7rem;
+    color: var(--muted);
+    transition: transform 0.25s;
+    font-family: var(--mono);
+  }
+  .section-body { padding: 1.25rem; }
+  .section.collapsed .section-body { display: none; }
+  .section.collapsed .toggle-icon { transform: rotate(-90deg); }
+
+  /* ── Tables ── */
+  .tbl-wrap { overflow-x: auto; margin: 0.75rem 0; border-radius: 6px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.6rem 0.9rem;
+    text-align: left;
+    white-space: nowrap;
+  }
+  td { padding: 0.55rem 0.9rem; border-top: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ── Cards grid ── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.9rem; margin: 0.75rem 0; }
+  .card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .card-icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
+  .card-label { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.3rem; }
+  .card-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; }
+  .card-desc { font-size: 0.8rem; color: #94a3b8; line-height: 1.5; }
+
+  /* ── Reward pills ── */
+  .rewards { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.75rem 0; }
+  .pill {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-family: var(--mono);
+    border: 1px solid;
+  }
+  .pill.pos { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.3); color: var(--green); }
+  .pill.neg { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.3); color: var(--red); }
+  .pill.neu { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.3); color: var(--yellow); }
+  .pill-val { font-weight: 700; font-size: 0.9rem; }
+
+  /* ── Neural net diagram ── */
+  .nn-diagram {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem 1rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+  }
+  .nn-layers { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; min-width: 340px; }
+  .nn-layer { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; flex: 1; }
+  .nn-label { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; text-align: center; }
+  .nn-sublabel { font-size: 0.6rem; color: var(--muted); opacity: 0.6; }
+  .nn-nodes { display: flex; flex-direction: column; gap: 5px; align-items: center; }
+  .nn-node {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.42rem; font-family: var(--mono); font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .nn-node.input { background: var(--accent); box-shadow: 0 0 8px rgba(79,142,247,0.4); }
+  .nn-node.hidden { background: var(--accent2); box-shadow: 0 0 6px rgba(124,58,237,0.35); }
+  .nn-node.output { background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,0.4); }
+  .nn-node.more { background: var(--surface); border: 1px dashed var(--muted); color: var(--muted); font-size: 0.55rem; }
+  .nn-arrow { color: var(--muted); font-size: 1.1rem; flex-shrink: 0; }
+  .nn-node-text { font-size: 0.42rem; text-align: center; padding: 2px; }
+
+  /* ── Equation block ── */
+  .eq {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    padding: 0.85rem 1rem;
+    margin: 0.75rem 0;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    line-height: 1.9;
+    color: var(--cyan);
+  }
+  .eq .sym { color: var(--yellow); }
+  .eq .comment { color: var(--muted); font-size: 0.72rem; display: block; white-space: normal; margin-top: 0.3rem; }
+
+  /* ── Comparison table accent rows ── */
+  .row-vs td:first-child { color: var(--accent); font-weight: 600; }
+  .row-pb td:first-child { color: var(--cyan); font-weight: 600; }
+
+  /* ── Badge ── */
+  .badge {
+    display: inline-block; padding: 0.15rem 0.5rem;
+    border-radius: 3px; font-family: var(--mono);
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .badge.blue { background: rgba(79,142,247,0.15); color: var(--accent); }
+  .badge.purple { background: rgba(124,58,237,0.15); color: #a78bfa; }
+  .badge.green { background: rgba(34,197,94,0.12); color: var(--green); }
+  .badge.red { background: rgba(239,68,68,0.12); color: var(--red); }
+  .badge.yellow { background: rgba(245,158,11,0.12); color: var(--yellow); }
+
+  /* ── Prose ── */
+  p, li { color: #94a3b8; font-size: 0.85rem; line-height: 1.7; }
+  ul { padding-left: 1.2rem; }
+  li { margin-bottom: 0.3rem; }
+  strong { color: var(--text); font-weight: 600; }
+  .highlight { color: var(--accent); font-weight: 600; }
+
+  /* ── Action-space visual ── */
+  .action-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 0.75rem 0; }
+  .action-btn {
+    display: flex; align-items: center; gap: 0.5rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-size: 0.82rem; font-weight: 600;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .action-btn:hover { border-color: var(--accent); box-shadow: 0 0 10px rgba(79,142,247,0.1); }
+  .action-icon { font-size: 1.2rem; }
+
+  /* ── MDP flow ── */
+  .mdp-flow {
+    display: flex; align-items: center; gap: 0; flex-wrap: nowrap;
+    overflow-x: auto; padding: 0.5rem 0;
+    margin: 0.75rem 0;
+  }
+  .mdp-node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.55rem 0.8rem;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .mdp-node .mn-icon { font-size: 1.2rem; }
+  .mdp-node .mn-label { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .mdp-node .mn-val { font-size: 0.78rem; font-weight: 600; margin-top: 0.1rem; }
+  .mdp-arrow { color: var(--muted); font-size: 0.9rem; padding: 0 0.3rem; flex-shrink: 0; }
+
+  /* ── Bellman highlight ── */
+  .bellman {
+    background: linear-gradient(135deg, rgba(79,142,247,0.07), rgba(124,58,237,0.07));
+    border: 1px solid rgba(79,142,247,0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 0.75rem 0;
+  }
+  .bellman-title { font-family: var(--mono); font-size: 0.65rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .bellman-eq { font-family: var(--mono); font-size: clamp(0.7rem, 2.5vw, 0.88rem); color: var(--cyan); overflow-x: auto; white-space: nowrap; line-height: 2; }
+  .bellman-legend { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.7rem; }
+  .bl-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; }
+  .bl-sym { font-family: var(--mono); color: var(--yellow); font-size: 0.78rem; min-width: 1.5rem; }
+  .bl-desc { color: #94a3b8; }
+
+  /* ── Progress charts (illustrative) ── */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; }
+  @media(max-width: 500px) { .charts-row { grid-template-columns: 1fr; } }
+  .mini-chart { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; }
+  .mc-title { font-size: 0.72rem; font-weight: 600; margin-bottom: 0.5rem; text-align: center; color: var(--text); }
+  .mc-svg { width: 100%; height: 70px; }
+
+  /* ── Actor-critic diagram ── */
+  .ac-diagram {
+    display: flex; gap: 0.75rem; align-items: stretch; flex-wrap: wrap;
+    margin: 0.75rem 0;
+  }
+  .ac-box {
+    flex: 1; min-width: 130px;
+    border-radius: 8px; padding: 0.85rem;
+    text-align: center;
+  }
+  .ac-box.actor { background: rgba(79,142,247,0.08); border: 1px solid rgba(79,142,247,0.25); }
+  .ac-box.critic { background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.25); }
+  .ac-box.env { background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.2); }
+  .ac-icon { font-size: 1.6rem; margin-bottom: 0.3rem; }
+  .ac-name { font-weight: 700; font-size: 0.85rem; margin-bottom: 0.25rem; }
+  .ac-desc { font-size: 0.73rem; color: #94a3b8; line-height: 1.4; }
+
+  /* ── Algo comparison ── */
+  .algo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin: 0.75rem 0; }
+  .algo-card {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.9rem; position: relative; overflow: hidden;
+  }
+  .algo-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  }
+  .algo-card.ql::before { background: var(--accent); }
+  .algo-card.dqn::before { background: var(--accent2); }
+  .algo-card.pg::before { background: var(--green); }
+  .algo-card.ppo::before { background: var(--yellow); }
+  .algo-name { font-family: var(--mono); font-size: 0.72rem; font-weight: 700; margin-bottom: 0.35rem; }
+  .algo-type { font-size: 0.68rem; color: var(--muted); margin-bottom: 0.5rem; }
+  .algo-bullets { list-style: none; padding: 0; }
+  .algo-bullets li { font-size: 0.75rem; color: #94a3b8; padding: 0.2rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .algo-bullets li:last-child { border: none; }
+  .algo-bullets li::before { content: '→ '; color: var(--muted); }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center; padding: 2rem 1rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+  }
+
+  /* ── Utility ── */
+  .mt { margin-top: 0.75rem; }
+  .mb { margin-bottom: 0.6rem; }
+  .divider { height: 1px; background: var(--border); margin: 1rem 0; }
+  .note { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.2); border-radius: 6px; padding: 0.6rem 0.9rem; font-size: 0.78rem; color: #fcd34d; margin: 0.75rem 0; }
+  .note::before { content: '💡 '; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-tag">AI / ML STUDY NOTES</div>
+  <h1>Deep <span>Reinforcement Learning</span><br>Hurdle Jump Problem</h1>
+  <p>DQN · Q-Learning · Policy Gradient · Actor-Critic</p>
+</header>
+
+<div class="container">
+
+  <!-- ── 1. ENVIRONMENT & AGENT ── -->
+  <div class="section" id="s1">
+    <div class="section-header" onclick="toggle('s1')">
+      <span class="section-num">01</span>
+      <span class="section-title">Environment & Agent Setup</span>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="mdp-flow">
+        <div class="mdp-node">
+          <div class="mn-icon">🏃</div>
+          <div class="mn-label">Agent</div>
+          <div class="mn-val">Athlete</div>
+        </div>
+        <span class="mdp-arrow">⟶</span>
+        <div class="mdp-node">
+          <div class="mn-icon">🎬</div>
+          <div class="mn-label">Action</div>
+          <div class="mn-val">Run/Jump/Stop</div>
+        </div>
+        <span class="mdp-arrow">⟶</span>
+        <div class="mdp-node">
+          <div class="mn-icon">🏟️</div>
+          <div class="mn-label">Environment</div>
+          <div class="mn-val">Track + Hurdles</div>
+        </div>
+        <span class="mdp-arrow">⟶</span>
+        <div class="mdp-node">
+          <div class="mn-icon">📊</div>
+          <div class="mn-label">State</div>
+          <div class="mn-val">Dist, Speed…</div>
+        </div>
+        <span class="mdp-arrow">⟶</span>
+        <div class="mdp-node">
+          <div class="mn-icon">🏆</div>
+          <div class="mn-label">Reward</div>
+          <div class="mn-val">+/− points</div>
+        </div>
+      </div>
+      <p>The RL framework is modeled as a <strong>Markov Decision Process (MDP)</strong>. The <strong>agent</strong> (athlete) interacts with the <strong>environment</strong> (athletic track) at each time step, choosing an action, receiving a reward, and observing the next state.</p>
+    </div>
+  </div>
+
+  <!-- ── 2. ACTION SPACE ── -->
+  <div class="section" id="s2">
+    <div class="section-header" onclick="toggle('s2')">
+      <span class="section-num">02</span>
+      <span class="section-title">Action Space <span style="color:var(--muted);font-weight:400;font-size:0.8rem">A = { Run, Jump, Stop }</span></span>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="section-body">
+      <p class="mb">This is a <strong>Discrete Action Space</strong> — the agent picks one of three distinct choices at each time step.</p>
+      <div class="action-row">
+        <div class="action-btn"><span class="action-icon">🏃</span> <div><div style="font-size:0.7rem;color:var(--muted);font-family:var(--mono)">ACTION 0</div>RUN</div></div>
+        <div class="action-btn"><span class="action-icon">🦘</span> <div><div style="font-size:0.7rem;color:var(--muted);font-family:var(--mono)">ACTION 1</div>JUMP</div></div>
+        <div class="action-btn"><span class="action-icon">🛑</span> <div><div style="font-size:0.7rem;color:var(--muted);font-family:var(--mono)">ACTION 2</div>STAY / STOP</div></div>
+      </div>
+      <div class="note">Because this is discrete, standard <strong>Q-Learning &amp; DQN</strong> work perfectly — we can compute max Q-value across all 3 actions trivially.</div>
+      <div class="divider"></div>
+      <p><strong>Discrete vs Continuous Action Spaces:</strong></p>
+      <div class="tbl-wrap mt">
+        <table>
+          <tr>
+            <th>Type</th><th>Examples</th><th>Algorithm</th><th>Challenge</th>
+          </tr>
+          <tr class="row-vs">
+            <td><span class="badge blue">DISCRETE</span></td>
+            <td>Up/Down/Left/Right, Atari buttons, Chess moves</td>
+            <td>Q-Learning, DQN</td>
+            <td>None — max Q over finite set is easy</td>
+          </tr>
+          <tr class="row-pb">
+            <td><span class="badge purple">CONTINUOUS</span></td>
+            <td>Accelerator (0–1), Robot joint angles (0°–180°), Temperature</td>
+            <td>PPO, DDPG</td>
+            <td>Can't take max over infinite actions</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. STATE SPACE ── -->
+  <div class="section" id="s3">
+    <div class="section-header" onclick="toggle('s3')">
+      <span class="section-num">03</span>
+      <span class="section-title">State Space — 4 Input Features</span>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="section-body">
+      <p class="mb">The state is a vector of 4 numbers fed into the neural network: <code style="font-family:var(--mono);color:var(--cyan);font-size:0.8rem">[distance, height, velocity, y_pos]</code></p>
+      <div class="cards">
+        <div class="card">
+          <div class="card-icon">📏</div>
+          <div class="card-label">Feature 1</div>
+          <div class="card-title">Distance to Hurdle</div>
+          <div class="card-desc">Meters to the next hurdle. Critical for timing the jump correctly.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📐</div>
+          <div class="card-label">Feature 2</div>
+          <div class="card-title">Hurdle Height</div>
+          <div class="card-desc">Useful when hurdle heights vary. Determines how high to jump.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">⚡</div>
+          <div class="card-label">Feature 3</div>
+          <div class="card-title">Current Speed</div>
+          <div class="card-desc">Agent's velocity. Affects how far in advance to initiate a jump.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📍</div>
+          <div class="card-label">Feature 4</div>
+          <div class="card-title">Pose Y (Position)</div>
+          <div class="card-desc">Y-coordinate to know if agent is airborne or on the ground.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. REWARD FUNCTION ── -->
+  <div class="section" id="s4">
+    <div class="section-header" onclick="toggle('s4')">
+      <span class="section-num">04</span>
+      <span class="section-title">Reward Function R(s, a)</span>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="section-body">
+      <p class="mb">The reward function guides learning by assigning numerical feedback to the agent's actions.</p>
+      <div class="rewards">
+        <div class="pill pos"><span class="pill-val">+1</span> Run → Moving forward</div>
+        <div class="pill pos"><span class="pill-val">+10</span> Successfully clear a hurdle</div>
+        <div class="pill neg"><span class="pill-val">−10</span> Hit / crash into hurdle</div>
+        <div class="pill neg"><span class="pill-val">−1</span> Jump with no hurdle nearby</div>
+        <div class="pill neu"><span class="pill-val">−1</span> Stay / Stop (wasting time)</div>
+      </div>
+      <div class="note">Large penalties (−10) discourage dangerous collisions. Small rewards (+1) keep the agent moving efficiently. The asymmetry teaches <em>when</em> to jump, not just <em>how</em>.</div>
+    </div>
+  </div>
+
+  <!-- ── 5. DQN ARCHITECTURE ── -->
+  <div class="section" id="s5">
+    <div class="section-header" onclick="toggle('s5')">
+      <span class="section-num">05</span>
+      <span class="section-title">DQN Neural Network Architecture</span>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="section-body">
+      <p class="mb">Instead of a Q-table, a <strong>Deep Q-Network (DQN)</strong> uses a neural network to approximate Q-values for every state-action pair.</p>
+      <div class="nn-diagram">
+        <div class="nn-layers">
+          <div class="nn-layer">
+            <div class="nn-label">Input<br><span class="nn-sublabel">4 nodes</span></div>
+            <div class="nn-nodes">
+              <div class="nn-node input" title="DIST">D</div>
+              <div class="nn-node input" title="SPEED">V</div>
+              <div class="nn-node input" title="POSE X">X</div>
+              <div class="nn-node input" title="POSE Y">Y</div>
+            </div>
+          </div>
+          <div class="nn-arrow">→</div>
+          <div class="nn-layer">
+            <div class="nn-label">Hidden 1<br><span class="nn-sublabel">32 nodes</span></div>
+            <div class="nn-nodes">
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+              <div class="nn-node more">…32</div>
+            </div>
+          </div>
+          <div class="nn-arrow">→</div>
+          <div class="nn-layer">
+            <div class="nn-label">Hidden 2<br><span class="nn-sublabel">32 nodes</span></div>
+            <div class="nn-nodes">
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+              <div class="nn-node more">…32</div>
+            </div>
+          </div>
+          <div class="nn-arrow">→</div>
+          <div class="nn-layer">
+            <div class="nn-label">Output<br><span class="nn-sublabel">3 nodes</span></div>
+            <div class="nn-nodes">
+              <div class="nn-node output" title="Q(s,RUN)">R</div>
+              <div class="nn-node output" title="Q(s,JUMP)">J</div>
+              <div class="nn-node output" title="Q(s,STOP)">S</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-top:0.9rem;">
+          <div style="font-size:0.68rem;font-family:var(--mono);color:var(--muted)">
+            <span style="color:var(--accent)">●</span> Input: [dist, height, vel, y_pos]
+          </div>
+          <div style="font-size:0.68rem;font-family:var(--mono);color:var(--muted)">
+            <span style="color:var(--accent2)">●</span> Dense + ReLU activation
+          </div>
+          <div style="font-size:0.68rem;font-family:var(--mono);color:var(--muted)">
+            <span style="color:var(--green)">●</span> Output: Q(s,RUN), Q(s,JUMP), Q(s,STOP)
+          </div>
+        </div>
+      </div>
+      <p>The network learns to predict the <strong>expected future reward</strong> for each action given the current state. The agent picks the action with the <strong>highest Q-value</strong>.</p>
+      <div class="charts-row mt">
+        <div class="mini-chart">
+          <div class="mc-title" style="color:var(--green)">📈 Average Reward</div>
+          <svg class="mc-svg" viewBox="0 0 200 70" preserveAspectRatio="none">
+            <path d="M5,60 C20,55 40,45 60,35 C80,26 100,22 130,18 C150,16 170,15 195,13" stroke="#22c55e" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M5,60 C20,55 40,45 60,35 C80,26 100,22 130,18 C150,16 170,15 195,13 L195,65 L5,65Z" fill="rgba(34,197,94,0.07)"/>
+          </svg>
+          <div style="font-size:0.62rem;color:var(--muted);text-align:center;font-family:var(--mono)">Episodes →</div>
+        </div>
+        <div class="mini-chart">
+          <div class="mc-title" style="color:var(--red)">📉 Training Loss</div>
+          <svg class="mc-svg" viewBox="0 0 200 70" preserveAspectRatio="none">
+            <path d="M5,10 C20,15 40,22 70,32 C100,40 130,48 160,53 C175,55 185,56 195,58" stroke="#ef4444" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M5,10 C20,15 40,22 70,32 C100,40 130,48 160,53 C175,55 185,56 195,58 L195,65 L5,65Z" fill="rgba(239,68,68,0.07)"/>
+          </svg>
+          <div style="font-size:0.62rem;color:var(--muted);text-align:center;font-family:var(--mono)">Episodes →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 6. LEARNING PROCESS ── -->
+  <div class="section" id="s6">
+    <div class="section-header" onclick="toggle('s6')">
+      <span class="section-num">06</span>
+      <span class="section-title">Q-Learning & Bellman Equation</span>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="section-body">
+      <p class="mb">The Q-value update uses the <strong>Bellman Equation</strong> to iteratively improve predictions:</p>
+      <div class="bellman">
+        <div class="bellman-title">Bellman Update Rule</div>
+        <div class="bellman-eq">Q(s,a) ← Q(s,a) + α [ r + γ · max<sub>a'</sub> Q(s',a') − Q(s,a) ]</div>
+        <div class="bellman-legend">
+          <div class="bl-item"><span class="bl-sym">α</span><span class="bl-desc">Learning rate — how fast weights update</span></div>
+          <div class="bl-item"><span class="bl-sym">γ</span><span class="bl-desc">Discount factor — importance of future rewards</span></div>
+          <div class="bl-item"><span class="bl-sym">r</span><span class="bl-desc">Immediate reward received after action a</span></div>
+          <div class="bl-item"><span class="bl-sym">s'</span><span class="bl-desc">Next state after taking action a in state s</span></div>
+          <div class="bl-item"><span class="bl-sym">max Q</span><span class="bl-desc">Best predicted reward in the next state</span></div>
+        </div>
+      </div>
+      <div class="tbl-wrap mt">
+        <table>
+          <tr><th>Step</th><th>What Happens</th></tr>
+          <tr><td><span class="badge blue">1</span></td><td>Agent observes state <strong>s</strong> (dist, vel, etc.)</td></tr>
+          <tr><td><span class="badge blue">2</span></td><td>Agent picks action using ε-greedy policy (explore vs exploit)</td></tr>
+          <tr><td><span class="badge blue">3</span></td><td>Environment returns reward <strong>r</strong> and next state <strong>s'</strong></td></tr>
+          <tr><td><span class="badge blue">4</span></td><td>Compute <em>Target</em> = r + γ · max Q(s', a')</td></tr>
+          <tr><td><span class="badge blue">5</span></td><td>Compute <em>Loss</em> = (Target − Q(s,a))²</td></tr>
+          <tr><td><span class="badge blue">6</span></td><td>Backpropagate loss to update network weights</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 7. VALUE vs POLICY ── -->
+  <div class="section" id="s7">
+    <div class="section-header" onclick="toggle('s7')">
+      <span class="section-num">07</span>
+      <span class="section-title">Value-Based vs Policy-Based Learning</span>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="tbl-wrap">
+        <table>
+          <tr>
+            <th></th>
+            <th>Value-Based</th>
+            <th>Policy-Based</th>
+          </tr>
+          <tr>
+            <td><strong>Goal</strong></td>
+            <td>Learn V(s) or Q(s,a)</td>
+            <td>Optimize π(a|s) directly</td>
+          </tr>
+          <tr>
+            <td><strong>Policy</strong></td>
+            <td>Implicit (pick max value)</td>
+            <td>Explicit (learned distribution)</td>
+          </tr>
+          <tr>
+            <td><strong>Examples</strong></td>
+            <td><span class="badge blue">Q-Learning</span> <span class="badge purple">DQN</span></td>
+            <td><span class="badge green">REINFORCE</span> <span class="badge yellow">PPO</span></td>
+          </tr>
+          <tr>
+            <td><strong>Logic</strong></td>
+            <td>"In this state, taking RUN gives +50 expected."</td>
+            <td>"80% probability that LEFT is optimal here."</td>
+          </tr>
+          <tr>
+            <td><strong>Best For</strong></td>
+            <td>Discrete action spaces</td>
+            <td>Continuous action spaces</td>
+          </tr>
+        </table>
+      </div>
+      <div class="divider"></div>
+      <p class="mb"><strong>Actor-Critic</strong> — modern hybrid combining both approaches:</p>
+      <div class="ac-diagram">
+        <div class="ac-box actor">
+          <div class="ac-icon">🎭</div>
+          <div class="ac-name" style="color:var(--accent)">Actor</div>
+          <div class="ac-desc">Policy-based. Proposes an action π(a|s). Learns WHAT to do.</div>
+        </div>
+        <div class="ac-box critic">
+          <div class="ac-icon">🧑‍⚖️</div>
+          <div class="ac-name" style="color:#a78bfa">Critic</div>
+          <div class="ac-desc">Value-based. Evaluates how good the action was via V(s). Learns HOW GOOD it was.</div>
+        </div>
+        <div class="ac-box env">
+          <div class="ac-icon">🌍</div>
+          <div class="ac-name" style="color:var(--cyan)">Environment</div>
+          <div class="ac-desc">Returns reward r and next state s'. Provides the signal to both.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 8. ALGORITHM COMPARISON ── -->
+  <div class="section" id="s8">
+    <div class="section-header" onclick="toggle('s8')">
+      <span class="section-num">08</span>
+      <span class="section-title">Algorithm Quick Reference</span>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="algo-grid">
+        <div class="algo-card ql">
+          <div class="algo-name" style="color:var(--accent)">Q-LEARNING</div>
+          <div class="algo-type">Value-Based · Model-Free · Tabular</div>
+          <ul class="algo-bullets">
+            <li>Uses Q-Table</li>
+            <li>Discrete actions only</li>
+            <li>Small state spaces</li>
+            <li>Bellman updates</li>
+          </ul>
+        </div>
+        <div class="algo-card dqn">
+          <div class="algo-name" style="color:#a78bfa">DQN</div>
+          <div class="algo-type">Value-Based · Deep · Discrete</div>
+          <ul class="algo-bullets">
+            <li>Neural network replaces table</li>
+            <li>Experience Replay buffer</li>
+            <li>Target Network trick</li>
+            <li>Used in Atari games</li>
+          </ul>
+        </div>
+        <div class="algo-card pg">
+          <div class="algo-name" style="color:var(--green)">REINFORCE</div>
+          <div class="algo-type">Policy-Based · Gradient · Stochastic</div>
+          <ul class="algo-bullets">
+            <li>Learns policy directly</li>
+            <li>High variance</li>
+            <li>Works for continuous</li>
+            <li>Monte Carlo returns</li>
+          </ul>
+        </div>
+        <div class="algo-card ppo">
+          <div class="algo-name" style="color:var(--yellow)">PPO / DDPG</div>
+          <div class="algo-type">Actor-Critic · Continuous · SOTA</div>
+          <ul class="algo-bullets">
+            <li>Continuous action spaces</li>
+            <li>Stable training (PPO clip)</li>
+            <li>DDPG: deterministic policy</li>
+            <li>Robotics &amp; locomotion</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 9. MDP SUMMARY ── -->
+  <div class="section" id="s9">
+    <div class="section-header" onclick="toggle('s9')">
+      <span class="section-num">09</span>
+      <span class="section-title">MDP Summary — Hurdle Problem</span>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Component</th><th>Symbol</th><th>Hurdle Jump Value</th></tr>
+          <tr><td><strong>State Space</strong></td><td style="font-family:var(--mono);color:var(--cyan)">S</td><td>[dist_to_hurdle, hurdle_height, velocity, y_position]</td></tr>
+          <tr><td><strong>Action Space</strong></td><td style="font-family:var(--mono);color:var(--cyan)">A</td><td>{ Run, Jump, Stay/Stop }</td></tr>
+          <tr><td><strong>Reward</strong></td><td style="font-family:var(--mono);color:var(--cyan)">R</td><td>+1 run, +10 clear, −10 hit, −1 bad jump</td></tr>
+          <tr><td><strong>Policy</strong></td><td style="font-family:var(--mono);color:var(--cyan)">π</td><td>DQN outputs argmax Q(s,a)</td></tr>
+          <tr><td><strong>Discount</strong></td><td style="font-family:var(--mono);color:var(--cyan)">γ</td><td>~0.95 (values near-future rewards)</td></tr>
+          <tr><td><strong>Learning Rate</strong></td><td style="font-family:var(--mono);color:var(--cyan)">α</td><td>~0.001 (Adam optimizer)</td></tr>
+          <tr><td><strong>Network</strong></td><td style="font-family:var(--mono);color:var(--cyan)">θ</td><td>4 → 32 → 32 → 3 (Dense + ReLU)</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  DEEP REINFORCEMENT LEARNING — STUDY NOTES &nbsp;|&nbsp; DQN · BELLMAN · ACTOR-CRITIC
+</footer>
+
+<script>
+  function toggle(id) {
+    document.getElementById(id).classList.toggle('collapsed');
+  }
+</script>
+</body>
+</html>
