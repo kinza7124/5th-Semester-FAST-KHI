@@ -14,6 +14,10 @@ It is designed to help students access all the necessary academic resources in o
 4. ML – Machine Learning
 
 5. CN – Computer Networks
+   
+6.DLP - Deep Learning
+
+7. SE - Software Engineering
 
 For OS: https://github.com/kinza7124/Operating-Systems
 
