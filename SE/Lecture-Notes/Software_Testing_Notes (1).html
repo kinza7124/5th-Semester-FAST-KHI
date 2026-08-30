@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Software Testing — Complete Study Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0e14;
+    --bg2: #111520;
+    --bg3: #161b27;
+    --surface: #1a2035;
+    --border: #232b3e;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --accent5: #ef4444;
+    --text: #e2e8f0;
+    --text-muted: #8892a4;
+    --text-dim: #5a6680;
+    --code-bg: #0d1117;
+    --keyword: #ff7b9c;
+    --string: #a8ff78;
+    --comment: #5a6680;
+    --number: #ffd700;
+    --fn: #79c0ff;
+    --tag: #00e5ff;
+    --radius: 10px;
+    --sidebar-w: 270px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--sidebar-w);
+    height: 100vh;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform .3s ease;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent2) transparent;
+  }
+
+  #sidebar::-webkit-scrollbar { width: 4px; }
+  #sidebar::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 4px; }
+
+  .sidebar-logo {
+    padding: 20px 18px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo .title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .sidebar-logo .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 3px;
+  }
+
+  .sidebar-nav { padding: 10px 0; }
+
+  .nav-section {
+    padding: 6px 18px 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 8px;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 7px 18px 7px 24px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all .2s;
+    font-weight: 500;
+    position: relative;
+  }
+  .nav-item:hover, .nav-item.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(0,229,255,.04);
+    padding-left: 26px;
+  }
+  .nav-item .badge {
+    position: absolute; right: 12px; top: 50%;
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    background: rgba(124,58,237,.3);
+    color: #c4b5fd;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .nav-item .badge.green {
+    background: rgba(16,185,129,.2);
+    color: #6ee7b7;
+  }
+  .nav-item .badge.yellow {
+    background: rgba(245,158,11,.2);
+    color: #fcd34d;
+  }
+
+  /* ── HAMBURGER ── */
+  #hamburger {
+    display: none;
+    position: fixed;
+    top: 12px; left: 12px;
+    z-index: 200;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 11px;
+    cursor: pointer;
+    flex-direction: column;
+    gap: 4px;
+  }
+  #hamburger span {
+    display: block; width: 20px; height: 2px;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: all .3s;
+  }
+  #overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.6);
+    z-index: 99;
+  }
+
+  /* ── MAIN ── */
+  #main {
+    margin-left: var(--sidebar-w);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #070a10 0%, #0b1022 50%, #0d1a2a 100%);
+    padding: 70px 50px 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40%; right: -15%;
+    width: 500px; height: 500px;
+    background: radial-gradient(ellipse, rgba(0,229,255,.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30%; left: 5%;
+    width: 400px; height: 400px;
+    background: radial-gradient(ellipse, rgba(124,58,237,.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 30px; height: 1px;
+    background: var(--accent);
+  }
+  .hero h1 {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800;
+    line-height: 1.15;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero-desc {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 620px;
+    margin-bottom: 28px;
+    line-height: 1.8;
+  }
+  .hero-chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .chip {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid;
+  }
+  .chip.cyan { color: var(--accent); border-color: rgba(0,229,255,.3); background: rgba(0,229,255,.07); }
+  .chip.purple { color: #c4b5fd; border-color: rgba(124,58,237,.3); background: rgba(124,58,237,.07); }
+  .chip.green { color: #6ee7b7; border-color: rgba(16,185,129,.3); background: rgba(16,185,129,.07); }
+  .chip.yellow { color: #fcd34d; border-color: rgba(245,158,11,.3); background: rgba(245,158,11,.07); }
+  .chip.red { color: #fca5a5; border-color: rgba(239,68,68,.3); background: rgba(239,68,68,.07); }
+
+  /* ── SECTIONS ── */
+  .section {
+    padding: 50px 50px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section:last-child { border-bottom: none; }
+
+  .section-header {
+    margin-bottom: 32px;
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent2);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    opacity: .7;
+  }
+  .section h2 {
+    font-size: clamp(20px, 2.5vw, 28px);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .section h2 .hl { color: var(--accent); }
+  .section-desc {
+    color: var(--text-muted);
+    font-size: 13.5px;
+    margin-top: 6px;
+  }
+
+  /* ── CARDS ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: border-color .2s, transform .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .card:hover { border-color: rgba(0,229,255,.2); transform: translateY(-2px); }
+  .card:hover::before { opacity: 1; }
+  .card-icon {
+    font-size: 24px; margin-bottom: 10px;
+  }
+  .card h3 {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 7px;
+  }
+  .card p, .card li {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .card ul { padding-left: 16px; }
+  .card li { margin-bottom: 3px; }
+  .card .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── DEFINITION BLOCKS ── */
+  .def-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 16px 18px;
+    margin: 14px 0;
+  }
+  .def-block.purple { border-left-color: var(--accent2); }
+  .def-block.green { border-left-color: var(--accent3); }
+  .def-block.yellow { border-left-color: var(--accent4); }
+  .def-block.red { border-left-color: var(--accent5); }
+  .def-block strong {
+    color: var(--accent);
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    display: block;
+    margin-bottom: 5px;
+  }
+  .def-block.purple strong { color: #c4b5fd; }
+  .def-block.green strong { color: #6ee7b7; }
+  .def-block.yellow strong { color: #fcd34d; }
+  .def-block.red strong { color: #fca5a5; }
+  .def-block p { font-size: 13.5px; color: var(--text-muted); }
+
+  /* ── CODE BLOCKS ── */
+  .code-wrap {
+    margin: 18px 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .code-header {
+    background: var(--surface);
+    padding: 9px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-header .lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .code-header .dots {
+    display: flex; gap: 5px;
+  }
+  .code-header .dots span {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .code-header .dots span:nth-child(1) { background: #ef4444; }
+  .code-header .dots span:nth-child(2) { background: #f59e0b; }
+  .code-header .dots span:nth-child(3) { background: #10b981; }
+  pre {
+    background: var(--code-bg);
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: #c9d1d9;
+    tab-size: 2;
+  }
+  pre::-webkit-scrollbar { height: 4px; }
+  pre::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .kw { color: var(--keyword); font-weight: 600; }
+  .str { color: var(--string); }
+  .cm { color: var(--comment); font-style: italic; }
+  .nm { color: var(--number); }
+  .fn { color: var(--fn); }
+  .tg { color: var(--tag); }
+  .cl { color: #ffa657; }
+  .dc { color: #e3b341; }
+
+  /* ── TABLES ── */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 18px 0;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead tr {
+    background: var(--surface);
+  }
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 16px;
+    border-bottom: 1px solid rgba(35,43,62,.6);
+    color: var(--text-muted);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  td strong { color: var(--text); font-weight: 600; }
+  td .mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+  }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin: 16px 0;
+    display: flex; gap: 12px;
+    font-size: 13.5px;
+  }
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout p { color: var(--text-muted); }
+  .callout strong { color: var(--text); }
+  .callout.info { background: rgba(0,229,255,.06); border: 1px solid rgba(0,229,255,.15); }
+  .callout.warn { background: rgba(245,158,11,.06); border: 1px solid rgba(245,158,11,.15); }
+  .callout.tip { background: rgba(16,185,129,.06); border: 1px solid rgba(16,185,129,.15); }
+  .callout.danger { background: rgba(239,68,68,.06); border: 1px solid rgba(239,68,68,.15); }
+
+  /* ── STEPS ── */
+  .steps { margin: 16px 0; }
+  .step {
+    display: flex; gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #000;
+    margin-top: 2px;
+  }
+  .step-body h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .step-body p { font-size: 13px; color: var(--text-muted); }
+
+  /* ── INTERVIEW Q&A ── */
+  .qa-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .qa-q {
+    padding: 14px 18px;
+    cursor: pointer;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #fff;
+    transition: background .2s;
+    user-select: none;
+  }
+  .qa-q:hover { background: rgba(255,255,255,.03); }
+  .qa-q::after {
+    content: '▾';
+    color: var(--accent);
+    flex-shrink: 0;
+    font-size: 14px;
+    transition: transform .25s;
+  }
+  .qa-q.open::after { transform: rotate(180deg); }
+  .qa-a {
+    display: none;
+    padding: 0 18px 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    line-height: 1.8;
+  }
+  .qa-a.open { display: block; }
+  .qa-a code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+
+  /* ── COMPARISON ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 18px 0;
+  }
+  .compare-col {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .compare-col-head {
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .compare-col-head .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .compare-col ul { padding: 12px 16px; list-style: none; }
+  .compare-col li {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(35,43,62,.4);
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+  .compare-col li::before { content: '→'; color: var(--text-dim); flex-shrink: 0; }
+  .compare-col li:last-child { border-bottom: none; }
+
+  /* ── BADGE INLINE ── */
+  .ibadge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin: 0 3px;
+    vertical-align: middle;
+    font-weight: 600;
+  }
+  .ibadge.c { background: rgba(0,229,255,.12); color: var(--accent); }
+  .ibadge.p { background: rgba(124,58,237,.15); color: #c4b5fd; }
+  .ibadge.g { background: rgba(16,185,129,.12); color: #6ee7b7; }
+  .ibadge.y { background: rgba(245,158,11,.12); color: #fcd34d; }
+  .ibadge.r { background: rgba(239,68,68,.12); color: #fca5a5; }
+
+  /* ── INLINE TEXT ── */
+  .prose {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.85;
+    margin: 12px 0 18px;
+  }
+  .prose strong { color: var(--text); }
+  .prose em { color: var(--accent); font-style: normal; }
+  h3.sub-head {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin: 26px 0 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  h3.sub-head::before {
+    content: '';
+    width: 3px; height: 16px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  h4.mini-head {
+    font-size: 13.5px; font-weight: 700;
+    color: var(--text);
+    margin: 18px 0 8px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent2);
+  }
+  h4.mini-head::before { content: '## '; color: var(--text-dim); }
+
+  /* ── PROGRESS LEVELS ── */
+  .level-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .level-icon { font-size: 22px; }
+  .level-info { flex: 1; }
+  .level-info h4 { font-size: 13px; font-weight: 700; color: #fff; }
+  .level-info p { font-size: 11.5px; color: var(--text-dim); margin-top: 2px; }
+  .level-bar .track {
+    width: 100px;
+    height: 5px;
+    background: var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .level-bar .fill {
+    height: 100%;
+    border-radius: 5px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  /* ── SCROLL PROGRESS ── */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: var(--sidebar-w); right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    z-index: 1000;
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform .1s;
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 900px) {
+    #sidebar {
+      transform: translateX(-100%);
+    }
+    #sidebar.open {
+      transform: translateX(0);
+      box-shadow: 10px 0 40px rgba(0,0,0,.5);
+    }
+    #main { margin-left: 0; }
+    #hamburger { display: flex; }
+    #overlay.open { display: block; }
+    #progress-bar { left: 0; }
+
+    .hero { padding: 60px 20px 40px; }
+    .section { padding: 36px 20px 10px; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 24px; }
+    pre { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- Sidebar -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="title">Software Testing</div>
+    <div class="sub">// Complete Study Guide v2.0</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Foundations</div>
+    <a class="nav-item" href="#intro">Introduction to Testing</a>
+    <a class="nav-item" href="#vv">V&amp;V and Inspections</a>
+    <a class="nav-item" href="#devtest">Development Testing <span class="badge yellow">Exam</span></a>
+
+    <div class="nav-section">Test Design</div>
+    <a class="nav-item" href="#partition">Equivalence Partitioning</a>
+    <a class="nav-item" href="#basis">Basis Path Testing <span class="badge">White-Box</span></a>
+    <a class="nav-item" href="#component">Component &amp; Interface</a>
+
+    <div class="nav-section">Process</div>
+    <a class="nav-item" href="#tdd">Test-Driven Dev (TDD)</a>
+    <a class="nav-item" href="#release">Release &amp; User Testing</a>
+    <a class="nav-item" href="#performance">Performance Testing</a>
+
+    <div class="nav-section">Practical Skills</div>
+    <a class="nav-item" href="#manual">Manual Testing <span class="badge green">Practical</span></a>
+    <a class="nav-item" href="#jest">JavaScript — Jest <span class="badge green">Code</span></a>
+    <a class="nav-item" href="#pytest">Python — Pytest <span class="badge green">Code</span></a>
+    <a class="nav-item" href="#selenium">Selenium Automation</a>
+    <a class="nav-item" href="#tools">Testing Tools Overview</a>
+
+    <div class="nav-section">Interview Prep</div>
+    <a class="nav-item" href="#interview">Interview Q&amp;A <span class="badge">Hot</span></a>
+    <a class="nav-item" href="#cheatsheet">Quick Cheat Sheet</a>
+  </div>
+</nav>
+
+<!-- Hamburger -->
+<button id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+  <span></span><span></span><span></span>
+</button>
+<div id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- Main -->
+<main id="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">CS Study Notes</div>
+    <h1>Software <span>Testing</span><br>Complete Reference</h1>
+    <p class="hero-desc">
+      From beginner fundamentals to advanced white-box techniques. Covers theory, practical test case writing in JavaScript &amp; Python, automated tools, and interview preparation — all in one place.
+    </p>
+    <div class="hero-chips">
+      <span class="chip cyan">Unit Testing</span>
+      <span class="chip purple">Basis Path</span>
+      <span class="chip green">Jest / Pytest</span>
+      <span class="chip yellow">TDD</span>
+      <span class="chip red">Selenium</span>
+      <span class="chip cyan">Interview Ready</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       1. INTRODUCTION
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="intro">
+    <div class="section-header">
+      <div class="section-num">// 01 — Foundations</div>
+      <h2>Introduction to <span class="hl">Software Testing</span></h2>
+      <p class="section-desc">What testing is, why it matters, and the core vocabulary.</p>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">💡</div>
+      <p><strong>Definition:</strong> Software testing is the process of <strong>evaluating a program</strong> to detect anomalies, defects, crashes, incorrect computations, and data corruption — using sample input data.</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <div class="tag" style="background:rgba(0,229,255,.1);color:var(--accent);">VALIDATION</div>
+        <h3>Validation Testing</h3>
+        <p>Are we building the <strong>right product</strong>? Tests verify the system meets user requirements. A successful test confirms the software operates as intended.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🐛</div>
+        <div class="tag" style="background:rgba(239,68,68,.1);color:#fca5a5;">DEFECT</div>
+        <h3>Defect Testing</h3>
+        <p>Are we building the <strong>product right</strong>? Tests deliberately try to make the system fail to expose bugs and incorrect behaviour.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⬛</div>
+        <div class="tag" style="background:rgba(255,255,255,.07);color:var(--text-muted);">BLACK-BOX</div>
+        <h3>Black-Box Testing</h3>
+        <p>Test the system from the outside — without looking at internal code. Only inputs and outputs are considered. Also called <em>functional testing</em>.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⬜</div>
+        <div class="tag" style="background:rgba(124,58,237,.1);color:#c4b5fd;">WHITE-BOX</div>
+        <h3>White-Box Testing</h3>
+        <p>Test with full knowledge of internal code structure. Each component (function, branch, path) is tested individually. Also called <em>structural testing</em>.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <div class="tag" style="background:rgba(16,185,129,.1);color:#6ee7b7;">FUNCTIONAL</div>
+        <h3>Functional Testing</h3>
+        <p>Verifying that each feature of the software works according to its specification. Does the login actually log you in?</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📈</div>
+        <div class="tag" style="background:rgba(245,158,11,.1);color:#fcd34d;">NON-FUNCTIONAL</div>
+        <h3>Non-Functional Testing</h3>
+        <p>Testing performance, scalability, reliability, security, usability — not specific features but system qualities and characteristics.</p>
+      </div>
+    </div>
+
+    <h3 class="sub-head">Input-Output Model of Testing</h3>
+    <p class="prose">
+      Every test follows this pattern: <strong>Test inputs</strong> → <strong>System under test</strong> → <strong>Observed outputs</strong> compared against <strong>Expected outputs</strong>. If output matches expected → validation test passed. If system behaves incorrectly → defect exposed.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Testing Type</th><th>Who Writes It</th><th>Goal</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Unit</strong></td><td>Developer</td><td>Test individual functions/methods</td><td>Test <span class="mono">add(2,3)</span> returns 5</td></tr>
+          <tr><td><strong>Component / Integration</strong></td><td>Tester / Dev</td><td>Test components interacting</td><td>Login module + DB module together</td></tr>
+          <tr><td><strong>System</strong></td><td>QA Team</td><td>Test full integrated system</td><td>End-to-end checkout flow</td></tr>
+          <tr><td><strong>Acceptance (UAT)</strong></td><td>Client / End User</td><td>Confirm system meets requirements</td><td>Client approves before go-live</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       2. V&V + INSPECTIONS
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="vv">
+    <div class="section-header">
+      <div class="section-num">// 02 — Verification &amp; Validation</div>
+      <h2>V&amp;V and <span class="hl">Inspections</span></h2>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-col">
+        <div class="compare-col-head" style="color:var(--accent);">
+          <div class="dot" style="background:var(--accent);"></div> Verification (Are we building it RIGHT?)
+        </div>
+        <ul>
+          <li>Static analysis of code</li>
+          <li>Code reviews &amp; walkthroughs</li>
+          <li>Formal proofs</li>
+          <li>Checking conformance to spec</li>
+          <li>Does not run the code</li>
+        </ul>
+      </div>
+      <div class="compare-col">
+        <div class="compare-col-head" style="color:#c4b5fd;">
+          <div class="dot" style="background:#c4b5fd;"></div> Validation (Are we building the RIGHT product?)
+        </div>
+        <ul>
+          <li>Dynamic testing — runs the code</li>
+          <li>Meets user requirements?</li>
+          <li>Acceptance testing</li>
+          <li>System testing</li>
+          <li>User testing / UAT</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="sub-head">Software Inspections (Static V&amp;V)</h3>
+    <p class="prose">
+      Inspections involve people <strong>examining source representations</strong> (code, design, requirements) without executing the program. They can find defects <em>before</em> implementation completes and can be applied to any artifact.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3>✅ Advantages of Inspections</h3>
+        <ul>
+          <li>Error propagation impossible — errors don't hide other errors</li>
+          <li>Can inspect incomplete systems — no test harness needed</li>
+          <li>Check compliance with standards &amp; coding style</li>
+          <li>More cost-effective for defect discovery than testing alone</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>❌ Limitations of Inspections</h3>
+        <ul>
+          <li>Cannot detect interaction-based defects (nothing runs)</li>
+          <li>Can't check non-functional properties (performance, usability)</li>
+          <li>Requires experienced reviewers</li>
+          <li>Time-intensive for large codebases</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-icon">✅</div>
+      <p><strong>Key point for exams:</strong> Inspections and testing are <strong>complementary</strong>, not competing. Use both. Inspections = static. Testing = dynamic.</p>
+    </div>
+
+    <h3 class="sub-head">V&amp;V Confidence Factors</h3>
+    <p class="prose">The level of V&amp;V confidence needed depends on:</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Software Criticality</h4>
+          <p>A fire alarm system needs much higher confidence than a blog CMS. Safety-critical = maximum testing required.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>User Expectations</h4>
+          <p>New software gets some tolerance for bugs. Mature deployed software must be highly reliable.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Marketing Environment</h4>
+          <p>Sometimes time-to-market matters more than zero defects (beta releases, MVPs).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       3. DEVELOPMENT TESTING
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="devtest">
+    <div class="section-header">
+      <div class="section-num">// 03 — Development Testing</div>
+      <h2>Unit · Component · <span class="hl">System Testing</span></h2>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Stage</th><th>Scope</th><th>Phase in SDLC</th><th>Focus</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Unit Testing</strong></td>
+            <td>Single function / method / class</td>
+            <td>Development phase</td>
+            <td>Functionality of individual unit</td>
+          </tr>
+          <tr>
+            <td><strong>Component Testing</strong></td>
+            <td>Multiple units combined</td>
+            <td>Testing phase</td>
+            <td>Compatibility, data transfer between units</td>
+          </tr>
+          <tr>
+            <td><strong>System Testing</strong></td>
+            <td>Full integrated system</td>
+            <td>Testing phase</td>
+            <td>Component interactions, end-to-end behaviour</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub-head">Unit Testing in Detail</h3>
+    <p class="prose">
+      Unit testing tests <strong>individual components in isolation</strong>. It is a defect-testing process. Units may be individual functions, object classes with attributes and methods, or composite components.
+    </p>
+
+    <div class="def-block">
+      <strong>Automated Test Structure (3 Parts)</strong>
+      <p><strong>1. Setup</strong> — Initialize system state, provide inputs and expected outputs.<br>
+      <strong>2. Call</strong> — Execute the unit/method being tested.<br>
+      <strong>3. Assertion</strong> — Compare actual result to expected. True = pass, False = fail.</p>
+    </div>
+
+    <h4 class="mini-head">Object Class Testing Checklist</h4>
+    <p class="prose">When testing a class, ensure complete coverage:</p>
+    <div class="card-grid">
+      <div class="card">
+        <h3>📋 What to Test in a Class</h3>
+        <ul>
+          <li>All <strong>operations (methods)</strong> of the class</li>
+          <li>All <strong>attributes</strong> are set/read correctly</li>
+          <li>All <strong>events that change state</strong> (state machine transitions)</li>
+          <li>Inherited methods in <strong>subclasses</strong> — implementation may differ</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>🔄 State Transition Example</h3>
+        <p style="color:var(--text-muted);font-size:13px;line-height:1.8;">For a <code style="font-family:JetBrains Mono,monospace;color:var(--accent);font-size:11px;">WeatherStation</code> class, test the state chain:</p>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#ffd700;margin-top:8px;">Shutdown → Running → Shutdown</p>
+        <p style="color:var(--text-muted);font-size:12px;margin-top:6px;">Some methods must be called in sequence — e.g., you must <code style="font-family:JetBrains Mono,monospace;color:var(--accent);font-size:11px;">restart()</code> before testing <code style="font-family:JetBrains Mono,monospace;color:var(--accent);font-size:11px;">shutdown()</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       4. EQUIVALENCE PARTITIONING
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="partition">
+    <div class="section-header">
+      <div class="section-num">// 04 — Test Design Strategies</div>
+      <h2>Equivalence Partitioning &amp; <span class="hl">Boundary Testing</span></h2>
+    </div>
+
+    <p class="prose">
+      Instead of testing every single input (impossible), group inputs into <strong>equivalence classes</strong> — inputs that should all be handled the same way. Test one value from each class, plus the boundaries.
+    </p>
+
+    <div class="def-block green">
+      <strong>Equivalence Partitioning Rule</strong>
+      <p>If a program accepts inputs 4–10 integers, each being a 5-digit integer &gt; 10,000, then your equivalence classes are: <em>too few inputs</em>, <em>valid range</em>, <em>too many inputs</em>, <em>values &lt; 10,000</em>, <em>valid values</em>, <em>non-integer values</em>.</p>
+    </div>
+
+    <h3 class="sub-head">Partition + Boundary — Practical Example</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Partition Class</th><th>Example Input</th><th>Expected Result</th><th>Why?</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Below min inputs</strong></td><td>3 integers</td><td>Error / Reject</td><td>Too few inputs</td></tr>
+          <tr><td><strong>Valid inputs (boundary)</strong></td><td>4 integers</td><td>Accept</td><td>Minimum boundary</td></tr>
+          <tr><td><strong>Valid inputs (middle)</strong></td><td>7 integers</td><td>Accept</td><td>Middle of range</td></tr>
+          <tr><td><strong>Valid inputs (boundary)</strong></td><td>10 integers</td><td>Accept</td><td>Maximum boundary</td></tr>
+          <tr><td><strong>Above max inputs</strong></td><td>11 integers</td><td>Error / Reject</td><td>Too many inputs</td></tr>
+          <tr><td><strong>Invalid value type</strong></td><td>"abc"</td><td>Error</td><td>Non-integer</td></tr>
+          <tr><td><strong>Below min value</strong></td><td>9999</td><td>Error / Reject</td><td>Value &lt; 10,000</td></tr>
+          <tr><td><strong>Zero</strong></td><td>0</td><td>Error</td><td>Edge: zero input</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub-head">Whittaker's General Testing Guidelines</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h3>🛑 Force Error Messages</h3>
+        <p>Design inputs that cause every possible error message to appear. Confirms error handling works.</p>
+      </div>
+      <div class="card">
+        <h3>💥 Buffer Overflow</h3>
+        <p>Design inputs that overflow input buffers. Classic security and stability test.</p>
+      </div>
+      <div class="card">
+        <h3>🔁 Repeat Inputs</h3>
+        <p>Repeat the same input multiple times. Checks for memory leaks and consistency issues.</p>
+      </div>
+      <div class="card">
+        <h3>⚠️ Force Invalid Outputs</h3>
+        <p>Try to force the system to produce outputs that it should never generate (impossible states).</p>
+      </div>
+      <div class="card">
+        <h3>📏 Computation Limits</h3>
+        <p>Force results to be too large or too small — find where the computation breaks down.</p>
+      </div>
+      <div class="card">
+        <h3>📦 Array Edge Cases</h3>
+        <p>Test arrays of different sizes. Access first, middle, last elements. Test length of -1 (empty/null).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       5. BASIS PATH TESTING
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="basis">
+    <div class="section-header">
+      <div class="section-num">// 05 — White-Box Technique</div>
+      <h2>Basis Path Testing &amp; <span class="hl">Cyclomatic Complexity</span></h2>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">📐</div>
+      <p><strong>Basis Path Testing</strong> is a white-box technique that ensures every <strong>independent execution path</strong> through a program is tested at least once. Based on graph theory — uses Control Flow Graphs (CFG).</p>
+    </div>
+
+    <h3 class="sub-head">Steps in Basis Path Testing</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Label Nodes in Source Code</h4>
+          <p>Assign numbers to each sequential block of statements and decision points in the code.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Create a Control Flow Graph (CFG)</h4>
+          <p>Draw the graph: Nodes = blocks, Edges = flow between blocks. Each condition (if/loop) creates branching edges.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Calculate Cyclomatic Complexity (CC)</h4>
+          <p>CC = E – N + 2P, where E = edges, N = nodes, P = connected components (usually 1). CC = number of independent paths.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>Identify Independent Paths</h4>
+          <p>List all basis paths. The count equals the Cyclomatic Complexity. Each path must traverse at least one new edge.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h4>Create Test Cases for Each Path</h4>
+          <p>Design inputs that force execution along each identified path, and note expected outputs.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="sub-head">Cyclomatic Complexity Formula</h3>
+    <div class="def-block">
+      <strong>CC = E – N + 2P</strong>
+      <p>
+        <strong>E</strong> = Number of edges in CFG<br>
+        <strong>N</strong> = Number of nodes in CFG<br>
+        <strong>P</strong> = Number of connected components (usually = 1)<br><br>
+        <strong>Shortcut:</strong> CC = Number of decision points (if, while, for, case) + 1<br>
+        <strong>Interpretation:</strong> CC = minimum number of test cases needed for full branch coverage.
+      </p>
+    </div>
+
+    <h3 class="sub-head">Worked Example — Triangle Classification</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="lang">Java — Basis Path Example</div>
+      </div>
+      <pre><span class="cm">// Step 1: Label each decision/block</span>
+<span class="kw">public</span> <span class="cl">String</span> <span class="fn">classifyTriangle</span>(<span class="kw">int</span> a, <span class="kw">int</span> b, <span class="kw">int</span> c) {
+<span class="cm">  // Node 1</span>
+  <span class="kw">if</span> (a + b &lt;= c || b + c &lt;= a || a + c &lt;= b) {   <span class="cm">// Edge → Node 2</span>
+    <span class="kw">return</span> <span class="str">"Not a triangle"</span>;                         <span class="cm">// Node 2</span>
+  }
+<span class="cm">  // Node 3</span>
+  <span class="kw">else if</span> (a == b &amp;&amp; b == c) {                      <span class="cm">// Edge → Node 4</span>
+    <span class="kw">return</span> <span class="str">"Equilateral"</span>;                           <span class="cm">// Node 4</span>
+  }
+<span class="cm">  // Node 5</span>
+  <span class="kw">else if</span> (a == b || b == c || a == c) {            <span class="cm">// Edge → Node 6</span>
+    <span class="kw">return</span> <span class="str">"Isosceles"</span>;                             <span class="cm">// Node 6</span>
+  }
+<span class="cm">  // Node 7</span>
+  <span class="kw">else</span> {
+    <span class="kw">return</span> <span class="str">"Scalene"</span>;                               <span class="cm">// Node 8</span>
+  }
+}
+<span class="cm">// CC = 3 decisions + 1 = 4 → 4 independent paths</span></pre>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Path</th><th>Nodes Traversed</th><th>Input (a,b,c)</th><th>Expected Output</th></tr></thead>
+        <tbody>
+          <tr><td><strong>P1</strong></td><td>1 → 2</td><td>(1, 2, 10)</td><td>Not a triangle</td></tr>
+          <tr><td><strong>P2</strong></td><td>1 → 3 → 4</td><td>(3, 3, 3)</td><td>Equilateral</td></tr>
+          <tr><td><strong>P3</strong></td><td>1 → 3 → 5 → 6</td><td>(3, 3, 4)</td><td>Isosceles</td></tr>
+          <tr><td><strong>P4</strong></td><td>1 → 3 → 5 → 7 → 8</td><td>(3, 4, 5)</td><td>Scalene</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub-head">Shipping Charge Example (from Slides)</h3>
+    <p class="prose">For the <code style="font-family:JetBrains Mono;font-size:12px;color:var(--accent);">calculate(amount)</code> method with 6 conditions: CC = 7. Therefore 7 independent paths must be tested.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Path</th><th>Amount</th><th>NextDay</th><th>Expected Outcome</th></tr></thead>
+        <tbody>
+          <tr><td>P-01 (baseline)</td><td>10</td><td>Yes</td><td>rushCharge=14.50, shipcharge=5.25, total = 10 + 0.725 + 19.75</td></tr>
+          <tr><td>P-02</td><td>1500</td><td>Yes</td><td>rushCharge=14.50, shipcharge = 1500×0.06 + 14.50 = 104.50</td></tr>
+          <tr><td>P-03</td><td>300</td><td>No</td><td>rushCharge=0, shipcharge = 300×0.08 = 24.00</td></tr>
+          <tr><td>P-04</td><td>150</td><td>No</td><td>shipcharge = 13.25</td></tr>
+          <tr><td>P-05</td><td>75</td><td>No</td><td>shipcharge = 9.95</td></tr>
+          <tr><td>P-06</td><td>30</td><td>No</td><td>shipcharge = 7.25</td></tr>
+          <tr><td>P-07</td><td>10</td><td>No</td><td>rushCharge=0, shipcharge = 5.25</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       6. COMPONENT & INTERFACE TESTING
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="component">
+    <div class="section-header">
+      <div class="section-num">// 06 — Integration</div>
+      <h2>Component &amp; <span class="hl">Interface Testing</span></h2>
+    </div>
+
+    <p class="prose">
+      Component testing checks that <strong>composite components</strong> (made of several interacting objects) behave correctly according to the component interface specification. Assumes unit testing of each individual part is already done.
+    </p>
+
+    <h3 class="sub-head">Types of Component Interfaces</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <h3>Parameter Interfaces</h3>
+        <p>Data is passed from one method/procedure to another via parameters. Most common. Tests: wrong order, wrong type, null values.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h3>Shared Memory Interfaces</h3>
+        <p>Block of memory shared between components. Common in embedded systems (sensor writes, analyser reads). Tests: timing, stale data, race conditions.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📞</div>
+        <h3>Procedural Interfaces</h3>
+        <p>A subsystem encapsulates procedures called by other subsystems. Like an API within a program. Tests: incorrect calls, wrong assumptions about behaviour.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">✉️</div>
+        <h3>Message Passing Interfaces</h3>
+        <p>Subsystems request services from others (e.g., client-server, MPI). Tests: message format, timing, lost messages, ordering.</p>
+      </div>
+    </div>
+
+    <h3 class="sub-head">Types of Interface Errors</h3>
+    <div class="def-block red">
+      <strong>Interface Misuse</strong>
+      <p>Calling component uses another component's interface incorrectly — e.g., parameters in wrong order. Detected by careful parameter checking.</p>
+    </div>
+    <div class="def-block yellow">
+      <strong>Interface Misunderstanding</strong>
+      <p>Calling component makes wrong assumptions about the called component's behaviour — e.g., calling a binary search with an <em>unsorted</em> array.</p>
+    </div>
+    <div class="def-block purple">
+      <strong>Timing Errors</strong>
+      <p>Components operating at different speeds — one reads shared memory before the other has written the latest value. Real-time system hazard.</p>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-icon">⚠️</div>
+      <p><strong>Fault Propagation:</strong> In interface testing, a wrong value in Component A causes an error in Component B. The bug appears in B but the root cause is in A. This is why interface errors are hard to detect.</p>
+    </div>
+
+    <h3 class="sub-head">Interface Testing Guidelines</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Extreme Parameter Values</h4><p>Pass parameters at the extreme ends of valid ranges — check for overflow, underflow, null handling.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Design Failure-Causing Tests</h4><p>Deliberately design tests to make components fail — expose assumptions that will break in production.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Stress Test Message Passing</h4><p>In concurrent systems, use stress testing to expose timing errors — flood the system with messages.</p></div></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       7. TDD
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="tdd">
+    <div class="section-header">
+      <div class="section-num">// 07 — Development Methodology</div>
+      <h2>Test-Driven Development <span class="hl">(TDD)</span></h2>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">🔄</div>
+      <p><strong>TDD</strong>: Write the test <em>first</em>, then write the code that makes the test pass. The test defines what the code should do before you write it.</p>
+    </div>
+
+    <h3 class="sub-head">The TDD Cycle — Red → Green → Refactor</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:linear-gradient(135deg,#ef4444,#b91c1c);">1</div><div class="step-body"><h4>🔴 RED — Write a failing test</h4><p>Write a test for the next small feature. Run it — it MUST fail because the feature doesn't exist yet.</p></div></div>
+      <div class="step"><div class="step-num" style="background:linear-gradient(135deg,#10b981,#047857);">2</div><div class="step-body"><h4>🟢 GREEN — Write minimal code to pass</h4><p>Write the simplest possible code to make the test pass. Don't over-engineer yet.</p></div></div>
+      <div class="step"><div class="step-num" style="background:linear-gradient(135deg,#f59e0b,#b45309);">3</div><div class="step-body"><h4>🔵 REFACTOR — Clean up the code</h4><p>Improve code structure, remove duplication. Run all tests again to ensure nothing broke.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><h4>↩️ REPEAT</h4><p>Move to the next small increment of functionality and repeat the cycle.</p></div></div>
+    </div>
+
+    <h3 class="sub-head">Benefits of TDD</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>100% Code Coverage</h3>
+        <p>Every line of code you write has at least one test. Defects discovered immediately when introduced.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔁</div>
+        <h3>Regression Testing Built-In</h3>
+        <p>Run the full test suite after every change. New code that breaks existing functionality is caught immediately.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🐞</div>
+        <h3>Simplified Debugging</h3>
+        <p>When a test fails, the newly-written code is the culprit. No need for complex debugging — the failure scope is tiny.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📄</div>
+        <h3>Living Documentation</h3>
+        <p>Tests describe exactly what each function should do. Better documentation than comments because it's always up-to-date.</p>
+      </div>
+    </div>
+
+    <h3 class="sub-head">Regression Testing</h3>
+    <div class="def-block green">
+      <strong>Regression Testing</strong>
+      <p>Re-running all existing tests after a code change to verify that previously working functionality hasn't been broken. With automation, this happens on every commit. TDD dramatically reduces the cost of regression testing.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       8. RELEASE & USER TESTING
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="release">
+    <div class="section-header">
+      <div class="section-num">// 08 — Final Stages</div>
+      <h2>Release &amp; <span class="hl">User Testing</span></h2>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-col">
+        <div class="compare-col-head" style="color:#6ee7b7;"><div class="dot" style="background:#6ee7b7;"></div>Release Testing</div>
+        <ul>
+          <li>Testing a specific release for external use</li>
+          <li>Performed by a <strong>separate testing team</strong></li>
+          <li>Black-box — tests derived from specification</li>
+          <li>Goal: validate the system is good enough for release</li>
+          <li>Includes requirements-based and performance tests</li>
+        </ul>
+      </div>
+      <div class="compare-col">
+        <div class="compare-col-head" style="color:var(--accent);"><div class="dot" style="background:var(--accent);"></div>System Testing</div>
+        <ul>
+          <li>Tests the full integrated system</li>
+          <li>Performed by development team + QA</li>
+          <li>Focus: <strong>finding bugs</strong> (defect testing)</li>
+          <li>Checks component interactions</li>
+          <li>Part of development process</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="sub-head">Requirements-Based Testing</h3>
+    <p class="prose">
+      For every requirement, create one or more test cases that verify it is met. This is <strong>validation testing</strong> — confirming the system does what it promised.
+    </p>
+
+    <div class="def-block yellow">
+      <strong>Dvago Pharmacy Case Study</strong>
+      <p>
+        <strong>Req 1:</strong> Customer searches medicine availability → Test: search "Panadol", expect found/not-found result.<br>
+        <strong>Req 2:</strong> If available, upload prescription before adding to cart → Test: add without prescription, expect error. Add with valid prescription, expect success.<br>
+        <strong>Req 3:</strong> Stock reduces after order → Test: order 5 units, verify stock decremented by 5.<br>
+        <strong>Req 4:</strong> Sold-out message if unavailable → Test: search out-of-stock item, expect "sold out" message.
+      </p>
+    </div>
+
+    <h3 class="sub-head">Types of User Testing</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🅰️</div>
+        <h3>Alpha Testing</h3>
+        <p>Users work directly with the development team <strong>at the developer's site</strong>. Provides early interface design feedback. Controlled environment.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🅱️</div>
+        <h3>Beta Testing</h3>
+        <p>Software released to a limited group of <strong>early adopters</strong> in their own environment. They report issues back. No developer present.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">✅</div>
+        <h3>Acceptance Testing (UAT)</h3>
+        <p>Customer formally tests the system to decide if it's ready for deployment. A formal sign-off process. Customer can accept or reject.</p>
+      </div>
+    </div>
+
+    <h3 class="sub-head">Acceptance Testing Process</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Define Acceptance Criteria</h4><p>Clarify uncertain requirements. Document what "done" looks like. Part of the system contract.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Plan Acceptance Testing</h4><p>Allocate resources, time, budget. Define risks and mitigation strategies.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Derive Acceptance Tests</h4><p>Cover all functional AND non-functional requirements. Complete requirement coverage.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Run Tests in Real Environment</h4><p>Execute agreed tests in the customer's actual working environment — not a test lab.</p></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Negotiate Results</h4><p>Rarely is everything perfect. Developer and customer negotiate what's acceptable, what needs fixing.</p></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><h4>Accept or Reject System</h4><p>Customer formally decides: accept as-is, accept with conditions, or reject and require revision.</p></div></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       9. PERFORMANCE TESTING
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="performance">
+    <div class="section-header">
+      <div class="section-num">// 09 — Non-Functional</div>
+      <h2>Performance &amp; <span class="hl">Stress Testing</span></h2>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3>Performance Testing</h3>
+        <p>Test system under expected load conditions. Increase load steadily until performance becomes unacceptable. Identifies performance bottlenecks.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💥</div>
+        <h3>Stress Testing</h3>
+        <p>Deliberately overload the system beyond its designed capacity. Identifies the breaking point and confirms <strong>fail-soft</strong> behaviour (graceful degradation, no data loss).</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Load Testing</h3>
+        <p>Simulate expected production load. Verify the system handles peak traffic without degradation. E.g., 300 concurrent users for an e-commerce site.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌐</div>
+        <h3>Distributed System Stress</h3>
+        <p>Most useful for identifying defects in distributed environments. System degradation begins as soon as threshold is exceeded. Find that point.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       10. MANUAL TESTING
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="manual">
+    <div class="section-header">
+      <div class="section-num">// 10 — Practical Skills</div>
+      <h2>Writing <span class="hl">Manual Test Cases</span></h2>
+    </div>
+
+    <p class="prose">
+      A well-written test case has a clear ID, description, preconditions, steps, expected result, and actual result. This is what interviewers look for when they say "write test cases for a login page."
+    </p>
+
+    <h3 class="sub-head">Standard Test Case Template</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Field</th><th>Description</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Test Case ID</strong></td><td>Unique identifier</td><td>TC-LOGIN-001</td></tr>
+          <tr><td><strong>Test Title</strong></td><td>Short description</td><td>Valid user login with correct credentials</td></tr>
+          <tr><td><strong>Precondition</strong></td><td>System state before test</td><td>User is registered. On login page.</td></tr>
+          <tr><td><strong>Test Steps</strong></td><td>Numbered actions</td><td>1. Enter email 2. Enter password 3. Click Login</td></tr>
+          <tr><td><strong>Test Data</strong></td><td>Specific values used</td><td>email: test@ex.com, pw: Secret123!</td></tr>
+          <tr><td><strong>Expected Result</strong></td><td>What should happen</td><td>Redirect to dashboard, show "Welcome" message</td></tr>
+          <tr><td><strong>Actual Result</strong></td><td>What actually happened</td><td>(Filled during execution)</td></tr>
+          <tr><td><strong>Pass/Fail</strong></td><td>Outcome</td><td>Pass ✅ / Fail ❌</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub-head">Test Cases for a Login Page — Interview Example</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>TC ID</th><th>Scenario</th><th>Input</th><th>Expected Result</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>TC-001</td><td>Valid login</td><td>Correct email + password</td><td>Login success, redirect to home</td><td><span class="ibadge g">POSITIVE</span></td></tr>
+          <tr><td>TC-002</td><td>Wrong password</td><td>Correct email, wrong password</td><td>"Invalid credentials" error</td><td><span class="ibadge r">NEGATIVE</span></td></tr>
+          <tr><td>TC-003</td><td>Wrong email</td><td>Non-existent email</td><td>"User not found" or generic error</td><td><span class="ibadge r">NEGATIVE</span></td></tr>
+          <tr><td>TC-004</td><td>Empty fields</td><td>Both fields empty</td><td>Validation error before submission</td><td><span class="ibadge r">NEGATIVE</span></td></tr>
+          <tr><td>TC-005</td><td>Empty email only</td><td>Email empty, password filled</td><td>"Email required" validation</td><td><span class="ibadge r">NEGATIVE</span></td></tr>
+          <tr><td>TC-006</td><td>SQL injection</td><td>' OR '1'='1 in email</td><td>Rejected, no DB access</td><td><span class="ibadge p">SECURITY</span></td></tr>
+          <tr><td>TC-007</td><td>XSS attack</td><td>&lt;script&gt;alert(1)&lt;/script&gt;</td><td>Script not executed, sanitized</td><td><span class="ibadge p">SECURITY</span></td></tr>
+          <tr><td>TC-008</td><td>Max char limit</td><td>500-char password</td><td>Handle gracefully or truncate</td><td><span class="ibadge y">BOUNDARY</span></td></tr>
+          <tr><td>TC-009</td><td>Case sensitivity</td><td>Email in UPPERCASE</td><td>Should still log in (case insensitive)</td><td><span class="ibadge c">EDGE</span></td></tr>
+          <tr><td>TC-010</td><td>Remember me</td><td>Check "Remember Me" checkbox</td><td>Session persists after browser close</td><td><span class="ibadge g">FUNCTIONAL</span></td></tr>
+          <tr><td>TC-011</td><td>Forgot password link</td><td>Click "Forgot Password"</td><td>Navigate to password reset flow</td><td><span class="ibadge g">FUNCTIONAL</span></td></tr>
+          <tr><td>TC-012</td><td>Brute force protection</td><td>5 wrong attempts</td><td>Account locked or CAPTCHA shown</td><td><span class="ibadge p">SECURITY</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       11. JAVASCRIPT TESTING — JEST
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="jest">
+    <div class="section-header">
+      <div class="section-num">// 11 — Practical: JavaScript</div>
+      <h2>Testing with <span class="hl">Jest</span></h2>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">⚡</div>
+      <p><strong>Jest</strong> is the most popular JavaScript testing framework. Used for React, Node.js, and vanilla JS. Made by Meta. Zero-config setup, built-in mocking, coverage reports.</p>
+    </div>
+
+    <h3 class="sub-head">Setup</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><div class="lang">Bash — Setup</div></div>
+      <pre><span class="cm"># Install Jest</span>
+npm install --save-dev jest
+
+<span class="cm"># Add to package.json</span>
+<span class="str">"scripts"</span>: {
+  <span class="str">"test"</span>: <span class="str">"jest"</span>,
+  <span class="str">"test:watch"</span>: <span class="str">"jest --watch"</span>,
+  <span class="str">"test:coverage"</span>: <span class="str">"jest --coverage"</span>
+}
+
+<span class="cm"># Run tests</span>
+npm test</pre>
+    </div>
+
+    <h3 class="sub-head">Basic Unit Tests</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><div class="lang">JavaScript — math.js + math.test.js</div></div>
+      <pre><span class="cm">// math.js — the code we're testing</span>
+<span class="kw">function</span> <span class="fn">add</span>(a, b) { <span class="kw">return</span> a + b; }
+<span class="kw">function</span> <span class="fn">divide</span>(a, b) {
+  <span class="kw">if</span> (b === <span class="nm">0</span>) <span class="kw">throw new</span> <span class="cl">Error</span>(<span class="str">'Cannot divide by zero'</span>);
+  <span class="kw">return</span> a / b;
+}
+module.exports = { add, divide };
+
+<span class="cm">// ─────────────────────────────────────────────</span>
+<span class="cm">// math.test.js — the test file</span>
+<span class="kw">const</span> { add, divide } = <span class="fn">require</span>(<span class="str">'./math'</span>);
+
+<span class="fn">describe</span>(<span class="str">'Math functions'</span>, () =&gt; {
+
+  <span class="cm">// ─── Positive Tests ───</span>
+  <span class="fn">test</span>(<span class="str">'adds two positive numbers'</span>, () =&gt; {
+    <span class="fn">expect</span>(<span class="fn">add</span>(<span class="nm">2</span>, <span class="nm">3</span>)).toBe(<span class="nm">5</span>);
+  });
+
+  <span class="fn">test</span>(<span class="str">'adds negative numbers'</span>, () =&gt; {
+    <span class="fn">expect</span>(<span class="fn">add</span>(-<span class="nm">2</span>, -<span class="nm">3</span>)).toBe(-<span class="nm">5</span>);
+  });
+
+  <span class="cm">// ─── Boundary Tests ───</span>
+  <span class="fn">test</span>(<span class="str">'adds zero to a number'</span>, () =&gt; {
+    <span class="fn">expect</span>(<span class="fn">add</span>(<span class="nm">5</span>, <span class="nm">0</span>)).toBe(<span class="nm">5</span>);
+  });
+
+  <span class="cm">// ─── Error / Negative Tests ───</span>
+  <span class="fn">test</span>(<span class="str">'throws on divide by zero'</span>, () =&gt; {
+    <span class="fn">expect</span>(() =&gt; <span class="fn">divide</span>(<span class="nm">10</span>, <span class="nm">0</span>)).toThrow(<span class="str">'Cannot divide by zero'</span>);
+  });
+
+  <span class="fn">test</span>(<span class="str">'divides correctly'</span>, () =&gt; {
+    <span class="fn">expect</span>(<span class="fn">divide</span>(<span class="nm">10</span>, <span class="nm">2</span>)).toBe(<span class="nm">5</span>);
+  });
+});</pre>
+    </div>
+
+    <h3 class="sub-head">Async / API Testing</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><div class="lang">JavaScript — API Tests with Mock</div></div>
+      <pre><span class="cm">// api.js — fetches user data</span>
+<span class="kw">const</span> axios = <span class="fn">require</span>(<span class="str">'axios'</span>);
+<span class="kw">async function</span> <span class="fn">getUser</span>(id) {
+  <span class="kw">const</span> response = <span class="kw">await</span> axios.<span class="fn">get</span>(<span class="str">`https://api.example.com/users/<span class="tg">${id}</span>`</span>);
+  <span class="kw">return</span> response.data;
+}
+module.exports = { getUser };
+
+<span class="cm">// api.test.js</span>
+<span class="kw">const</span> axios = <span class="fn">require</span>(<span class="str">'axios'</span>);
+<span class="kw">const</span> { getUser } = <span class="fn">require</span>(<span class="str">'./api'</span>);
+
+<span class="cm">// Mock axios so we don't hit real API</span>
+jest.<span class="fn">mock</span>(<span class="str">'axios'</span>);
+
+<span class="fn">describe</span>(<span class="str">'getUser'</span>, () =&gt; {
+  <span class="fn">test</span>(<span class="str">'returns user data on success'</span>, <span class="kw">async</span> () =&gt; {
+    <span class="kw">const</span> mockUser = { id: <span class="nm">1</span>, name: <span class="str">'Alice'</span> };
+    axios.get.<span class="fn">mockResolvedValue</span>({ data: mockUser });
+
+    <span class="kw">const</span> user = <span class="kw">await</span> <span class="fn">getUser</span>(<span class="nm">1</span>);
+    <span class="fn">expect</span>(user).toEqual(mockUser);
+    <span class="fn">expect</span>(axios.get).<span class="fn">toHaveBeenCalledWith</span>(
+      <span class="str">'https://api.example.com/users/1'</span>
+    );
+  });
+
+  <span class="fn">test</span>(<span class="str">'throws error when API fails'</span>, <span class="kw">async</span> () =&gt; {
+    axios.get.<span class="fn">mockRejectedValue</span>(<span class="kw">new</span> <span class="cl">Error</span>(<span class="str">'Network Error'</span>));
+    <span class="kw">await</span> <span class="fn">expect</span>(<span class="fn">getUser</span>(<span class="nm">1</span>)).<span class="fn">rejects</span>.<span class="fn">toThrow</span>(<span class="str">'Network Error'</span>);
+  });
+});</pre>
+    </div>
+
+    <h3 class="sub-head">Key Jest Matchers Reference</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Matcher</th><th>Usage</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><span class="mono">toBe()</span></td><td>Exact equality (===)</td><td><code style="font-size:11px;font-family:JetBrains Mono,monospace;">expect(2+2).toBe(4)</code></td></tr>
+          <tr><td><span class="mono">toEqual()</span></td><td>Deep equality (objects)</td><td><code style="font-size:11px;font-family:JetBrains Mono,monospace;">expect({a:1}).toEqual({a:1})</code></td></tr>
+          <tr><td><span class="mono">toBeNull()</span></td><td>Is null</td><td><code style="font-size:11px;font-family:JetBrains Mono,monospace;">expect(null).toBeNull()</code></td></tr>
+          <tr><td><span class="mono">toBeTruthy()</span></td><td>Truthy value</td><td><code style="font-size:11px;font-family:JetBrains Mono,monospace;">expect(1).toBeTruthy()</code></td></tr>
+          <tr><td><span class="mono">toBeFalsy()</span></td><td>Falsy value</td><td><code style="font-size:11px;font-family:JetBrains Mono,monospace;">expect(0).toBeFalsy()</code></td></tr>
+          <tr><td><span class="mono">toContain()</span></td><td>Array/string contains</td><td><code style="font-size:11px;font-family:JetBrains Mono,monospace;">expect([1,2]).toContain(1)</code></td></tr>
+          <tr><td><span class="mono">toThrow()</span></td><td>Function throws</td><td><code style="font-size:11px;font-family:JetBrains Mono,monospace;">expect(fn).toThrow('err')</code></td></tr>
+          <tr><td><span class="mono">toHaveBeenCalled()</span></td><td>Mock was called</td><td><code style="font-size:11px;font-family:JetBrains Mono,monospace;">expect(mockFn).toHaveBeenCalled()</code></td></tr>
+          <tr><td><span class="mono">toBeGreaterThan()</span></td><td>Number comparison</td><td><code style="font-size:11px;font-family:JetBrains Mono,monospace;">expect(5).toBeGreaterThan(3)</code></td></tr>
+          <tr><td><span class="mono">not.toBe()</span></td><td>Negation</td><td><code style="font-size:11px;font-family:JetBrains Mono,monospace;">expect(1).not.toBe(2)</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       12. PYTHON PYTEST
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="pytest">
+    <div class="section-header">
+      <div class="section-num">// 12 — Practical: Python</div>
+      <h2>Testing with <span class="hl">Pytest</span></h2>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">🐍</div>
+      <p><strong>Pytest</strong> is Python's most popular testing framework. Simple syntax, powerful fixtures, parametrize for data-driven tests, and plugins for coverage, async, and more.</p>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><div class="lang">Bash — Setup</div></div>
+      <pre>pip install pytest pytest-cov
+pytest                      <span class="cm"># run all tests</span>
+pytest -v                   <span class="cm"># verbose output</span>
+pytest --cov=mymodule       <span class="cm"># coverage report</span>
+pytest -k "test_login"      <span class="cm"># run tests matching name</span>
+pytest -x                   <span class="cm"># stop on first failure</span></pre>
+    </div>
+
+    <h3 class="sub-head">Basic Pytest Structure</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><div class="lang">Python — bank.py + test_bank.py</div></div>
+      <pre><span class="cm"># bank.py — code under test</span>
+<span class="kw">class</span> <span class="cl">BankAccount</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, balance=<span class="nm">0</span>):
+        self.balance = balance
+
+    <span class="kw">def</span> <span class="fn">deposit</span>(self, amount):
+        <span class="kw">if</span> amount &lt;= <span class="nm">0</span>:
+            <span class="kw">raise</span> <span class="cl">ValueError</span>(<span class="str">"Deposit amount must be positive"</span>)
+        self.balance += amount
+
+    <span class="kw">def</span> <span class="fn">withdraw</span>(self, amount):
+        <span class="kw">if</span> amount &gt; self.balance:
+            <span class="kw">raise</span> <span class="cl">ValueError</span>(<span class="str">"Insufficient funds"</span>)
+        self.balance -= amount
+
+    <span class="kw">def</span> <span class="fn">get_balance</span>(self):
+        <span class="kw">return</span> self.balance
+
+<span class="cm"># ─────────────────────────────────────────────</span>
+<span class="cm"># test_bank.py — test file (must start with test_)</span>
+<span class="kw">import</span> pytest
+<span class="kw">from</span> bank <span class="kw">import</span> <span class="cl">BankAccount</span>
+
+<span class="cm"># ─── Fixture: reusable setup ───</span>
+<span class="dc">@pytest.fixture</span>
+<span class="kw">def</span> <span class="fn">account</span>():
+    <span class="str">"""Creates a fresh BankAccount for each test"""</span>
+    <span class="kw">return</span> <span class="cl">BankAccount</span>(balance=<span class="nm">100</span>)
+
+<span class="cm"># ─── Positive Tests ───</span>
+<span class="kw">def</span> <span class="fn">test_deposit_increases_balance</span>(account):
+    account.<span class="fn">deposit</span>(<span class="nm">50</span>)
+    <span class="kw">assert</span> account.<span class="fn">get_balance</span>() == <span class="nm">150</span>
+
+<span class="kw">def</span> <span class="fn">test_withdraw_decreases_balance</span>(account):
+    account.<span class="fn">withdraw</span>(<span class="nm">30</span>)
+    <span class="kw">assert</span> account.<span class="fn">get_balance</span>() == <span class="nm">70</span>
+
+<span class="cm"># ─── Negative Tests ───</span>
+<span class="kw">def</span> <span class="fn">test_withdraw_raises_on_insufficient_funds</span>(account):
+    <span class="kw">with</span> pytest.<span class="fn">raises</span>(<span class="cl">ValueError</span>, match=<span class="str">"Insufficient funds"</span>):
+        account.<span class="fn">withdraw</span>(<span class="nm">200</span>)
+
+<span class="kw">def</span> <span class="fn">test_deposit_raises_on_negative_amount</span>(account):
+    <span class="kw">with</span> pytest.<span class="fn">raises</span>(<span class="cl">ValueError</span>):
+        account.<span class="fn">deposit</span>(-<span class="nm">10</span>)
+
+<span class="cm"># ─── Boundary Tests ───</span>
+<span class="kw">def</span> <span class="fn">test_deposit_zero_raises</span>(account):
+    <span class="kw">with</span> pytest.<span class="fn">raises</span>(<span class="cl">ValueError</span>):
+        account.<span class="fn">deposit</span>(<span class="nm">0</span>)
+
+<span class="kw">def</span> <span class="fn">test_withdraw_entire_balance</span>(account):
+    account.<span class="fn">withdraw</span>(<span class="nm">100</span>)
+    <span class="kw">assert</span> account.<span class="fn">get_balance</span>() == <span class="nm">0</span></pre>
+    </div>
+
+    <h3 class="sub-head">Parametrize — Data-Driven Testing</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><div class="lang">Python — Parametrize (Equivalence Partitioning)</div></div>
+      <pre><span class="kw">import</span> pytest
+
+<span class="kw">def</span> <span class="fn">classify_age</span>(age):
+    <span class="kw">if</span> age &lt; <span class="nm">0</span>: <span class="kw">raise</span> <span class="cl">ValueError</span>(<span class="str">"Age cannot be negative"</span>)
+    <span class="kw">if</span> age &lt; <span class="nm">13</span>: <span class="kw">return</span> <span class="str">"child"</span>
+    <span class="kw">if</span> age &lt; <span class="nm">18</span>: <span class="kw">return</span> <span class="str">"teenager"</span>
+    <span class="kw">if</span> age &lt; <span class="nm">65</span>: <span class="kw">return</span> <span class="str">"adult"</span>
+    <span class="kw">return</span> <span class="str">"senior"</span>
+
+<span class="cm"># Parametrize: run same test with many inputs at once</span>
+<span class="dc">@pytest.mark.parametrize</span>(<span class="str">"age, expected"</span>, [
+    (<span class="nm">0</span>,  <span class="str">"child"</span>),      <span class="cm"># boundary: min</span>
+    (<span class="nm">5</span>,  <span class="str">"child"</span>),      <span class="cm"># middle of class</span>
+    (<span class="nm">12</span>, <span class="str">"child"</span>),      <span class="cm"># boundary: max child</span>
+    (<span class="nm">13</span>, <span class="str">"teenager"</span>),   <span class="cm"># boundary: min teenager</span>
+    (<span class="nm">17</span>, <span class="str">"teenager"</span>),   <span class="cm"># boundary: max teenager</span>
+    (<span class="nm">18</span>, <span class="str">"adult"</span>),      <span class="cm"># boundary: min adult</span>
+    (<span class="nm">64</span>, <span class="str">"adult"</span>),      <span class="cm"># boundary: max adult</span>
+    (<span class="nm">65</span>, <span class="str">"senior"</span>),     <span class="cm"># boundary: min senior</span>
+    (<span class="nm">100</span>, <span class="str">"senior"</span>),    <span class="cm"># large valid</span>
+])
+<span class="kw">def</span> <span class="fn">test_classify_age</span>(age, expected):
+    <span class="kw">assert</span> <span class="fn">classify_age</span>(age) == expected
+
+<span class="dc">@pytest.mark.parametrize</span>(<span class="str">"age"</span>, [-<span class="nm">1</span>, -<span class="nm">100</span>])
+<span class="kw">def</span> <span class="fn">test_negative_age_raises</span>(age):
+    <span class="kw">with</span> pytest.<span class="fn">raises</span>(<span class="cl">ValueError</span>):
+        <span class="fn">classify_age</span>(age)</pre>
+    </div>
+
+    <h3 class="sub-head">Mocking with pytest-mock</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><div class="lang">Python — Mock External Dependencies</div></div>
+      <pre><span class="cm"># pip install pytest-mock</span>
+<span class="kw">import</span> requests
+<span class="kw">from</span> unittest.mock <span class="kw">import</span> patch, <span class="cl">MagicMock</span>
+
+<span class="kw">def</span> <span class="fn">fetch_user</span>(user_id):
+    response = requests.<span class="fn">get</span>(<span class="str">f"https://api.example.com/users/<span class="tg">{user_id}</span>"</span>)
+    <span class="kw">if</span> response.status_code == <span class="nm">200</span>:
+        <span class="kw">return</span> response.<span class="fn">json</span>()
+    <span class="kw">return None</span>
+
+<span class="cm"># Mock the requests.get call</span>
+<span class="dc">@patch</span>(<span class="str">'requests.get'</span>)
+<span class="kw">def</span> <span class="fn">test_fetch_user_success</span>(mock_get):
+    mock_response = <span class="cl">MagicMock</span>()
+    mock_response.status_code = <span class="nm">200</span>
+    mock_response.<span class="fn">json</span>.return_value = {<span class="str">"id"</span>: <span class="nm">1</span>, <span class="str">"name"</span>: <span class="str">"Alice"</span>}
+    mock_get.return_value = mock_response
+
+    result = <span class="fn">fetch_user</span>(<span class="nm">1</span>)
+    <span class="kw">assert</span> result == {<span class="str">"id"</span>: <span class="nm">1</span>, <span class="str">"name"</span>: <span class="str">"Alice"</span>}
+    mock_get.<span class="fn">assert_called_once_with</span>(<span class="str">"https://api.example.com/users/1"</span>)
+
+<span class="dc">@patch</span>(<span class="str">'requests.get'</span>)
+<span class="kw">def</span> <span class="fn">test_fetch_user_not_found</span>(mock_get):
+    mock_response = <span class="cl">MagicMock</span>()
+    mock_response.status_code = <span class="nm">404</span>
+    mock_get.return_value = mock_response
+
+    result = <span class="fn">fetch_user</span>(<span class="nm">999</span>)
+    <span class="kw">assert</span> result <span class="kw">is None</span></pre>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       13. SELENIUM
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="selenium">
+    <div class="section-header">
+      <div class="section-num">// 13 — Automation</div>
+      <h2>Selenium <span class="hl">Web Automation</span></h2>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">🤖</div>
+      <p><strong>Selenium</strong> automates browser interactions for end-to-end testing. It simulates a real user clicking, typing, and navigating — used for UI regression testing and acceptance testing.</p>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><div class="lang">Python — Selenium Login Test</div></div>
+      <pre><span class="kw">from</span> selenium <span class="kw">import</span> webdriver
+<span class="kw">from</span> selenium.webdriver.common.by <span class="kw">import</span> By
+<span class="kw">from</span> selenium.webdriver.support.ui <span class="kw">import</span> WebDriverWait
+<span class="kw">from</span> selenium.webdriver.support <span class="kw">import</span> expected_conditions <span class="kw">as</span> EC
+<span class="kw">import</span> pytest
+
+<span class="dc">@pytest.fixture</span>
+<span class="kw">def</span> <span class="fn">driver</span>():
+    d = webdriver.<span class="cl">Chrome</span>()          <span class="cm"># or Firefox(), Edge()</span>
+    d.implicitly_wait(<span class="nm">10</span>)
+    <span class="kw">yield</span> d
+    d.<span class="fn">quit</span>()                         <span class="cm"># cleanup after each test</span>
+
+<span class="kw">def</span> <span class="fn">test_valid_login</span>(driver):
+    driver.<span class="fn">get</span>(<span class="str">"https://example.com/login"</span>)
+
+    <span class="cm"># Find elements and interact</span>
+    driver.<span class="fn">find_element</span>(By.ID, <span class="str">"email"</span>).<span class="fn">send_keys</span>(<span class="str">"user@test.com"</span>)
+    driver.<span class="fn">find_element</span>(By.ID, <span class="str">"password"</span>).<span class="fn">send_keys</span>(<span class="str">"Secret123!"</span>)
+    driver.<span class="fn">find_element</span>(By.CSS_SELECTOR, <span class="str">"button[type='submit']"</span>).<span class="fn">click</span>()
+
+    <span class="cm"># Wait for dashboard to load and verify</span>
+    wait = <span class="cl">WebDriverWait</span>(driver, <span class="nm">10</span>)
+    welcome = wait.<span class="fn">until</span>(
+        EC.<span class="fn">presence_of_element_located</span>((By.CLASS_NAME, <span class="str">"welcome-message"</span>))
+    )
+    <span class="kw">assert</span> <span class="str">"Welcome"</span> <span class="kw">in</span> welcome.text
+
+<span class="kw">def</span> <span class="fn">test_invalid_login</span>(driver):
+    driver.<span class="fn">get</span>(<span class="str">"https://example.com/login"</span>)
+    driver.<span class="fn">find_element</span>(By.ID, <span class="str">"email"</span>).<span class="fn">send_keys</span>(<span class="str">"wrong@email.com"</span>)
+    driver.<span class="fn">find_element</span>(By.ID, <span class="str">"password"</span>).<span class="fn">send_keys</span>(<span class="str">"wrongpass"</span>)
+    driver.<span class="fn">find_element</span>(By.CSS_SELECTOR, <span class="str">"button[type='submit']"</span>).<span class="fn">click</span>()
+
+    error = driver.<span class="fn">find_element</span>(By.CLASS_NAME, <span class="str">"error-message"</span>)
+    <span class="kw">assert</span> <span class="str">"Invalid credentials"</span> <span class="kw">in</span> error.text</pre>
+    </div>
+
+    <h3 class="sub-head">Selenium Locator Strategies</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Strategy</th><th>Code</th><th>Best For</th><th>Reliability</th></tr></thead>
+        <tbody>
+          <tr><td><strong>ID</strong></td><td><span class="mono">By.ID, "username"</span></td><td>Unique elements</td><td>⭐⭐⭐⭐⭐ Best</td></tr>
+          <tr><td><strong>Name</strong></td><td><span class="mono">By.NAME, "email"</span></td><td>Form inputs</td><td>⭐⭐⭐⭐</td></tr>
+          <tr><td><strong>CSS Selector</strong></td><td><span class="mono">By.CSS_SELECTOR, ".btn"</span></td><td>Complex selectors</td><td>⭐⭐⭐⭐</td></tr>
+          <tr><td><strong>XPath</strong></td><td><span class="mono">By.XPATH, "//button"</span></td><td>Complex hierarchies</td><td>⭐⭐⭐ (fragile)</td></tr>
+          <tr><td><strong>Class Name</strong></td><td><span class="mono">By.CLASS_NAME, "btn"</span></td><td>Styled elements</td><td>⭐⭐⭐</td></tr>
+          <tr><td><strong>Link Text</strong></td><td><span class="mono">By.LINK_TEXT, "Login"</span></td><td>Anchor tags</td><td>⭐⭐⭐</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       14. TOOLS OVERVIEW
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="tools">
+    <div class="section-header">
+      <div class="section-num">// 14 — Ecosystem</div>
+      <h2>Testing <span class="hl">Tools Overview</span></h2>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tool</th><th>Language</th><th>Type</th><th>Best For</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Jest</strong></td><td>JavaScript / TS</td><td>Unit + Integration</td><td>React, Node.js — zero config</td></tr>
+          <tr><td><strong>Mocha + Chai</strong></td><td>JavaScript</td><td>Unit</td><td>Flexible, BDD-style</td></tr>
+          <tr><td><strong>Cypress</strong></td><td>JavaScript</td><td>E2E</td><td>Modern web app testing — excellent DX</td></tr>
+          <tr><td><strong>Playwright</strong></td><td>JS / Python / C#</td><td>E2E</td><td>Cross-browser, Microsoft-backed</td></tr>
+          <tr><td><strong>Pytest</strong></td><td>Python</td><td>Unit + Integration</td><td>Python — most popular, powerful fixtures</td></tr>
+          <tr><td><strong>unittest</strong></td><td>Python</td><td>Unit</td><td>Built-in, no install needed</td></tr>
+          <tr><td><strong>Selenium</strong></td><td>Multi-language</td><td>UI Automation</td><td>Browser automation, legacy systems</td></tr>
+          <tr><td><strong>JUnit 5</strong></td><td>Java</td><td>Unit</td><td>Java ecosystem standard</td></tr>
+          <tr><td><strong>Postman / Newman</strong></td><td>REST API</td><td>API Testing</td><td>REST API testing, collections</td></tr>
+          <tr><td><strong>JMeter</strong></td><td>Java/GUI</td><td>Performance</td><td>Load and stress testing</td></tr>
+          <tr><td><strong>k6</strong></td><td>JavaScript</td><td>Performance</td><td>Developer-friendly load testing</td></tr>
+          <tr><td><strong>SonarQube</strong></td><td>Multi</td><td>Static Analysis</td><td>Code quality, security vulnerabilities</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub-head">Manual vs Automated Testing</h3>
+    <div class="compare-grid">
+      <div class="compare-col">
+        <div class="compare-col-head" style="color:#fcd34d;"><div class="dot" style="background:#fcd34d;"></div>Manual Testing</div>
+        <ul>
+          <li>Human tester executes tests step by step</li>
+          <li>Good for exploratory, ad-hoc, UX testing</li>
+          <li>No coding skills required</li>
+          <li>Slow, expensive for regression</li>
+          <li>Use for: new features, one-time tests</li>
+        </ul>
+      </div>
+      <div class="compare-col">
+        <div class="compare-col-head" style="color:#6ee7b7;"><div class="dot" style="background:#6ee7b7;"></div>Automated Testing</div>
+        <ul>
+          <li>Scripts run tests automatically</li>
+          <li>Fast regression, CI/CD integration</li>
+          <li>Requires programming skills</li>
+          <li>High initial setup cost, low long-term cost</li>
+          <li>Use for: regression, performance, repetitive tasks</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="sub-head">CI/CD Integration — The Pipeline</h3>
+    <div class="code-wrap">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><div class="lang">YAML — GitHub Actions CI Pipeline</div></div>
+      <pre><span class="cm"># .github/workflows/test.yml</span>
+<span class="tg">name:</span> Run Tests
+
+<span class="tg">on:</span>
+  <span class="tg">push:</span>
+    <span class="tg">branches:</span> [main, develop]
+  <span class="tg">pull_request:</span>
+
+<span class="tg">jobs:</span>
+  <span class="tg">test:</span>
+    <span class="tg">runs-on:</span> ubuntu-latest
+    <span class="tg">steps:</span>
+      - <span class="tg">uses:</span> actions/checkout@v3
+
+      - <span class="tg">name:</span> Setup Node.js
+        <span class="tg">uses:</span> actions/setup-node@v3
+        <span class="tg">with:</span>
+          <span class="tg">node-version:</span> <span class="str">'18'</span>
+
+      - <span class="tg">name:</span> Install dependencies
+        <span class="tg">run:</span> npm ci
+
+      - <span class="tg">name:</span> Run Jest Tests
+        <span class="tg">run:</span> npm test -- --coverage
+
+      - <span class="tg">name:</span> Upload coverage report
+        <span class="tg">uses:</span> codecov/codecov-action@v3
+<span class="cm"># Tests MUST pass before code merges. This is automated regression testing.</span></pre>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       15. INTERVIEW Q&A
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="interview">
+    <div class="section-header">
+      <div class="section-num">// 15 — Interview Preparation</div>
+      <h2>Top Interview <span class="hl">Questions &amp; Answers</span></h2>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-icon">🎯</div>
+      <p><strong>Interview Tip:</strong> Always link theory to practice. When asked about testing types, mention which tools you'd use. When asked about test cases, write them out on paper/whiteboard clearly.</p>
+    </div>
+
+    <h3 class="sub-head">Core Concepts</h3>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">What is the difference between verification and validation?</div>
+      <div class="qa-a">
+        <strong>Verification:</strong> "Are we building the product right?" — static checking that code conforms to specification (code reviews, static analysis, inspections). Does not run code.<br><br>
+        <strong>Validation:</strong> "Are we building the right product?" — dynamic testing that the system meets user requirements. Runs the actual code.<br><br>
+        <em>Mnemonic: Verification = spec correct. Validation = user happy.</em>
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">What is the difference between black-box and white-box testing?</div>
+      <div class="qa-a">
+        <strong>Black-box:</strong> Test without knowing internal code. Only inputs and outputs matter. Basis: specification/requirements. Example: testing a login form without seeing server code.<br><br>
+        <strong>White-box:</strong> Test with full knowledge of internal code. Design tests for branches, paths, loops. Example: basis path testing, code coverage analysis.<br><br>
+        <strong>Grey-box:</strong> Partial knowledge. Common in integration testing.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">Explain TDD and why it's valuable. Write a TDD example.</div>
+      <div class="qa-a">
+        TDD = Write test FIRST, then write code to pass it. Cycle: Red → Green → Refactor.<br><br>
+        <strong>Benefits:</strong> 100% code coverage, built-in regression testing, tests serve as documentation, simplified debugging (failing test pinpoints the problem).<br><br>
+        <strong>Example:</strong><br>
+        <code>// Step 1: Write failing test</code><br>
+        <code>test('isPalindrome("racecar") returns true', () => {</code><br>
+        <code>&nbsp;&nbsp;expect(isPalindrome("racecar")).toBe(true); // FAILS — fn doesn't exist</code><br>
+        <code>});</code><br><br>
+        <code>// Step 2: Write minimal code</code><br>
+        <code>function isPalindrome(s) { return s === s.split('').reverse().join(''); }</code><br><br>
+        <code>// Step 3: Test passes. Refactor if needed.</code>
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">What is Cyclomatic Complexity and how do you calculate it?</div>
+      <div class="qa-a">
+        Cyclomatic Complexity (CC) measures the logical complexity of code — the number of independent paths through it.<br><br>
+        <strong>Formula:</strong> <code>CC = E – N + 2P</code> (Edges – Nodes + 2 × Connected Components)<br>
+        <strong>Shortcut:</strong> <code>CC = Number of decision points + 1</code><br><br>
+        <strong>Example:</strong> A function with 3 if-statements has CC = 4 → needs minimum 4 test cases for full path coverage.<br><br>
+        <strong>Interpretation:</strong> CC ≤ 10 = simple, 11–20 = moderate, &gt;20 = complex (refactor recommended).
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">What is Equivalence Partitioning? Give a practical example.</div>
+      <div class="qa-a">
+        EP divides inputs into groups (partitions) where all values in a group should behave the same way. You test one value from each partition instead of every value.<br><br>
+        <strong>Example — Age input for a system accepting 1–120:</strong><br>
+        • Invalid partition 1: &lt; 1 (e.g., 0, -5) → expect error<br>
+        • Valid partition: 1–120 (e.g., 25) → expect success<br>
+        • Invalid partition 2: &gt; 120 (e.g., 150) → expect error<br>
+        • Invalid type: "abc" → expect error<br><br>
+        <strong>Add Boundary Testing:</strong> test 0, 1, 120, 121 — boundaries are where most bugs hide.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">What's the difference between alpha, beta, and acceptance testing?</div>
+      <div class="qa-a">
+        <strong>Alpha Testing:</strong> Users test at the developer's site with developer support. Early, controlled, focused on interface usability. Done before beta.<br><br>
+        <strong>Beta Testing:</strong> Software released to a limited group of external users in their own environment. Developer not present. Users report bugs.<br><br>
+        <strong>Acceptance Testing (UAT):</strong> Customer formally tests the system to decide if it should be deployed. Results in an official accept/reject decision.<br><br>
+        <em>Order: Development → System Testing → Alpha → Beta → UAT → Production</em>
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">Write test cases for a calculator's divide function.</div>
+      <div class="qa-a">
+        TC-001: 10 ÷ 2 = 5 (positive / positive)<br>
+        TC-002: -10 ÷ 2 = -5 (negative / positive)<br>
+        TC-003: 0 ÷ 5 = 0 (zero numerator)<br>
+        TC-004: 10 ÷ 0 → Error: "Division by zero" (zero denominator)<br>
+        TC-005: 0 ÷ 0 → Error (both zero)<br>
+        TC-006: 1 ÷ 3 = 0.333... (float result)<br>
+        TC-007: MAX_INT ÷ 1 = MAX_INT (overflow check)<br>
+        TC-008: "abc" ÷ 2 → Type Error (string input)<br>
+        TC-009: null ÷ 2 → Error (null input)
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">What is regression testing and when do you run it?</div>
+      <div class="qa-a">
+        Regression testing = re-running all existing tests after a code change to ensure nothing previously working has been broken.<br><br>
+        <strong>When to run:</strong><br>
+        • After every bug fix (verify fix didn't break something else)<br>
+        • After adding a new feature<br>
+        • After code refactoring<br>
+        • Before every release<br>
+        • Automatically on every commit in CI/CD pipelines<br><br>
+        <strong>Tools:</strong> Jest (--watch mode), pytest, Selenium suites in Jenkins/GitHub Actions.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">What is mocking in testing? Why is it important?</div>
+      <div class="qa-a">
+        Mocking replaces real dependencies (APIs, databases, external services) with fake, controlled versions during testing.<br><br>
+        <strong>Why:</strong><br>
+        • Tests run in isolation — no real network calls<br>
+        • Tests are fast and deterministic<br>
+        • Can test error scenarios (API down, 404, timeout) easily<br>
+        • No cost or side effects from hitting real services<br><br>
+        <strong>In Jest:</strong> <code>jest.mock('axios')</code>, then <code>axios.get.mockResolvedValue({...})</code><br>
+        <strong>In Python:</strong> <code>@patch('requests.get')</code> decorator or <code>unittest.mock.MagicMock()</code>
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">Explain stress testing vs load testing vs performance testing.</div>
+      <div class="qa-a">
+        <strong>Performance Testing:</strong> Broad term for testing system speed, scalability, and stability under load.<br><br>
+        <strong>Load Testing:</strong> Test with expected peak load. E.g., simulate 1000 concurrent users on an e-commerce site during Black Friday.<br><br>
+        <strong>Stress Testing:</strong> Push beyond the limit until the system breaks. Goal: find the breaking point, confirm graceful degradation (no data loss, good error messages).<br><br>
+        <strong>Spike Testing:</strong> Sudden, extreme increase in load — then back to normal. Tests elasticity.<br><br>
+        <strong>Soak Testing:</strong> Run at normal load for a long time — find memory leaks.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q" onclick="toggleQA(this)">What's the testing pyramid? How do you apply it?</div>
+      <div class="qa-a">
+        The Testing Pyramid (Mike Cohn) describes the ideal distribution of test types:<br><br>
+        <strong>🔺 Top (few): E2E / UI Tests</strong> — Selenium, Cypress. Slow, expensive, brittle. Test critical user journeys only.<br>
+        <strong>🔷 Middle: Integration Tests</strong> — Test multiple components together. APIs, databases, services interacting.<br>
+        <strong>🔲 Bottom (many): Unit Tests</strong> — Fast, cheap, isolated. The foundation. Aim for &gt;70% coverage here.<br><br>
+        <strong>Rule of thumb:</strong> 70% Unit, 20% Integration, 10% E2E. Avoid the "ice cream cone" anti-pattern (inverted pyramid — mostly manual/E2E).
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       16. CHEAT SHEET
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="cheatsheet">
+    <div class="section-header">
+      <div class="section-num">// 16 — Quick Reference</div>
+      <h2>Exam <span class="hl">Cheat Sheet</span></h2>
+    </div>
+
+    <h3 class="sub-head">Core Formulas &amp; Facts</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="tag" style="background:rgba(0,229,255,.1);color:var(--accent);">FORMULA</div>
+        <h3>Cyclomatic Complexity</h3>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#ffd700;margin-bottom:6px;">CC = E – N + 2P</p>
+        <p>Also = decisions + 1 | Equals min test cases needed for path coverage.</p>
+      </div>
+      <div class="card">
+        <div class="tag" style="background:rgba(124,58,237,.1);color:#c4b5fd;">CONCEPT</div>
+        <h3>V&amp;V Acronym</h3>
+        <p><strong style="color:var(--accent);">V</strong>erification = right product? (static)<br><strong style="color:#c4b5fd;">V</strong>alidation = product right? (dynamic)</p>
+      </div>
+      <div class="card">
+        <div class="tag" style="background:rgba(16,185,129,.1);color:#6ee7b7;">TDD</div>
+        <h3>TDD Cycle</h3>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#fca5a5;">🔴 Red</p>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6ee7b7;">🟢 Green</p>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);">🔵 Refactor → Repeat</p>
+      </div>
+    </div>
+
+    <h3 class="sub-head">Testing Stages Quick Reference</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Stage</th><th>When</th><th>Who</th><th>Black/White Box</th><th>Automated?</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Unit</strong></td><td>During dev</td><td>Developer</td><td>White-box</td><td>✅ Always</td></tr>
+          <tr><td><strong>Component/Integration</strong></td><td>Testing phase</td><td>Dev + QA</td><td>Both</td><td>✅ Often</td></tr>
+          <tr><td><strong>System</strong></td><td>Testing phase</td><td>QA team</td><td>Black-box</td><td>✅ Often</td></tr>
+          <tr><td><strong>Release</strong></td><td>Pre-release</td><td>Separate team</td><td>Black-box</td><td>Partially</td></tr>
+          <tr><td><strong>Alpha</strong></td><td>Pre-beta</td><td>Internal users</td><td>Black-box</td><td>❌ Manual</td></tr>
+          <tr><td><strong>Beta</strong></td><td>Pre-release</td><td>External users</td><td>Black-box</td><td>❌ Manual</td></tr>
+          <tr><td><strong>Acceptance (UAT)</strong></td><td>Before deployment</td><td>Customer</td><td>Black-box</td><td>❌ Manual</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub-head">Key Terminology Glossary</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Test Case</strong></td><td>A specific condition with inputs, steps, and expected results used to validate software behaviour</td></tr>
+          <tr><td><strong>Test Suite</strong></td><td>A collection of related test cases</td></tr>
+          <tr><td><strong>Test Harness</strong></td><td>Code/tools used to run tests and report results automatically</td></tr>
+          <tr><td><strong>Stub</strong></td><td>A simplified replacement for a module called by the unit being tested (downstream)</td></tr>
+          <tr><td><strong>Driver</strong></td><td>A module that calls the unit under test (simulates the caller — upstream)</td></tr>
+          <tr><td><strong>Mock</strong></td><td>An object that mimics real dependencies with programmable behaviour and call tracking</td></tr>
+          <tr><td><strong>Fixture</strong></td><td>Fixed state or data used as baseline for running tests (setup/teardown)</td></tr>
+          <tr><td><strong>Coverage</strong></td><td>Percentage of code exercised by tests (line, branch, path coverage)</td></tr>
+          <tr><td><strong>Regression</strong></td><td>A previously working feature that broke after a code change</td></tr>
+          <tr><td><strong>Defect/Bug</strong></td><td>A flaw causing software to behave unexpectedly or incorrectly</td></tr>
+          <tr><td><strong>Test Oracle</strong></td><td>Mechanism to determine whether actual output matches expected output</td></tr>
+          <tr><td><strong>Smoke Test</strong></td><td>Quick sanity check — does the application start and its core features work?</td></tr>
+          <tr><td><strong>Sanity Test</strong></td><td>Narrow regression test after a fix to verify the specific issue is resolved</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-icon">🏆</div>
+      <p><strong>For Exams:</strong> Know the difference between <em>unit/component/system testing</em>, the <em>TDD cycle</em>, <em>CC formula</em>, <em>basis path steps</em>, and the types of <em>interface errors</em>. For practicals: be able to write test cases for any given function in Jest or Pytest.</p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // ── Sidebar toggle ──
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('open');
+  }
+
+  // ── Q&A toggle ──
+  function toggleQA(el) {
+    el.classList.toggle('open');
+    const ans = el.nextElementSibling;
+    ans.classList.toggle('open');
+  }
+
+  // ── Scroll progress bar ──
+  window.addEventListener('scroll', () => {
+    const el = document.getElementById('progress-bar');
+    const doc = document.documentElement;
+    const scrollTop = doc.scrollTop;
+    const scrollHeight = doc.scrollHeight - doc.clientHeight;
+    const pct = scrollTop / scrollHeight;
+    el.style.transform = `scaleX(${pct})`;
+  });
+
+  // ── Active nav link ──
+  const sections = document.querySelectorAll('.section');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        navItems.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  // ── Close sidebar on nav click (mobile) ──
+  navItems.forEach(a => {
+    a.addEventListener('click', () => {
+      if (window.innerWidth <= 900) {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('overlay').classList.remove('open');
+      }
+    });
+  });
+</script>
+</body>
+</html>
