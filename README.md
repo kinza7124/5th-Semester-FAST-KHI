@@ -15,7 +15,7 @@ It is designed to help students access all the necessary academic resources in o
 
 5. CN – Computer Networks
    
-6.DLP - Deep Learning
+6. DLP - Deep Learning
 
 7. SE - Software Engineering
 
