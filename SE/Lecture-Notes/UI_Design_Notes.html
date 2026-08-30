@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI Design – Complete Exam Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --card: #191c27;
+    --border: #262b3a;
+    --accent1: #6c63ff;
+    --accent2: #00d4aa;
+    --accent3: #ff6b6b;
+    --accent4: #ffd166;
+    --text: #e8eaf0;
+    --muted: #8b91a8;
+    --heading: #ffffff;
+    --tag-bg: #1e2235;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.75;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0d0f14 0%, #13111f 50%, #0f1a18 100%);
+    padding: 3.5rem 1.5rem 2.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(108,99,255,.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(108,99,255,.15);
+    border: 1px solid rgba(108,99,255,.35);
+    color: #a99fff;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: .3rem .85rem;
+    border-radius: 2rem;
+    margin-bottom: 1.2rem;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.9rem, 6vw, 3.2rem);
+    font-weight: 800;
+    color: var(--heading);
+    line-height: 1.15;
+    margin-bottom: .9rem;
+  }
+  .hero h1 span { color: var(--accent1); }
+  .hero p {
+    color: var(--muted);
+    max-width: 500px;
+    margin: 0 auto 1.5rem;
+    font-size: .95rem;
+  }
+  .pill-row { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; }
+  .pill {
+    padding: .35rem .8rem;
+    border-radius: 2rem;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .pill-p { background: rgba(108,99,255,.15); color: #a99fff; border: 1px solid rgba(108,99,255,.3); }
+  .pill-g { background: rgba(0,212,170,.12); color: #4dffd8; border: 1px solid rgba(0,212,170,.25); }
+  .pill-r { background: rgba(255,107,107,.12); color: #ff9f9f; border: 1px solid rgba(255,107,107,.25); }
+  .pill-y { background: rgba(255,209,102,.12); color: #ffe08a; border: 1px solid rgba(255,209,102,.25); }
+
+  /* ── NAV ── */
+  .toc {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    position: sticky; top: 0; z-index: 100;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .toc-inner { display: inline-flex; gap: .5rem; }
+  .toc a {
+    text-decoration: none;
+    color: var(--muted);
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .4rem .85rem;
+    border-radius: .4rem;
+    border: 1px solid transparent;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .toc a:hover { color: var(--heading); background: var(--card); border-color: var(--border); }
+
+  /* ── LAYOUT ── */
+  .wrap { max-width: 860px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+  section { margin-bottom: 3.5rem; }
+
+  /* ── SECTION HEADER ── */
+  .sec-header {
+    display: flex; align-items: center; gap: .75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .sec-icon {
+    width: 2.2rem; height: 2.2rem;
+    border-radius: .55rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .ic-p { background: rgba(108,99,255,.2); }
+  .ic-g { background: rgba(0,212,170,.15); }
+  .ic-r { background: rgba(255,107,107,.15); }
+  .ic-y { background: rgba(255,209,102,.15); }
+  .ic-b { background: rgba(100,160,255,.15); }
+  .sec-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--heading);
+  }
+  .sec-num {
+    font-family: 'Syne', sans-serif;
+    font-size: .7rem;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: .15rem;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: .85rem;
+    padding: 1.25rem 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--heading);
+    margin-bottom: .55rem;
+  }
+  .card p, .card li { color: var(--text); font-size: .9rem; }
+  .card ul, .card ol { padding-left: 1.3rem; }
+  .card li { margin-bottom: .3rem; }
+  .card-accent-p { border-left: 3px solid var(--accent1); }
+  .card-accent-g { border-left: 3px solid var(--accent2); }
+  .card-accent-r { border-left: 3px solid var(--accent3); }
+  .card-accent-y { border-left: 3px solid var(--accent4); }
+
+  /* ── HIGHLIGHT BOX ── */
+  .info-box {
+    border-radius: .75rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    display: flex; gap: .75rem;
+  }
+  .info-box .ib-icon { font-size: 1.25rem; flex-shrink: 0; margin-top: .05rem; }
+  .info-box p { font-size: .88rem; color: var(--text); }
+  .info-box strong { color: var(--heading); }
+  .ib-blue { background: rgba(100,160,255,.09); border: 1px solid rgba(100,160,255,.2); }
+  .ib-green { background: rgba(0,212,170,.08); border: 1px solid rgba(0,212,170,.2); }
+  .ib-yellow { background: rgba(255,209,102,.08); border: 1px solid rgba(255,209,102,.2); }
+  .ib-red { background: rgba(255,107,107,.08); border: 1px solid rgba(255,107,107,.2); }
+
+  /* ── PRINCIPLE GRID ── */
+  .principle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+  .principle-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: .85rem;
+    padding: 1.15rem;
+  }
+  .principle-item .p-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: .4rem;
+  }
+  .principle-item h4 { font-family: 'Syne', sans-serif; font-size: .92rem; font-weight: 700; color: var(--heading); margin-bottom: .45rem; }
+  .principle-item p { font-size: .82rem; color: var(--muted); }
+  .num-p { color: var(--accent1); }
+  .num-g { color: var(--accent2); }
+  .num-r { color: var(--accent3); }
+
+  /* ── INLINE CODE ── */
+  code {
+    background: rgba(108,99,255,.12);
+    color: #a99fff;
+    padding: .1rem .4rem;
+    border-radius: .3rem;
+    font-size: .82rem;
+    font-family: monospace;
+  }
+
+  /* ── EXAM Q SECTION ── */
+  .exam-q {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: .85rem;
+    margin-bottom: .9rem;
+    overflow: hidden;
+  }
+  .eq-header {
+    display: flex; gap: .75rem; align-items: flex-start;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+  }
+  .eq-num {
+    background: rgba(108,99,255,.2);
+    color: #a99fff;
+    font-family: 'Syne', sans-serif;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    padding: .25rem .6rem;
+    border-radius: .35rem;
+    flex-shrink: 0;
+    margin-top: .05rem;
+  }
+  .eq-q { font-weight: 500; color: var(--heading); font-size: .93rem; flex: 1; }
+  .eq-toggle { color: var(--muted); font-size: .85rem; flex-shrink: 0; transition: transform .25s; margin-top: .1rem; }
+  .eq-body {
+    padding: 0 1.25rem 1rem 1.25rem;
+    font-size: .87rem;
+    color: var(--text);
+    border-top: 1px solid var(--border);
+    padding-top: .85rem;
+    display: none;
+  }
+  .eq-body ul { padding-left: 1.2rem; }
+  .eq-body li { margin-bottom: .3rem; }
+  .exam-q.open .eq-toggle { transform: rotate(180deg); }
+  .exam-q.open .eq-body { display: block; }
+
+  /* ── DIAGRAM ── */
+  .diagram-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: .85rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+  }
+  .diagram-wrap h4 { font-family: 'Syne', sans-serif; font-size: .88rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 1rem; }
+
+  /* UI Layout Wireframe */
+  .wireframe { width: 100%; max-width: 380px; margin: 0 auto; font-size: .75rem; }
+  .wf-bar { background: var(--accent1); border-radius: .4rem .4rem 0 0; padding: .5rem .75rem; color: #fff; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .wf-nav { background: #1d2032; border: 1px solid var(--border); border-top: none; padding: .5rem .75rem; display: flex; gap: .5rem; align-items: center; }
+  .wf-nav-link { color: var(--muted); padding: .2rem .5rem; border-radius: .3rem; font-size: .7rem; }
+  .wf-nav-link.active { background: rgba(108,99,255,.2); color: #a99fff; }
+  .wf-body { border: 1px solid var(--border); border-top: none; display: flex; min-height: 160px; }
+  .wf-sidebar { background: #161927; width: 28%; padding: .5rem; border-right: 1px solid var(--border); }
+  .wf-sidebar-item { background: var(--border); border-radius: .25rem; height: .5rem; margin-bottom: .4rem; }
+  .wf-sidebar-item.s-active { background: var(--accent1); opacity: .5; }
+  .wf-main { flex: 1; padding: .6rem; }
+  .wf-hero-block { background: rgba(108,99,255,.1); border: 1px dashed rgba(108,99,255,.3); border-radius: .3rem; height: 45px; margin-bottom: .5rem; display: flex; align-items: center; justify-content: center; color: var(--accent1); font-size: .68rem; }
+  .wf-cards-row { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; }
+  .wf-mini-card { background: var(--border); border-radius: .3rem; height: 35px; }
+  .wf-footer { background: #12141c; border: 1px solid var(--border); border-top: none; padding: .4rem .75rem; border-radius: 0 0 .4rem .4rem; text-align: center; color: var(--muted); font-size: .65rem; }
+
+  /* Spiral diagram */
+  .spiral-wrap { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: center; padding: .5rem 0; }
+  .spiral-step {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    width: 80px; height: 80px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    font-size: .65rem;
+    font-weight: 600;
+    color: var(--text);
+    position: relative;
+  }
+  .spiral-step .s-num { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; }
+  .spiral-step::after {
+    content: '→';
+    position: absolute; right: -1.1rem;
+    top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-size: .9rem;
+  }
+  .spiral-step:last-child::after { content: '↺'; right: -1.2rem; color: var(--accent2); }
+  .ss1 { border-color: var(--accent1); } .ss1 .s-num { color: var(--accent1); }
+  .ss2 { border-color: var(--accent2); } .ss2 .s-num { color: var(--accent2); }
+  .ss3 { border-color: var(--accent3); } .ss3 .s-num { color: var(--accent3); }
+  .ss4 { border-color: var(--accent4); } .ss4 .s-num { color: var(--accent4); }
+
+  /* Flow diagram */
+  .flow { display: flex; flex-direction: column; gap: .3rem; align-items: center; }
+  .flow-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: .5rem;
+    padding: .5rem 1.2rem;
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--text);
+    width: 100%; max-width: 280px;
+    text-align: center;
+  }
+  .flow-box.fb-p { border-color: var(--accent1); color: #a99fff; }
+  .flow-box.fb-g { border-color: var(--accent2); color: #4dffd8; }
+  .flow-arrow { color: var(--muted); font-size: .9rem; }
+
+  /* Model diagram */
+  .model-row { display: flex; gap: .75rem; flex-wrap: wrap; justify-content: center; margin-top: .5rem; }
+  .model-box {
+    background: var(--bg);
+    border: 2px dashed var(--border);
+    border-radius: .6rem;
+    padding: .75rem 1rem;
+    text-align: center;
+    flex: 1; min-width: 110px;
+  }
+  .model-box .mb-label { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: .3rem; font-weight: 600; }
+  .model-box .mb-main { font-family: 'Syne', sans-serif; font-size: .88rem; font-weight: 700; color: var(--heading); }
+  .model-eq { font-family: 'Syne', sans-serif; font-size: 1.5rem; color: var(--accent2); display: flex; align-items: center; padding-top: .5rem; }
+  .model-arrow { display: flex; align-items: center; padding-top: .5rem; color: var(--accent1); font-size: 1.1rem; }
+
+  /* ── TABLE ── */
+  .styled-table { width: 100%; border-collapse: collapse; font-size: .84rem; margin-bottom: 1rem; }
+  .styled-table th {
+    background: var(--tag-bg);
+    color: var(--accent1);
+    font-family: 'Syne', sans-serif;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .7rem 1rem;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  .styled-table td { padding: .65rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text); }
+  .styled-table tr:last-child td { border-bottom: none; }
+  .styled-table tr:hover td { background: rgba(255,255,255,.025); }
+  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: .85rem; overflow: hidden; margin-bottom: 1rem; overflow-x: auto; }
+
+  /* ── TAG ── */
+  .tag {
+    display: inline-block;
+    padding: .2rem .6rem;
+    border-radius: .3rem;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-right: .3rem; margin-bottom: .3rem;
+  }
+  .tag-p { background: rgba(108,99,255,.15); color: #a99fff; }
+  .tag-g { background: rgba(0,212,170,.12); color: #4dffd8; }
+  .tag-r { background: rgba(255,107,107,.12); color: #ff9f9f; }
+  .tag-y { background: rgba(255,209,102,.12); color: #ffe08a; }
+
+  /* ── EXAMPLE BOX ── */
+  .example-box {
+    background: rgba(0,212,170,.06);
+    border: 1px solid rgba(0,212,170,.2);
+    border-radius: .65rem;
+    padding: .9rem 1.1rem;
+    margin-bottom: .8rem;
+  }
+  .example-box .ex-label {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: .35rem;
+    display: flex; align-items: center; gap: .35rem;
+  }
+  .example-box p, .example-box li { font-size: .87rem; color: var(--text); }
+  .example-box ul { padding-left: 1.15rem; }
+  .example-box li { margin-bottom: .25rem; }
+
+  /* ── DIVIDER ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+  /* ── SUBHEADING ── */
+  .sh { font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700; color: var(--heading); margin: 1.2rem 0 .55rem; }
+
+  /* mobile tweaks */
+  @media (max-width: 500px) {
+    .spiral-step { width: 68px; height: 68px; font-size: .6rem; }
+    .principle-grid { grid-template-columns: 1fr; }
+    .spiral-step::after { right: -1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── HERO ─── -->
+<div class="hero">
+  <div class="hero-badge">📚 Exam Study Guide</div>
+  <h1>User Interface<br><span>Design</span></h1>
+  <p>Complete notes covering all slides — principles, analysis, design steps, models, guidelines, and exam Q&amp;A.</p>
+  <div class="pill-row">
+    <span class="pill pill-p">Golden Rules</span>
+    <span class="pill pill-g">UI Models</span>
+    <span class="pill pill-r">Analysis &amp; Design</span>
+    <span class="pill pill-y">Design Issues</span>
+    <span class="pill pill-p">Exam Q&amp;A</span>
+  </div>
+</div>
+
+<!-- ─── NAV ─── -->
+<nav class="toc">
+  <div class="toc-inner">
+    <a href="#intro">Intro</a>
+    <a href="#golden">Golden Rules</a>
+    <a href="#models">UI Models</a>
+    <a href="#process">Analysis &amp; Design</a>
+    <a href="#issues">Design Issues</a>
+    <a href="#guidelines">Guidelines</a>
+    <a href="#workflow">Workflow</a>
+    <a href="#exam">Exam Q&amp;A</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- ══════════════════════════════════════════
+     SECTION 1 — INTRODUCTION
+════════════════════════════════════════════ -->
+<section id="intro">
+  <div class="sec-header">
+    <div class="sec-icon ic-p">🖥️</div>
+    <div>
+      <div class="sec-num">Section 01</div>
+      <h2>Introduction to Interface Design</h2>
+    </div>
+  </div>
+
+  <div class="info-box ib-blue">
+    <div class="ib-icon">💡</div>
+    <p><strong>Core Idea:</strong> Initially users had to adapt to complex technical systems. Modern design flips this — <strong>technology must now adapt to human ease</strong>. Usability is the central concern.</p>
+  </div>
+
+  <div class="card card-accent-p">
+    <h3>Historical Context</h3>
+    <ul>
+      <li>Early interfaces were purely technical — users were expected to learn them.</li>
+      <li>A set of <strong>Golden Rules</strong> was defined to guide designers.</li>
+      <li>The concept of the <em>"window world"</em> (GUI) was introduced to make systems visual and intuitive.</li>
+      <li>Issues observed in bad GUI designs: <span class="tag tag-r">Not user-friendly</span> <span class="tag tag-r">Confusing</span> <span class="tag tag-r">Counter-intuitive</span> <span class="tag tag-r">Frustrating</span></li>
+    </ul>
+  </div>
+
+  <div class="example-box">
+    <div class="ex-label">🌍 Real-World Example</div>
+    <ul>
+      <li><strong>Good UI:</strong> Apple iOS — icons, gestures, no commands needed.</li>
+      <li><strong>Bad UI:</strong> Old command-line systems requiring memorised syntax (e.g., early UNIX for casual users).</li>
+      <li><strong>Evolution:</strong> MS-DOS → Windows GUI → Touch interfaces → Voice UI (Alexa, Siri).</li>
+    </ul>
+  </div>
+
+  <!-- Sample wireframe diagram -->
+  <div class="diagram-wrap">
+    <h4>📐 Sample UI Layout — Wireframe</h4>
+    <div class="wireframe">
+      <div class="wf-bar">
+        <span>🔵 MyApp v2.0</span>
+        <span>☰</span>
+      </div>
+      <div class="wf-nav">
+        <span class="wf-nav-link active">Home</span>
+        <span class="wf-nav-link">About</span>
+        <span class="wf-nav-link">Services</span>
+        <span class="wf-nav-link">Contact</span>
+      </div>
+      <div class="wf-body">
+        <div class="wf-sidebar">
+          <div class="wf-sidebar-item s-active"></div>
+          <div class="wf-sidebar-item"></div>
+          <div class="wf-sidebar-item"></div>
+          <div class="wf-sidebar-item"></div>
+          <div class="wf-sidebar-item"></div>
+        </div>
+        <div class="wf-main">
+          <div class="wf-hero-block">Hero / Banner Area</div>
+          <div class="wf-cards-row">
+            <div class="wf-mini-card"></div>
+            <div class="wf-mini-card"></div>
+            <div class="wf-mini-card"></div>
+            <div class="wf-mini-card"></div>
+          </div>
+        </div>
+      </div>
+      <div class="wf-footer">Footer · Links · Copyright</div>
+    </div>
+    <p style="font-size:.75rem;color:var(--muted);text-align:center;margin-top:.75rem;">A standard web UI: Navbar → Sidebar + Main Content → Footer</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 2 — GOLDEN RULES (THEO MANDEL)
+════════════════════════════════════════════ -->
+<section id="golden">
+  <div class="sec-header">
+    <div class="sec-icon ic-g">⭐</div>
+    <div>
+      <div class="sec-num">Section 02</div>
+      <h2>Golden Rules of UI Design — Theo Mandel</h2>
+    </div>
+  </div>
+
+  <div class="info-box ib-yellow">
+    <div class="ib-icon">🎓</div>
+    <p><strong>Theo Mandel</strong> defined three fundamental principles that guide every aspect of UI design. These are extremely exam-important.</p>
+  </div>
+
+  <div class="principle-grid">
+    <div class="principle-item">
+      <div class="p-num num-p">01</div>
+      <h4>Allow Users to Maintain Control</h4>
+      <p>Users must feel in charge — free to do what they want, switch modes, undo mistakes, and interact flexibly.</p>
+    </div>
+    <div class="principle-item">
+      <div class="p-num num-g">02</div>
+      <h4>Reduce User's Memory Load</h4>
+      <p>The system should remember things for the user. Use visuals, defaults, and shortcuts to minimise recall demand.</p>
+    </div>
+    <div class="principle-item">
+      <div class="p-num num-r">03</div>
+      <h4>Make Consistent Interface</h4>
+      <p>Patterns, colours, and interactions should remain predictable across all screens and applications.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- PRINCIPLE 1 DETAILS -->
+  <div class="sh">Principle 1: Allow Users to Maintain Control — Details</div>
+
+  <div class="card card-accent-p">
+    <h3>1a. Define Interactive Modes Freely</h3>
+    <p>Allow users to define different modes and switch between them easily at any time.</p>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>MS Word:</strong> Switch between Editing Mode and Spell-Check Mode freely.</li>
+        <li><strong>Chrome Browser:</strong> Normal mode vs. Incognito mode vs. Reading mode.</li>
+        <li><strong>Adobe Photoshop:</strong> Selection mode, brush mode, crop mode — easy switching.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-p">
+    <h3>1b. Allow Flexible Interaction</h3>
+    <p>Users should be able to interact via multiple input methods:</p>
+    <div style="margin-top:.5rem;">
+      <span class="tag tag-p">Mouse</span>
+      <span class="tag tag-p">Keyboard</span>
+      <span class="tag tag-p">Digitizer Pen</span>
+      <span class="tag tag-p">Voice Input</span>
+      <span class="tag tag-p">Multi-touch</span>
+    </div>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>Windows OS:</strong> Mouse clicks, keyboard shortcuts, stylus on Surface devices, Cortana voice commands.</li>
+        <li><strong>Google Docs:</strong> Keyboard, mouse, Google Assistant voice dictation, mobile touch.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-p">
+    <h3>1c. Allow Uninterruptable &amp; Undoable Interaction</h3>
+    <ul>
+      <li>User can freely quit a task and do another <strong>without losing changes</strong>.</li>
+      <li><strong>Undo/Redo</strong> must always be available.</li>
+    </ul>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>MS Word / Google Docs:</strong> Auto-save + unlimited Ctrl+Z undo.</li>
+        <li><strong>Photoshop:</strong> History panel with 50+ undo steps.</li>
+        <li><strong>Gmail:</strong> "Undo Send" feature — cancel a sent email within seconds.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-p">
+    <h3>1d. Allow Customized Operations (Macros)</h3>
+    <p>Advanced users can create <strong>macros</strong> for frequently occurring operations to speed up workflow.</p>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>MS Excel/Word:</strong> Record and run macros via VBA (Visual Basic for Applications).</li>
+        <li><strong>AutoHotKey:</strong> Desktop macro scripting tool.</li>
+        <li><strong>Photoshop Actions:</strong> Record repetitive tasks as a single-click action.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-p">
+    <h3>1e. Hide Technical Internals from Casual Users</h3>
+    <p>Users should not need to know about the underlying OS, file systems, or backend complexities.</p>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>iOS/Android:</strong> Users never see the file system or OS commands — apps handle everything.</li>
+        <li><strong>MS Word:</strong> User clicks "Save" — no need to know about disk sectors, buffers, or OS file APIs.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-p">
+    <h3>1f. Design for Direct Interaction</h3>
+    <p>Icons and objects should be draggable, scalable, and feel as if they physically exist.</p>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>File Explorer:</strong> Drag files to folders — like moving physical folders.</li>
+        <li><strong>Canva / Figma:</strong> Drag-and-drop UI elements, resize handles, direct manipulation.</li>
+        <li><strong>Google Maps:</strong> Drag the map, pinch-to-zoom — direct interaction.</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- PRINCIPLE 2 DETAILS -->
+  <div class="sh">Principle 2: Reduce User's Memory Load — Details</div>
+
+  <div class="card card-accent-g">
+    <h3>2a. Well-Designed Systems Don't Test Memory</h3>
+    <p>Use <strong>list boxes, checkboxes, dropdowns</strong> rather than empty text fields wherever possible. Display past inputs visually.</p>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>Google Search:</strong> Auto-complete suggestions — no need to recall full queries.</li>
+        <li><strong>Form dropdowns:</strong> Country picker uses a dropdown list, not a blank text box.</li>
+        <li><strong>Spotify:</strong> Recently played shows your history — no memorisation needed.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-g">
+    <h3>2b. Establish Meaningful Defaults</h3>
+    <p>Provide sensible default settings. Users can customise but always have a "Reset to Defaults" option available.</p>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>Microsoft Word:</strong> Default font (Calibri 11pt), margins (1 inch) — sensible starting point.</li>
+        <li><strong>Chrome:</strong> Default search engine set to Google; users can change it.</li>
+        <li><strong>VS Code:</strong> Default dark theme + reset settings option.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-g">
+    <h3>2c. Define Intuitive Shortcuts</h3>
+    <p>Shortcuts should be mnemonically obvious so users can guess or remember them easily.</p>
+    <div class="table-wrap" style="margin-top:.75rem;">
+      <table class="styled-table">
+        <tr><th>Shortcut</th><th>Action</th><th>Software</th></tr>
+        <tr><td><code>Ctrl+P</code></td><td>Print</td><td>All Windows apps</td></tr>
+        <tr><td><code>Ctrl+S</code></td><td>Save</td><td>MS Office, VS Code</td></tr>
+        <tr><td><code>Ctrl+Z</code></td><td>Undo</td><td>Universal</td></tr>
+        <tr><td><code>Ctrl+C / V</code></td><td>Copy / Paste</td><td>Universal</td></tr>
+        <tr><td><code>Ctrl+F</code></td><td>Find</td><td>Browser, Word, Notepad</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card card-accent-g">
+    <h3>2d. Visual Layout Near Real-World Processes</h3>
+    <p>The steps in software should mirror real-life procedures — don't re-invent familiar sequences.</p>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>Online Bill Payment:</strong> Select bill → Enter amount → Confirm → Receipt. Same as real-world bank payment.</li>
+        <li><strong>E-Commerce Checkout (Amazon):</strong> Cart → Address → Payment → Review → Place Order. Mirrors physical store checkout.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-g">
+    <h3>2e. Disclose Information Progressively</h3>
+    <p>Show only what's needed. Reveal more detail on demand (clicks, hover, expand). Avoid overwhelming the user upfront.</p>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>Amazon Product Page:</strong> Shows image + price first → click for full specs, reviews, Q&amp;A sections.</li>
+        <li><strong>Accordion menus in mobile apps:</strong> Tap a category to expand sub-items.</li>
+        <li><strong>Gmail:</strong> Shows subject line in list → click to see full email body.</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- PRINCIPLE 3 DETAILS -->
+  <div class="sh">Principle 3: Make Consistent Interface — Details</div>
+
+  <div class="card card-accent-r">
+    <h3>3a. Meaningful Context for Tasks</h3>
+    <p>Users should always understand where they are and what they are doing — use window titles, breadcrumbs, colour coding.</p>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>MS Word:</strong> Title bar shows filename + "Word" — user knows what app and file they're in.</li>
+        <li><strong>E-commerce sites:</strong> Breadcrumb trail: Home &gt; Electronics &gt; Phones &gt; iPhone 15.</li>
+        <li><strong>Jira:</strong> Colour-coded tickets by status — red = blocked, green = done.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-r">
+    <h3>3b. Consistency Across Application Family</h3>
+    <p>A suite of applications should share the same visual language — menus, fonts, colours, and patterns.</p>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>Microsoft Office Suite:</strong> Word, Excel, PowerPoint, Outlook all share the Ribbon interface, font chooser, colour picker.</li>
+        <li><strong>Google Workspace:</strong> Docs, Sheets, Slides share the same top-bar, share button, file-menu structure.</li>
+        <li><strong>Adobe Creative Cloud:</strong> Photoshop, Illustrator, InDesign share Layers panel, tools panel layout.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-r">
+    <h3>3c. Don't Redefine User's Past Experiences</h3>
+    <p>Never reassign globally known shortcuts or interaction patterns unless absolutely forced to.</p>
+    <div class="info-box ib-red" style="margin-top:.75rem;">
+      <div class="ib-icon">⚠️</div>
+      <p><strong>Classic Bad Example:</strong> If a new app binds <code>Ctrl+S</code> to <em>Scale</em> instead of Save, users will lose work constantly because muscle memory expects Save. This violates consistency.</p>
+    </div>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Good Examples of Consistency</div>
+      <ul>
+        <li>All browsers use <code>Ctrl+T</code> for new tab, <code>Ctrl+W</code> to close.</li>
+        <li>File → Save, Edit → Undo, View → Zoom are universal menu positions.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 3 — UI DESIGN MODELS
+════════════════════════════════════════════ -->
+<section id="models">
+  <div class="sec-header">
+    <div class="sec-icon ic-y">🧠</div>
+    <div>
+      <div class="sec-num">Section 03</div>
+      <h2>UI Design Models</h2>
+    </div>
+  </div>
+
+  <div class="info-box ib-yellow">
+    <div class="ib-icon">🎓</div>
+    <p><strong>Key Principle:</strong> An effective UI design is one where the <strong>user's mental model</strong> and the <strong>implementation model</strong> coincide (match each other perfectly).</p>
+  </div>
+
+  <div class="diagram-wrap">
+    <h4>🧩 UI Design Models — Diagram</h4>
+    <div class="model-row">
+      <div class="model-box">
+        <div class="mb-label">Designer's</div>
+        <div class="mb-main">Design Model</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:.3rem;">How designer intends it to work</div>
+      </div>
+      <div class="model-arrow">→</div>
+      <div class="model-box" style="border-color:var(--accent2);">
+        <div class="mb-label">Builds</div>
+        <div class="mb-main" style="color:var(--accent2);">System Image</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:.3rem;">What the user actually sees</div>
+      </div>
+      <div class="model-arrow">→</div>
+      <div class="model-box">
+        <div class="mb-label">User forms</div>
+        <div class="mb-main">Mental Model</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:.3rem;">How user thinks it works</div>
+      </div>
+    </div>
+    <div class="info-box ib-green" style="margin-top:1rem;">
+      <div class="ib-icon">✅</div>
+      <p><strong>Goal:</strong> When Mental Model = Implementation Model → Effective Design achieved.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Three Models Explained</h3>
+    <div class="table-wrap">
+      <table class="styled-table">
+        <tr><th>Model</th><th>Who Creates It</th><th>Description</th></tr>
+        <tr><td><strong>Design Model</strong></td><td>Software Engineer / Designer</td><td>The intended design — how the engineer builds it based on requirements.</td></tr>
+        <tr><td><strong>User's Mental Model</strong></td><td>End User</td><td>The user's internal picture of how the system works — formed from experience.</td></tr>
+        <tr><td><strong>System's Image</strong></td><td>Interaction of both</td><td>What the user actually experiences — the interface as it appears and behaves.</td></tr>
+      </table>
+    </div>
+    <div class="info-box ib-blue" style="margin-top:.5rem;">
+      <div class="ib-icon">🔑</div>
+      <p>The engineer gets to see the design model but the user only sees the system image. If the system image is poorly constructed, the user's mental model will be incorrect, causing confusion.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 4 — UI ANALYSIS & DESIGN PROCESS
+════════════════════════════════════════════ -->
+<section id="process">
+  <div class="sec-header">
+    <div class="sec-icon ic-r">🔄</div>
+    <div>
+      <div class="sec-num">Section 04</div>
+      <h2>UI Analysis &amp; Design Process</h2>
+    </div>
+  </div>
+
+  <div class="info-box ib-blue">
+    <div class="ib-icon">ℹ️</div>
+    <p>UI Analysis &amp; Design is an <strong>iterative process</strong> — it uses the <strong>Spiral Process Model</strong>. The 4 steps repeat continuously for improvement.</p>
+  </div>
+
+  <div class="diagram-wrap">
+    <h4>🌀 Spiral Process — UI Design Steps</h4>
+    <div class="spiral-wrap">
+      <div class="spiral-step ss1"><div class="s-num">1</div>Interface<br>Analysis</div>
+      <div class="spiral-step ss2"><div class="s-num">2</div>Interface<br>Design</div>
+      <div class="spiral-step ss3"><div class="s-num">3</div>Interface<br>Build</div>
+      <div class="spiral-step ss4"><div class="s-num">4</div>Interface<br>Validation</div>
+    </div>
+    <p style="font-size:.75rem;color:var(--muted);text-align:center;margin-top:.75rem;">↺ = Loop repeats until the design is satisfactory</p>
+  </div>
+
+  <hr>
+
+  <!-- STEP 1: INTERFACE ANALYSIS -->
+  <div class="sh">Step 1: Interface Analysis</div>
+
+  <div class="card card-accent-p">
+    <h3>User Analysis</h3>
+    <ul>
+      <li>Understand the <strong>users</strong> of the system, system goals, displayed content, and environment.</li>
+      <li>The mental image and implementation model must converge — achieved by understanding how users use the system.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Information Sources for System Understanding</h3>
+    <div class="table-wrap" style="margin-top:.5rem;">
+      <table class="styled-table">
+        <tr><th>Source</th><th>Method</th></tr>
+        <tr><td><strong>User Interviews</strong></td><td>Development team meets end-users to identify needs and work culture.</td></tr>
+        <tr><td><strong>Marketing &amp; Sales Input</strong></td><td>Market surveys to find how many ways the product could be useful.</td></tr>
+        <tr><td><strong>Support Input</strong></td><td>Support staff collects feedback on what works/doesn't, what's easy or difficult.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card card-accent-g">
+    <h3>User Analysis — Key Questions (Exam Important!)</h3>
+    <p style="margin-bottom:.5rem;">These questions help in better user categorisation:</p>
+    <ul>
+      <li>Are users trained professionals, technicians, clerical, or manufacturing workers?</li>
+      <li>What is the average formal education level of users?</li>
+      <li>Do users prefer written materials or classroom training?</li>
+      <li>Are users expert typists or keyboard-phobic?</li>
+      <li>What is the age range and gender of the user community?</li>
+      <li>How are users compensated? What are their working hours?</li>
+      <li>How frequently will they use the software? (mostly / occasionally)</li>
+      <li>What is the primary spoken language of users?</li>
+      <li>What are the consequences of a user's mistake in the system?</li>
+      <li>Are users subject-matter experts? Are they interested in the underlying technology?</li>
+    </ul>
+  </div>
+
+  <div class="sh">Task Analysis &amp; Modelling</div>
+
+  <div class="card">
+    <h3>Components of Task Analysis</h3>
+    <div class="table-wrap" style="margin-top:.5rem;">
+      <table class="styled-table">
+        <tr><th>Component</th><th>Description</th></tr>
+        <tr><td><strong>Task Identification</strong></td><td>Identify tasks and sub-tasks performed by the user in specific circumstances.</td></tr>
+        <tr><td><strong>Use-Cases</strong></td><td>Define basic actor-system interactions in informal paragraphs. Used to derive tasks, sub-tasks, and interfaces.</td></tr>
+        <tr><td><strong>Task Elaboration</strong></td><td>Stepwise refinement of interactive tasks — can be derived manually or from existing systems.</td></tr>
+        <tr><td><strong>Object Elaboration</strong></td><td>Extract physical objects from system to define their classes and behaviour.</td></tr>
+        <tr><td><strong>Workflow Analysis</strong></td><td>Shows how a work process is completed when multiple people and roles are involved — represented via UML Swim Lane Diagrams.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card card-accent-y">
+    <h3>Workflow &amp; Swim Lane Diagram</h3>
+    <p>A <strong>Swim Lane Diagram</strong> is a type of flowchart that shows process steps and assigns responsibility to different roles (lanes).</p>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">📊 Example — Order Processing Swim Lane</div>
+      <p>Lanes: <strong>Customer | Sales Rep | Warehouse | Finance</strong></p>
+      <p>Customer places order → Sales Rep confirms → Warehouse ships → Finance invoices. Each step sits in the responsible party's lane.</p>
+    </div>
+  </div>
+
+  <div class="sh">Analysis of Display Content &amp; Environment</div>
+
+  <div class="card">
+    <h3>Two More Analysis Dimensions</h3>
+    <ul>
+      <li><strong>Display Content Analysis:</strong> Format, aesthetics, and progressive disclosure of content. What to show, how to show it, and in what sequence.</li>
+      <li><strong>Physical Work Environment Analysis:</strong> Workplace must allow proper operation and concentration. Software aesthetics must co-relate with the physical setting (e.g., dark mode for dim rooms, high-contrast for bright environments).</li>
+    </ul>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Examples</div>
+      <ul>
+        <li><strong>Display Content:</strong> E-commerce shows product image first → click for full specs (progressive disclosure).</li>
+        <li><strong>Environment:</strong> Air Traffic Control UI — high contrast, no distracting animations, large readable fonts due to high-stakes physical environment.</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- STEP 2: INTERFACE DESIGN -->
+  <div class="sh">Step 2: Interface Design</div>
+
+  <div class="card card-accent-p">
+    <h3>UI Design Steps (from Design Models)</h3>
+    <ol>
+      <li>Define <strong>interface objects</strong> (buttons, text fields, video, icons) and <strong>operations</strong> (tasks).</li>
+      <li>Define <strong>events</strong> (user actions) that change the UI state.</li>
+      <li><strong>Depict each interface state</strong> as it will look to the end-user — use sketches/wireframes.</li>
+      <li>Show how the user can infer the <strong>system state</strong> from the information provided through the interface.</li>
+    </ol>
+  </div>
+
+  <div class="card card-accent-g">
+    <h3>Applying Design Steps — Object Classification</h3>
+    <ul>
+      <li>Create a list of objects and actions → categorise them into types:
+        <ul style="margin-top:.3rem;">
+          <li><strong>Source Objects:</strong> E.g., Printer icon (originates an action).</li>
+          <li><strong>Target Objects:</strong> E.g., Paper (receives the action).</li>
+          <li><strong>Application Objects:</strong> E.g., Screen, database table/entity.</li>
+        </ul>
+      </li>
+      <li>Use <strong>UI Design Patterns</strong> — pre-formulated solutions for well-bounded problems.
+        <div class="example-box" style="margin-top:.5rem;">
+          <div class="ex-label">📅 Example — Calendar Strip Pattern</div>
+          <p>A Calendar Strip shows dates in a horizontal row, highlights today, allows forward/backward navigation — a reusable UI pattern.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 5 — DESIGN ISSUES
+════════════════════════════════════════════ -->
+<section id="issues">
+  <div class="sec-header">
+    <div class="sec-icon ic-r">⚠️</div>
+    <div>
+      <div class="sec-num">Section 05</div>
+      <h2>Interface Design Issues (6 Issues)</h2>
+    </div>
+  </div>
+
+  <div class="info-box ib-red">
+    <div class="ib-icon">📋</div>
+    <p>Six key design issues must be addressed in every interactive system. These are very likely to appear in exams.</p>
+  </div>
+
+  <div class="card card-accent-r">
+    <h3>Issue 1: System Response Time ⏱️</h3>
+    <p><strong>Primary complaint</strong> for almost every interactive system. Has two critical characteristics:</p>
+    <div class="table-wrap" style="margin-top:.75rem;">
+      <table class="styled-table">
+        <tr><th>Characteristic</th><th>Problem if Violated</th><th>Example</th></tr>
+        <tr><td><strong>Length</strong></td><td>Longer response times → user frustration; users abandon tasks.</td><td>Page takes 10s to load → user leaves.</td></tr>
+        <tr><td><strong>Variability</strong></td><td>Varying response times → user confusion — they wonder if something went wrong at the backend.</td><td>Usually loads in 1s, suddenly takes 7s — user unsure if it's broken.</td></tr>
+      </table>
+    </div>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Solutions</div>
+      <ul>
+        <li><strong>Progress bars / spinners</strong> (Gmail, Chrome) — inform the user that work is ongoing.</li>
+        <li><strong>Skeleton screens</strong> (Facebook, LinkedIn) — show placeholder shapes while content loads.</li>
+        <li><strong>Optimistic UI updates</strong> (Twitter/X likes) — update UI instantly, sync with server in background.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-y">
+    <h3>Issue 2: Help Facilities ❓</h3>
+    <p>Every system must provide help mechanisms. Design questions to address:</p>
+    <ul>
+      <li>Is help available for <strong>all functionalities</strong>?</li>
+      <li>How will the user <strong>demand help</strong>? (Menu option? Function key like F1?)</li>
+      <li>How is help <strong>presented</strong>? (Separate window? Tooltip? Printed manual?)</li>
+      <li>How does the user <strong>return to normal UI</strong> after consulting help?</li>
+    </ul>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>MS Office:</strong> F1 opens full Help documentation in a panel — context-sensitive help.</li>
+        <li><strong>Windows:</strong> ? icon in dialog boxes → tooltip explanation.</li>
+        <li><strong>Slack / Intercom:</strong> In-app chat-based help widget (bottom right corner).</li>
+        <li><strong>Figma:</strong> Tooltips on every tool explaining the shortcut and function.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-r">
+    <h3>Issue 3: Error Handling 🚨</h3>
+    <p>Error messages are bad news — they must be designed to minimise user frustration and guide recovery.</p>
+    <div class="info-box ib-green" style="margin-top:.75rem;">
+      <div class="ib-icon">✅</div>
+      <p><strong>A good error message must:</strong></p>
+    </div>
+    <ul style="margin-top:.5rem;">
+      <li><strong>Describe the problem simply</strong> — plain language, no jargon.</li>
+      <li><strong>Provide valuable advice</strong> — tell the user what to do next (use hyperlinks).</li>
+      <li><strong>List negative consequences</strong> of the error (what data may be lost, etc.).</li>
+      <li><strong>Visual prompting</strong> — use colour scheme (red border, warning icon) to categorise it clearly as an error.</li>
+    </ul>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>Gmail — "Message too large":</strong> Explains size limit, links to how to share via Google Drive instead.</li>
+        <li><strong>Chrome Error 404:</strong> Clear message, suggests going back or checking URL. Friendly dinosaur reduces frustration.</li>
+        <li><strong>Form validation (React/HTML5):</strong> Red border + helper text below field ("Email must contain @").</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-p">
+    <h3>Issue 4: Menu &amp; Command Labelling 📋</h3>
+    <ul>
+      <li>Different styles: <strong>Command-oriented</strong> architecture vs <strong>UI-based</strong> architecture — both used frequently.</li>
+      <li>Commands assigned to menu items should also be executable <strong>without the UI</strong> (via keyboard/CLI).</li>
+    </ul>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>MS Word:</strong> Menu shows "File → Save" and also shows shortcut <code>Ctrl+S</code> — both work.</li>
+        <li><strong>VS Code:</strong> Every action in menu has a command palette equivalent (Ctrl+Shift+P).</li>
+        <li><strong>Linux:</strong> GUI file manager actions also available via terminal commands.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-g">
+    <h3>Issue 5: Application Accessibility ♿</h3>
+    <p>UI must cater to the needs of <strong>physically challenged persons</strong>.</p>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>Windows Narrator:</strong> Screen reader for visually impaired users.</li>
+        <li><strong>iOS VoiceOver / Android TalkBack:</strong> Full screen reader on mobile.</li>
+        <li><strong>Dragon Naturally Speaking:</strong> Voice input for users with motor disabilities.</li>
+        <li><strong>Web WCAG Standards:</strong> Alt text for images, keyboard-only navigation, sufficient colour contrast ratio.</li>
+        <li><strong>YouTube:</strong> Auto-generated captions for hearing-impaired users.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-accent-y">
+    <h3>Issue 6: Internationalization 🌐</h3>
+    <p>UI must target the <strong>global market</strong> — follow global design standards and support multiple languages.</p>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 Software Examples</div>
+      <ul>
+        <li><strong>Google Chrome:</strong> Automatically detects page language and offers translation.</li>
+        <li><strong>MS Office:</strong> Available in 100+ languages with localised menus, date formats, currency symbols.</li>
+        <li><strong>WhatsApp:</strong> Supports RTL (right-to-left) layout for Arabic/Hebrew users.</li>
+        <li><strong>iOS/Android:</strong> System-wide language switching affects all apps.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 6 — GUIDELINES (REVISED)
+════════════════════════════════════════════ -->
+<section id="guidelines">
+  <div class="sec-header">
+    <div class="sec-icon ic-b">📏</div>
+    <div>
+      <div class="sec-num">Section 06</div>
+      <h2>Revised Interface Design Guidelines</h2>
+    </div>
+  </div>
+
+  <div class="card card-accent-g">
+    <h3>Key Guideline Insights</h3>
+    <ul>
+      <li>In interactive systems, completing tasks <strong>quickly</strong> matters — relevant options must be easily accessible and in a larger size.</li>
+      <li><strong>Important buttons</strong> should be made bigger to reduce accessibility time (Fitts's Law: bigger target = faster to click).</li>
+      <li><strong>Inter-related targets</strong> should be placed together to reduce movement time between clicks.</li>
+    </ul>
+    <div class="example-box" style="margin-top:.75rem;">
+      <div class="ex-label">💻 YouTube Example</div>
+      <ul>
+        <li>Volume/sound controls are placed at the bottom, near the video (related controls grouped).</li>
+        <li>The <strong>Subscribe button is bigger</strong> than other buttons to increase clicks.</li>
+        <li>Play/Pause is the largest button — most frequently used, follows Fitts's Law.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sh">Guidelines for Web App Design</div>
+
+  <div class="card">
+    <h3>Core Web UI Principles</h3>
+    <div class="table-wrap" style="margin-top:.5rem;">
+      <table class="styled-table">
+        <tr><th>Guideline</th><th>Explanation</th><th>Example</th></tr>
+        <tr><td>Consistent Navigation</td><td>Navigation must appear in the same place on every page.</td><td>Amazon: top nav bar always visible.</td></tr>
+        <tr><td>Clear Visual Hierarchy</td><td>Most important elements must be visually dominant.</td><td>Checkout button: bright colour, large size.</td></tr>
+        <tr><td>Responsive Design</td><td>UI adapts to different screen sizes (mobile, tablet, desktop).</td><td>Bootstrap grid system, CSS media queries.</td></tr>
+        <tr><td>Feedback for Actions</td><td>Every user action must produce visible feedback.</td><td>Button changes colour when clicked; spinner while loading.</td></tr>
+        <tr><td>Minimal Cognitive Load</td><td>Don't put too many options on one page.</td><td>Wizard-style forms: one step at a time.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Fitts's Law Diagram -->
+  <div class="diagram-wrap">
+    <h4>📐 Fitts's Law — Button Size &amp; Layout</h4>
+    <div style="display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center;padding:.5rem 0;">
+      <div style="background:var(--bg);border:2px solid var(--accent2);border-radius:.5rem;width:110px;height:50px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--accent2);">✅ Subscribe<br><span style="font-size:.6rem;font-weight:400;color:var(--muted)">(Large - Primary)</span></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:.5rem;width:70px;height:35px;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--muted);align-self:center;">Share<br><span style="font-size:.58rem">(Medium)</span></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:.5rem;width:50px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--muted);align-self:center;">Save<br><span style="font-size:.55rem">(Small)</span></div>
+    </div>
+    <p style="font-size:.75rem;color:var(--muted);text-align:center;margin-top:.5rem;">Size hierarchy reflects importance and frequency of use</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 7 — INTERFACE DESIGN WORKFLOW
+════════════════════════════════════════════ -->
+<section id="workflow">
+  <div class="sec-header">
+    <div class="sec-icon ic-p">📋</div>
+    <div>
+      <div class="sec-num">Section 07</div>
+      <h2>Interface Design Workflow</h2>
+    </div>
+  </div>
+
+  <div class="diagram-wrap">
+    <h4>🔄 Interface Design Workflow — Step by Step</h4>
+    <div class="flow">
+      <div class="flow-box fb-p">1. Derive &amp; refine info from requirements</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-box">2. Develop rough layout sketch</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-box">3. Map user objectives to actions (Home, Contact, Booking...)</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-box">4. Create storyboard screen images for every interface</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-box">5. Refine layouts — improve aesthetics</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-box">6. Develop activity diagram to show design flow</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-box">7. Develop state diagrams to show transitions</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-box">8. Describe interface layout for every state</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-box fb-g">9. Refine &amp; review the model ✅</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Key Artefacts Produced</h3>
+    <div class="table-wrap" style="margin-top:.5rem;">
+      <table class="styled-table">
+        <tr><th>Artefact</th><th>Tool/Method</th><th>Purpose</th></tr>
+        <tr><td>Rough Sketches</td><td>Paper, Balsamiq</td><td>Quick exploration of layout ideas</td></tr>
+        <tr><td>Wireframes</td><td>Figma, Adobe XD</td><td>Structural layout without visual design</td></tr>
+        <tr><td>Storyboards</td><td>Sequence of screens</td><td>Show user journey through the interface</td></tr>
+        <tr><td>Activity Diagrams</td><td>UML tools, draw.io</td><td>Show design flow and logic</td></tr>
+        <tr><td>State Diagrams</td><td>UML tools</td><td>Show how UI changes between states</td></tr>
+        <tr><td>Prototypes</td><td>Figma, InVision, HTML/CSS</td><td>Interactive mockup for validation</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="sh">Interface Design Evolution</div>
+  <div class="card">
+    <h3>UI Timeline — From Earliest to Latest</h3>
+    <div class="table-wrap" style="margin-top:.5rem;">
+      <table class="styled-table">
+        <tr><th>Era</th><th>Interface Type</th><th>Example</th></tr>
+        <tr><td>1960s–70s</td><td>Command Line Interface (CLI)</td><td>UNIX, MS-DOS — type commands</td></tr>
+        <tr><td>1980s</td><td>Text-based UI (TUI)</td><td>Lotus 1-2-3, Turbo Pascal IDE</td></tr>
+        <tr><td>1984–90s</td><td>Graphical User Interface (GUI)</td><td>Apple Macintosh, Windows 3.1</td></tr>
+        <tr><td>2000s</td><td>Web-based UI</td><td>Google, Facebook, Yahoo</td></tr>
+        <tr><td>2007+</td><td>Touch / Mobile UI</td><td>iPhone iOS, Android</td></tr>
+        <tr><td>2010s</td><td>Responsive / Adaptive UI</td><td>Bootstrap, Material Design</td></tr>
+        <tr><td>2020s</td><td>Voice / Conversational UI</td><td>Alexa, Siri, Google Assistant, ChatGPT</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 8 — EXAM Q&A
+════════════════════════════════════════════ -->
+<section id="exam">
+  <div class="sec-header">
+    <div class="sec-icon ic-y">🎓</div>
+    <div>
+      <div class="sec-num">Section 08</div>
+      <h2>Exam Questions &amp; Answers</h2>
+    </div>
+  </div>
+
+  <div class="info-box ib-yellow">
+    <div class="ib-icon">💡</div>
+    <p>Tap any question to reveal the model answer. All answers are detailed and exam-ready.</p>
+  </div>
+
+  <!-- Q1 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q1</div>
+      <div class="eq-q">What are Theo Mandel's three golden rules of UI design? Explain each with examples.</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <p>Theo Mandel defined three fundamental principles:</p>
+      <ul>
+        <li><strong>1. Allow Users to Maintain Control:</strong> Users must freely choose modes, interact via multiple inputs (mouse, keyboard, voice), undo/redo actions, create macros, and interact directly with on-screen objects. Example: MS Word's spell-check/editing mode switch; Photoshop's undo history.</li>
+        <li><strong>2. Reduce User's Memory Load:</strong> Use list boxes/dropdowns instead of blank text inputs. Save past inputs. Establish defaults. Bind intuitive shortcuts (Ctrl+P = Print). Mirror real-world processes. Use progressive disclosure. Example: Amazon auto-complete, Gmail's draft saving.</li>
+        <li><strong>3. Make a Consistent Interface:</strong> Use consistent labelling, colour coding, and layout across all app screens and across a product suite. Don't re-assign known shortcuts. Example: MS Office Ribbon, consistent Ctrl+S = Save everywhere.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q2</div>
+      <div class="eq-q">Explain the UI Design Models. What is the goal of an effective UI design in terms of models?</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <p>There are three models in UI design:</p>
+      <ul>
+        <li><strong>Design Model:</strong> Created by the software engineer/designer — how they intend the system to work based on requirements.</li>
+        <li><strong>User's Mental Model:</strong> The internal picture the user forms about how the system works, based on their interaction and past experience.</li>
+        <li><strong>System Image:</strong> The actual interface the user sees — the intersection of the design model and user experience.</li>
+      </ul>
+      <p style="margin-top:.5rem;"><strong>Goal:</strong> An effective design is one in which the <em>user's mental model</em> and the <em>implementation (design) model</em> coincide — the user's understanding perfectly matches how the system actually works. This is achieved through good interface analysis, consistent design, and user testing.</p>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q3</div>
+      <div class="eq-q">What is the UI Analysis and Design Process? Why is it called iterative?</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <p>The UI Analysis and Design Process follows the <strong>Spiral Process Model</strong> and consists of 4 steps:</p>
+      <ol>
+        <li><strong>Interface Analysis:</strong> Understand users, tasks, environment, and display content.</li>
+        <li><strong>Interface Design:</strong> Define objects, operations, events, and sketch interface states.</li>
+        <li><strong>Interface Implementation/Construction:</strong> Build prototypes and working UI using a prototyping approach.</li>
+        <li><strong>Interface Validation:</strong> Test the interface against user needs and refine.</li>
+      </ol>
+      <p style="margin-top:.5rem;"><strong>Why Iterative?</strong> It uses the spiral model — these 4 steps are repeated (iterated) again and again. Each cycle produces a more refined and improved design. No single pass is sufficient for a quality UI.</p>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q4</div>
+      <div class="eq-q">What are the six design issues in interface design? Explain system response time in detail.</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <p>The six design issues are: <strong>(1) System Response Time, (2) Help Facilities, (3) Error Handling, (4) Menu &amp; Command Labelling, (5) Application Accessibility, (6) Internationalization.</strong></p>
+      <p style="margin-top:.5rem;"><strong>System Response Time in detail:</strong></p>
+      <ul>
+        <li>It is the <em>primary complaint</em> for almost every interactive system.</li>
+        <li><strong>Length:</strong> Longer response times lead to user frustration — users may abandon the task entirely. Every second of delay reduces satisfaction.</li>
+        <li><strong>Variability:</strong> Inconsistent response times cause confusion — users wonder if the system malfunctioned. A system that sometimes takes 1s and sometimes takes 8s is worse than one consistently taking 3s.</li>
+        <li>Solution: Use progress bars, skeleton screens, spinners, and optimistic UI updates to manage user perception during wait times.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q5</div>
+      <div class="eq-q">What is Interface Analysis? List and explain the information gathering methods used.</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <p><strong>Interface Analysis</strong> is the first step in the UI design process. It involves understanding the problem before designing the solution — specifically understanding users, system goals, content, and the environment.</p>
+      <p style="margin-top:.5rem;">The mental image (user's model) and the implementation model must converge, which is only possible by deeply understanding users and how they use the system.</p>
+      <p style="margin-top:.5rem;"><strong>Three information sources:</strong></p>
+      <ul>
+        <li><strong>User Interviews:</strong> Development team meets directly with end-users to identify needs, workflows, and work culture.</li>
+        <li><strong>Marketing &amp; Sales Input:</strong> Market surveys to understand in how many ways the product could be useful to different segments.</li>
+        <li><strong>Support Input:</strong> Support staff collects feedback on what features work or don't, what's easy or confusing — direct from real users.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q6</div>
+      <div class="eq-q">What are the characteristics of a good error message? Give examples.</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <p>A good error message must include:</p>
+      <ul>
+        <li><strong>Describe the problem simply:</strong> Use plain language, no technical jargon. Say what went wrong clearly.</li>
+        <li><strong>Provide valuable advice:</strong> Tell the user what to do to fix it. Include hyperlinks to solutions.</li>
+        <li><strong>List negative consequences:</strong> Tell the user what data might be lost or what can't be recovered.</li>
+        <li><strong>Visual prompting:</strong> Use a colour scheme (red, orange) and icons (⚠️, ❌) that make it immediately clear this is an error — distinct from normal UI.</li>
+      </ul>
+      <p style="margin-top:.5rem;"><strong>Bad error:</strong> "Error 0x80070570" — meaningless to a casual user.</p>
+      <p><strong>Good error:</strong> "Your file couldn't be saved because the disk is full. Free up at least 500MB and try again. [Click here for help]" — descriptive, actionable, visually distinct.</p>
+    </div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q7</div>
+      <div class="eq-q">Explain Task Analysis and its components in the context of interface analysis.</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <p><strong>Task Analysis</strong> is performed after User Analysis. It identifies and models the tasks users will perform to achieve system goals.</p>
+      <p style="margin-top:.5rem;"><strong>Components:</strong></p>
+      <ul>
+        <li><strong>Task Identification:</strong> Identify all tasks and sub-tasks performed in specific circumstances.</li>
+        <li><strong>Use-Cases:</strong> Define basic interactions between actor and system in informal paragraphs. Used to derive tasks, sub-tasks, and UI requirements.</li>
+        <li><strong>Task Elaboration:</strong> Stepwise refinement — break down complex tasks into detailed sub-steps. Can be manual or derived from existing systems.</li>
+        <li><strong>Object Elaboration:</strong> Extract physical objects (entities) from the system to define their classes and behaviours (links to OOP concepts).</li>
+        <li><strong>Workflow Analysis:</strong> Define how work processes are completed across multiple people and roles — represented using UML Swim Lane Diagrams.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q8</div>
+      <div class="eq-q">What is the Interface Design Workflow? List all nine steps.</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <ol>
+        <li>Derive and refine information from requirements.</li>
+        <li>Develop rough layout sketch.</li>
+        <li>Map user objectives to actions (Home, Contact, Booking, Facilities, etc.).</li>
+        <li>Create storyboard screen images for every interface state.</li>
+        <li>Refine layouts by improving aesthetics.</li>
+        <li>Develop an activity diagram to show the design flow.</li>
+        <li>Develop state diagrams to show changes in state after transitions.</li>
+        <li>Describe interface layout for every state.</li>
+        <li>Refine and review the model.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Q9 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q9</div>
+      <div class="eq-q">What is progressive disclosure in UI design? Give examples.</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <p><strong>Progressive Disclosure</strong> is a UI design technique where information is displayed gradually — only what is needed at the current step is shown, with more detail revealed on demand.</p>
+      <p style="margin-top:.5rem;"><strong>Why it matters:</strong> It reduces cognitive overload, making complex systems appear simple to new users while keeping full functionality accessible to advanced users.</p>
+      <p style="margin-top:.5rem;"><strong>Examples:</strong></p>
+      <ul>
+        <li><strong>E-commerce (Amazon):</strong> Product listing shows image + price → click for full description, specs, customer reviews.</li>
+        <li><strong>Gmail:</strong> Inbox shows sender + subject → click to see full email body, headers, attachments.</li>
+        <li><strong>Accordion menus (mobile):</strong> Top-level categories visible → tap to expand sub-items.</li>
+        <li><strong>Advanced settings:</strong> Basic settings shown by default → click "Advanced" to reveal more options (e.g., Chrome settings).</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Q10 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q10</div>
+      <div class="eq-q">Compare command-oriented and UI-based architectures. Give examples of each.</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <div class="table-wrap">
+        <table class="styled-table">
+          <tr><th>Feature</th><th>Command-Oriented</th><th>UI-Based</th></tr>
+          <tr><td>Interaction</td><td>User types text commands</td><td>User clicks/taps on visual elements</td></tr>
+          <tr><td>Learning Curve</td><td>High — must memorise syntax</td><td>Low — intuitive and visual</td></tr>
+          <tr><td>Speed (Expert)</td><td>Faster for experts</td><td>Slightly slower due to navigation</td></tr>
+          <tr><td>Target Users</td><td>Developers, IT professionals</td><td>Casual users, general public</td></tr>
+          <tr><td>Example</td><td>Linux terminal, Git CLI, PowerShell</td><td>Windows GUI, Mobile apps, Web apps</td></tr>
+        </table>
+      </div>
+      <p style="margin-top:.5rem;">Modern systems provide <strong>both</strong> — e.g., VS Code has a full GUI but also a Command Palette and integrated terminal. This gives flexibility to all user types.</p>
+    </div>
+  </div>
+
+  <!-- Q11 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q11</div>
+      <div class="eq-q">What are the user analysis questions for better user categorisation? Why are they important?</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <p>These questions help designers understand WHO they are building for, ensuring the UI is appropriate for the actual user population:</p>
+      <ul>
+        <li>Are users trained professionals, technicians, clerical, or manufacturing workers?</li>
+        <li>Level of formal education of an average user?</li>
+        <li>Do users prefer written materials or classroom training?</li>
+        <li>Are users expert typists or keyboard-phobic?</li>
+        <li>Age range and gender of user community?</li>
+        <li>Working hours — normal office hours or until the job is done?</li>
+        <li>How frequently do they use the software? (mostly/occasionally)</li>
+        <li>Primary spoken language among users?</li>
+        <li>Consequences of a user's mistake in the system?</li>
+        <li>Are users subject matter experts? Are they interested in the underlying technology?</li>
+      </ul>
+      <p style="margin-top:.5rem;"><strong>Importance:</strong> Answers determine the UI complexity level, training support needed, language/localisation requirements, error tolerance design, and accessible design considerations.</p>
+    </div>
+  </div>
+
+  <!-- Q12 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q12</div>
+      <div class="eq-q">What is internationalization in UI design? Why is it important and how is it implemented?</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <p><strong>Internationalization (i18n)</strong> is the process of designing a UI that can be adapted to different languages, regions, and cultures without requiring engineering changes to the core codebase.</p>
+      <p style="margin-top:.5rem;"><strong>Why important:</strong> Modern software targets a global market. A product that only works in English excludes billions of potential users. Legal requirements in some regions also mandate language support.</p>
+      <p style="margin-top:.5rem;"><strong>Implementation:</strong></p>
+      <ul>
+        <li>Support multiple languages — all text stored in separate language files (not hardcoded).</li>
+        <li>Support RTL (right-to-left) layouts for Arabic, Hebrew, Urdu.</li>
+        <li>Localise date/time formats (MM/DD/YYYY vs DD/MM/YYYY), currency symbols, number formats.</li>
+        <li>Use Unicode for character encoding to support all scripts.</li>
+        <li>Follow global design standards (ISO, WCAG).</li>
+      </ul>
+      <p style="margin-top:.5rem;"><strong>Examples:</strong> WhatsApp (RTL support), MS Office (100+ languages), iOS/Android (system-wide language switching).</p>
+    </div>
+  </div>
+
+  <!-- Q13 — SHORT ANSWER TYPE -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q13</div>
+      <div class="eq-q">What is the difference between a wireframe, storyboard, and prototype?</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <ul>
+        <li><strong>Wireframe:</strong> A low-fidelity structural sketch of the UI layout — shows element placement without visual design (no colours, no images). Like an architectural blueprint. Tools: Balsamiq, Figma (draft mode).</li>
+        <li><strong>Storyboard:</strong> A sequence of screen images that show the user's journey through the interface — scene by scene, like a comic strip. Shows the flow and context of interactions.</li>
+        <li><strong>Prototype:</strong> A higher-fidelity, interactive model of the UI — may be clickable/tappable. Used for user testing before development. Tools: Figma, Adobe XD, InVision, HTML/CSS mock.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Q14 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q14</div>
+      <div class="eq-q">What is a Swim Lane Diagram and where is it used in UI design?</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <p>A <strong>Swim Lane Diagram</strong> is a type of UML process flowchart that visually divides responsibilities across multiple actors or departments (each "lane" represents one actor/role).</p>
+      <p style="margin-top:.5rem;"><strong>Use in UI design:</strong> It is used in <em>Workflow Analysis</em> during Interface Analysis to show how a complete work process is accomplished when <strong>multiple people and roles</strong> are involved. It clarifies who does what, in what sequence, and how handoffs occur between roles.</p>
+      <p style="margin-top:.5rem;"><strong>Example:</strong> An online order process swim lane might have: Customer | Sales System | Warehouse | Accounts. Each step (place order, confirm, pack, invoice) appears in the correct actor's lane with arrows showing flow between lanes.</p>
+    </div>
+  </div>
+
+  <!-- Q15 -->
+  <div class="exam-q" onclick="this.classList.toggle('open')">
+    <div class="eq-header">
+      <div class="eq-num">Q15</div>
+      <div class="eq-q">What is accessibility in UI design? Why must UI cater to physically challenged users?</div>
+      <div class="eq-toggle">▼</div>
+    </div>
+    <div class="eq-body">
+      <p><strong>Accessibility</strong> in UI design means ensuring that software can be used effectively by people with disabilities — visual impairments, hearing impairments, motor disabilities, or cognitive challenges.</p>
+      <p style="margin-top:.5rem;"><strong>Why it matters:</strong></p>
+      <ul>
+        <li><strong>Ethical responsibility:</strong> Everyone has the right to use technology.</li>
+        <li><strong>Legal compliance:</strong> Many countries mandate accessibility (ADA in USA, EN 301 549 in EU).</li>
+        <li><strong>Market reach:</strong> Over 1 billion people worldwide have a disability — a huge user segment.</li>
+        <li><strong>Better design for all:</strong> Accessible design often benefits all users (e.g., captions help people in noisy environments, not just the hearing-impaired).</li>
+      </ul>
+      <p style="margin-top:.5rem;"><strong>Examples of accessible features:</strong> Screen readers (iOS VoiceOver), voice input (Dragon Naturally Speaking), keyboard-only navigation, sufficient colour contrast (WCAG AA: 4.5:1 ratio), alt text for images, captions for videos.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+<div style="text-align:center;padding:2rem 0;color:var(--muted);font-size:.78rem;border-top:1px solid var(--border);">
+  <p>UI Design — Complete Exam Notes</p>
+  <p style="margin-top:.3rem;font-size:.72rem;">Based on course slides • Includes real-world software examples • 15 exam Q&amp;As</p>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+  // Smooth expand toggle handled by onclick+CSS toggle
+  // Add keyboard accessibility
+  document.querySelectorAll('.exam-q').forEach(q => {
+    q.setAttribute('tabindex', '0');
+    q.addEventListener('keypress', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        q.classList.toggle('open');
+      }
+    });
+  });
+</script>
+</body>
+</html>
