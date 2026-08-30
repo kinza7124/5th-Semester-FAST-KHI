@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diffusion Models — Deep Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0c10;
+    --surface: #13151a;
+    --surface2: #1c1f27;
+    --border: #272b35;
+    --accent: #64ffda;
+    --accent2: #ff6b9d;
+    --accent3: #ffd166;
+    --accent4: #a78bfa;
+    --text: #e2e8f0;
+    --text-muted: #8892a4;
+    --text-dim: #4a5568;
+    --noise-blue: #4895ef;
+    --clean-green: #06d6a0;
+    --math-bg: #0d1117;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lora', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 1000; opacity: 0.4;
+  }
+
+  /* ─── HEADER ─── */
+  .hero {
+    background: linear-gradient(135deg, #0b0c10 0%, #0f1923 50%, #0b0c10 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 60px 24px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  .hero-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 14px;
+    border-radius: 99px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 7vw, 64px);
+    font-weight: 800;
+    line-height: 1.1;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    font-size: clamp(14px, 2.5vw, 18px);
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto 28px;
+  }
+  .hero-stats {
+    display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
+  }
+  .stat {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .stat strong { color: var(--accent3); margin-right: 6px; }
+
+  /* ─── TOC ─── */
+  .toc-wrap {
+    max-width: 860px; margin: 32px auto; padding: 0 20px;
+  }
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+  }
+  .toc h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 16px;
+  }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 6px 0; }
+  .toc a {
+    color: var(--text-muted); text-decoration: none;
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    transition: color 0.2s;
+  }
+  .toc a:hover { color: var(--accent); }
+
+  /* ─── MAIN LAYOUT ─── */
+  .container { max-width: 860px; margin: 0 auto; padding: 0 20px 80px; }
+
+  /* ─── SECTIONS ─── */
+  .section {
+    margin-top: 56px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent4); margin-bottom: 10px;
+  }
+  .section h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(20px, 4vw, 30px);
+    font-weight: 700; color: #fff;
+    margin-bottom: 20px; line-height: 1.2;
+  }
+  .section h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(16px, 3vw, 20px);
+    font-weight: 600; color: var(--accent3);
+    margin: 28px 0 12px;
+  }
+  .section p { color: var(--text); margin-bottom: 14px; }
+
+  /* ─── CALLOUTS ─── */
+  .callout {
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin: 22px 0;
+    border-left: 3px solid;
+    font-size: 15px;
+  }
+  .callout.analogy { background: #0f1e1a; border-color: var(--clean-green); }
+  .callout.analogy::before { content: '💡 Analogy  '; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--clean-green); display: block; margin-bottom: 8px; font-weight: 600; }
+  .callout.intuition { background: #13111f; border-color: var(--accent4); }
+  .callout.intuition::before { content: '🧠 Intuition  '; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent4); display: block; margin-bottom: 8px; font-weight: 600; }
+  .callout.warning { background: #1a1408; border-color: var(--accent3); }
+  .callout.warning::before { content: '⚠️ Key Insight  '; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent3); display: block; margin-bottom: 8px; font-weight: 600; }
+  .callout.tldr { background: #120a0f; border-color: var(--accent2); }
+  .callout.tldr::before { content: '⚡ TL;DR  '; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent2); display: block; margin-bottom: 8px; font-weight: 600; }
+
+  /* ─── MATH BLOCKS ─── */
+  .math-block {
+    background: var(--math-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+  }
+  .math-block .eq {
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(13px, 2.5vw, 16px);
+    color: var(--accent);
+    text-align: center;
+    display: block;
+    padding: 8px 0;
+    line-height: 1.6;
+  }
+  .math-block .eq-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--text-dim);
+    text-align: right; margin-top: 6px;
+  }
+  .math-block .explain {
+    margin-top: 14px; padding-top: 14px;
+    border-top: 1px solid var(--border);
+    font-size: 14px; color: var(--text-muted);
+  }
+  .math-block .explain li {
+    margin: 6px 0; list-style: none;
+    padding-left: 18px; position: relative;
+  }
+  .math-block .explain li::before {
+    content: '▸'; position: absolute; left: 0; color: var(--accent2);
+  }
+  code {
+    font-family: 'DM Mono', monospace;
+    background: var(--surface2);
+    color: var(--accent3);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.88em;
+  }
+
+  /* ─── DIAGRAMS ─── */
+  .diagram-wrap {
+    margin: 24px 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    overflow-x: auto;
+  }
+  .diagram-wrap .caption {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; color: var(--text-dim);
+    text-align: center; margin-top: 12px;
+  }
+
+  /* Forward process diagram */
+  .fwd-process {
+    display: flex; align-items: center; gap: 0;
+    min-width: 540px; padding: 12px 0;
+    overflow-x: auto;
+  }
+  .fwd-step {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    flex-shrink: 0;
+  }
+  .pixel-box {
+    width: 60px; height: 60px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    position: relative; overflow: hidden;
+  }
+  .fwd-step .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--text-dim); text-align: center;
+  }
+  .arrow-fwd {
+    font-family: 'DM Mono', monospace;
+    color: var(--accent2); font-size: 18px;
+    padding: 0 6px; flex-shrink: 0; margin-bottom: 20px;
+  }
+  /* noise levels */
+  .n0 { background: linear-gradient(135deg,#1a3a5c,#2d6a9f); }
+  .n1 { background: linear-gradient(135deg,#1a3a5c 30%,#4a6080 70%); filter: contrast(0.9); }
+  .n2 { background: linear-gradient(135deg,#304050,#5a6a7a); }
+  .n3 { background: linear-gradient(135deg,#3a3a4a,#6a6a7a); }
+  .n4 { background: linear-gradient(135deg,#484848,#787878); }
+  .n5 { background: #6a6a6a; }
+
+  /* Reverse diagram */
+  .rev-process {
+    display: flex; align-items: center; gap: 0;
+    min-width: 540px; padding: 12px 0; justify-content: flex-end;
+    overflow-x: auto;
+  }
+  .arrow-rev { color: var(--accent); font-size: 18px; padding: 0 6px; flex-shrink: 0; margin-bottom: 20px; }
+
+  /* Beta schedule */
+  .schedule-bars {
+    display: flex; gap: 4px; align-items: flex-end;
+    height: 80px; padding: 8px 0;
+  }
+  .bar {
+    flex: 1; border-radius: 4px 4px 0 0;
+    background: linear-gradient(180deg, var(--accent2), var(--accent4));
+    min-width: 16px;
+  }
+
+  /* ─── STEP BOX ─── */
+  .step-grid { display: grid; gap: 16px; margin: 20px 0; }
+  .step-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    position: relative;
+  }
+  .step-box .step-num {
+    position: absolute; top: -12px; left: 16px;
+    background: var(--accent);
+    color: #000; font-family: 'DM Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    padding: 2px 10px; border-radius: 99px;
+  }
+  .step-box h4 {
+    font-family: 'Syne', sans-serif; font-size: 15px;
+    color: #fff; margin-bottom: 8px;
+  }
+  .step-box p { font-size: 14px; color: var(--text-muted); margin: 0; }
+
+  /* ─── INTERVIEW Qs ─── */
+  .iq-grid { display: grid; gap: 16px; margin-top: 20px; }
+  .iq {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .iq-q {
+    background: var(--surface2);
+    padding: 14px 18px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 600; color: var(--accent3);
+    border-bottom: 1px solid var(--border);
+  }
+  .iq-q::before { content: 'Q: '; color: var(--accent2); }
+  .iq-a {
+    padding: 14px 18px;
+    font-size: 14px; color: var(--text-muted); line-height: 1.7;
+  }
+  .iq-a strong { color: var(--text); }
+  details summary { cursor: pointer; }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] .iq-a { display: block; }
+  .iq-a { display: none; }
+  details[open] summary .toggle { transform: rotate(180deg); }
+  .toggle { display: inline-block; transition: transform 0.2s; margin-left: 8px; }
+
+  /* ─── COMPARISON TABLE ─── */
+  .table-wrap { overflow-x: auto; margin: 20px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th {
+    background: var(--surface2);
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--accent4); padding: 12px 14px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text-muted); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); color: var(--text); transition: 0.15s; }
+  td:first-child { color: var(--text); font-weight: 600; }
+
+  /* ─── PROGRESS TRACKER ─── */
+  .progress-bar {
+    position: fixed; top: 0; left: 0;
+    height: 3px; background: var(--accent);
+    z-index: 9999; transition: width 0.1s;
+    width: 0;
+  }
+
+  /* ─── BACK TO TOP ─── */
+  .btt {
+    position: fixed; bottom: 24px; right: 20px;
+    background: var(--accent); color: #000;
+    font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600;
+    padding: 10px 14px; border-radius: 99px;
+    cursor: pointer; border: none; z-index: 999;
+    opacity: 0; transform: translateY(12px);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .btt.show { opacity: 1; transform: translateY(0); }
+
+  /* ─── HIGHLIGHT ─── */
+  .hl { color: var(--accent); font-style: normal; }
+  .hl2 { color: var(--accent2); }
+  .hl3 { color: var(--accent3); }
+  .hl4 { color: var(--accent4); }
+
+  /* ─── NOISE VIZ SVG ─── */
+  .viz-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px; margin: 20px 0;
+    text-align: center;
+  }
+  .viz-wrap svg { max-width: 100%; height: auto; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 600px) {
+    .fwd-process, .rev-process { min-width: 100%; flex-wrap: nowrap; }
+    .pixel-box { width: 46px; height: 46px; font-size: 16px; }
+    .arrow-fwd, .arrow-rev { font-size: 14px; padding: 0 3px; }
+    .math-block { padding: 14px 16px; }
+    .toc { padding: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Complete Study Notes</div>
+  <h1>Diffusion<br><span>Models</span></h1>
+  <p>From absolute zero to DDPM — noise, denoising, math, intuition, and interview prep in one place.</p>
+  <div class="hero-stats">
+    <span class="stat"><strong>★</strong> Beginner Friendly</span>
+    <span class="stat"><strong>★</strong> Full Derivations</span>
+    <span class="stat"><strong>★</strong> Diagrams Included</span>
+    <span class="stat"><strong>★</strong> Interview Q&A</span>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc-wrap">
+  <div class="toc">
+    <h3>📑 Table of Contents</h3>
+    <ol>
+      <li><a href="#s1">What is a Diffusion Model? (Bird's Eye View)</a></li>
+      <li><a href="#s2">Gaussian Noise — The Building Block</a></li>
+      <li><a href="#s3">The Forward Process (Noising)</a></li>
+      <li><a href="#s4">The Reparameterization Trick</a></li>
+      <li><a href="#s5">The Reverse Process (Denoising)</a></li>
+      <li><a href="#s6">The Neural Network's Job (ε-prediction)</a></li>
+      <li><a href="#s7">The Loss Function — What We Optimize</a></li>
+      <li><a href="#s8">Sampling — Generating New Images</a></li>
+      <li><a href="#s9">DDIM — Faster Sampling</a></li>
+      <li><a href="#s10">Conditional Diffusion (Text → Image)</a></li>
+      <li><a href="#s11">Famous Interview Questions</a></li>
+    </ol>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ══════════════════════════════════ -->
+<!-- SECTION 1 -->
+<!-- ══════════════════════════════════ -->
+<div class="section" id="s1">
+  <div class="section-label">Section 01</div>
+  <h2>What is a Diffusion Model?</h2>
+
+  <p>A <strong>diffusion model</strong> is a type of <em>generative AI model</em> — meaning it can <strong>create new data</strong> (like images) from scratch. Think of models like Stable Diffusion, DALL·E 2, and Midjourney — these all use diffusion under the hood.</p>
+
+  <div class="callout analogy">
+    Imagine you have a beautiful photo. You slowly sprinkle sand over it, step by step, until it's completely buried and you can only see random sand. A diffusion model learns to <strong>reverse</strong> this process — given a pile of sand, it learns to recover the original photo.
+  </div>
+
+  <p>There are two key phases:</p>
+
+  <div class="step-grid">
+    <div class="step-box">
+      <div class="step-num">Phase 1</div>
+      <h4>🌫️ Forward Process (Noising)</h4>
+      <p>Gradually destroy a real image by adding noise, step by step, until it becomes pure random static. This is <em>fixed</em> — no learning needed.</p>
+    </div>
+    <div class="step-box">
+      <div class="step-num">Phase 2</div>
+      <h4>✨ Reverse Process (Denoising)</h4>
+      <p>Train a neural network to go backwards — starting from noise, progressively clean it up to create a realistic image. <em>This is what we learn.</em></p>
+    </div>
+  </div>
+
+  <div class="callout tldr">
+    Diffusion models = learn to reverse a noise-adding process. At inference time, start from pure noise and run the learned reverse to get a new image.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SECTION 2 -->
+<!-- ══════════════════════════════════ -->
+<div class="section" id="s2">
+  <div class="section-label">Section 02</div>
+  <h2>Gaussian Noise — The Building Block</h2>
+
+  <p>Before we talk about noising images, we need to understand what noise we're adding.</p>
+
+  <h3>What is a Gaussian / Normal Distribution?</h3>
+
+  <p>A <strong>Gaussian distribution</strong> (also called <em>normal distribution</em> or <em>bell curve</em>) is a probability distribution parameterized by:</p>
+  <ul style="padding-left:20px; margin-bottom:14px;">
+    <li style="margin:5px 0;"><strong style="color:var(--accent)">μ (mu)</strong> = mean (center of the bell)</li>
+    <li style="margin:5px 0;"><strong style="color:var(--accent2)">σ² (sigma squared)</strong> = variance (how spread out)</li>
+  </ul>
+
+  <div class="math-block">
+    <span class="eq">𝒩(x ; μ, σ²) = (1 / √(2πσ²)) · exp(−(x − μ)² / (2σ²))</span>
+    <div class="eq-label">Definition of Gaussian PDF</div>
+    <ul class="explain">
+      <li><code>x</code> — the value we're evaluating</li>
+      <li><code>μ</code> — mean: where the peak is. Usually <code>μ = 0</code> for noise.</li>
+      <li><code>σ²</code> — variance: how wide/narrow the bell is. Larger = more spread out.</li>
+      <li>Writing <code>𝒩(0, I)</code> means mean=0, variance=identity (standard normal)</li>
+    </ul>
+  </div>
+
+  <!-- Bell curve SVG diagram -->
+  <div class="viz-wrap">
+    <svg viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bell1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#64ffda" stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="#64ffda" stop-opacity="0.05"/>
+        </linearGradient>
+      </defs>
+      <!-- axes -->
+      <line x1="40" y1="180" x2="460" y2="180" stroke="#272b35" stroke-width="1.5"/>
+      <line x1="250" y1="20" x2="250" y2="185" stroke="#272b35" stroke-width="1" stroke-dasharray="4,3"/>
+      <!-- bell curve fill -->
+      <path d="M 40 178 C 80 178 110 175 130 170 C 160 162 180 140 200 115 C 215 95 230 60 250 38 C 270 60 285 95 300 115 C 320 140 340 162 370 170 C 390 175 420 178 460 178 Z" fill="url(#bell1)"/>
+      <!-- bell curve line -->
+      <path d="M 40 178 C 80 178 110 175 130 170 C 160 162 180 140 200 115 C 215 95 230 60 250 38 C 270 60 285 95 300 115 C 320 140 340 162 370 170 C 390 175 420 178 460 178" fill="none" stroke="#64ffda" stroke-width="2.5"/>
+      <!-- labels -->
+      <text x="250" y="210" text-anchor="middle" font-family="DM Mono,monospace" font-size="12" fill="#4a5568">μ = 0</text>
+      <text x="300" y="125" font-family="DM Mono,monospace" font-size="11" fill="#ffd166">σ (spread)</text>
+      <line x1="250" y1="115" x2="290" y2="115" stroke="#ffd166" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="100" y="170" font-family="DM Mono,monospace" font-size="10" fill="#8892a4">low prob</text>
+      <text x="350" y="170" font-family="DM Mono,monospace" font-size="10" fill="#8892a4">low prob</text>
+      <text x="215" y="32" font-family="DM Mono,monospace" font-size="10" fill="#64ffda">peak (most likely)</text>
+      <text x="20" y="197" font-family="DM Mono,monospace" font-size="10" fill="#4a5568">x →</text>
+    </svg>
+    <div class="caption">Figure 1 — Gaussian bell curve. Most values cluster near μ=0, fewer values far away.</div>
+  </div>
+
+  <div class="callout intuition">
+    When we say "sample from 𝒩(0, I)", we're rolling a dice whose outcomes are mostly near 0, rarely far from 0. Each pixel of noise is one such dice roll.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SECTION 3 -->
+<!-- ══════════════════════════════════ -->
+<div class="section" id="s3">
+  <div class="section-label">Section 03</div>
+  <h2>The Forward Process (Noising)</h2>
+
+  <p>The forward process takes a real image <code>x₀</code> and slowly degrades it over <code>T</code> timesteps (e.g. T = 1000). At each step we add a tiny bit of Gaussian noise.</p>
+
+  <!-- Forward process diagram -->
+  <div class="diagram-wrap">
+    <div class="fwd-process">
+      <div class="fwd-step">
+        <div class="pixel-box n0">🖼️</div>
+        <div class="label">x₀<br>Real image</div>
+      </div>
+      <div class="arrow-fwd">→</div>
+      <div class="fwd-step">
+        <div class="pixel-box n1">🌁</div>
+        <div class="label">x₁<br>t=200</div>
+      </div>
+      <div class="arrow-fwd">→</div>
+      <div class="fwd-step">
+        <div class="pixel-box n2">🌫️</div>
+        <div class="label">x₂<br>t=400</div>
+      </div>
+      <div class="arrow-fwd">→</div>
+      <div class="fwd-step">
+        <div class="pixel-box n3">💭</div>
+        <div class="label">x₃<br>t=600</div>
+      </div>
+      <div class="arrow-fwd">→</div>
+      <div class="fwd-step">
+        <div class="pixel-box n4">❄️</div>
+        <div class="label">x₄<br>t=800</div>
+      </div>
+      <div class="arrow-fwd">→</div>
+      <div class="fwd-step">
+        <div class="pixel-box n5">📺</div>
+        <div class="label">xT<br>Pure noise</div>
+      </div>
+    </div>
+    <div class="caption">Figure 2 — The forward process q(xₜ | xₜ₋₁) gradually destroys image structure.</div>
+  </div>
+
+  <h3>Mathematical Definition — One Step</h3>
+
+  <p>Each forward step is defined as:</p>
+
+  <div class="math-block">
+    <span class="eq">q(xₜ | xₜ₋₁) = 𝒩(xₜ ; √(1 − βₜ) · xₜ₋₁ ,  βₜ · I)</span>
+    <div class="eq-label">Forward process — single step</div>
+    <ul class="explain">
+      <li><code>xₜ</code> — image at timestep t</li>
+      <li><code>xₜ₋₁</code> — image at previous timestep</li>
+      <li><code>βₜ</code> — noise schedule, a small number between 0.0001 and 0.02 typically</li>
+      <li><code>√(1 − βₜ)</code> — scales down the original signal (makes it fade)</li>
+      <li><code>βₜ · I</code> — variance of noise added</li>
+    </ul>
+  </div>
+
+  <div class="callout analogy">
+    Think of fading a photo on a copier. Each copy fades a little (the √(1−β) term), and introduces a tiny amount of static (the β term). After 1000 copies, you get pure static.
+  </div>
+
+  <h3>Why √(1−βₜ) as the multiplier?</h3>
+
+  <p>When you <em>scale</em> a Gaussian by a constant <code>c</code>, its variance scales by <code>c²</code>. By choosing <code>c = √(1−β)</code>, the signal's variance contribution becomes <code>(1−β)</code>, and adding noise of variance <code>β</code> gives total variance approaching <code>1</code> — keeping everything normalized! This is crucial for the math to stay clean.</p>
+
+  <h3>The Noise Schedule βₜ</h3>
+
+  <p>The noise schedule controls <em>how fast</em> we add noise. Two common choices:</p>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Schedule</th><th>Description</th><th>Formula</th></tr>
+      <tr><td>Linear</td><td>Constant rate increase; simple but crude</td><td>β linearly from 0.0001 → 0.02</td></tr>
+      <tr><td>Cosine</td><td>Slow start, slow end; better quality (Ho et al.)</td><td>βₜ = 1 − cos²((t/T + ε)π/2)</td></tr>
+    </table>
+  </div>
+
+  <!-- Beta schedule bar chart -->
+  <div class="diagram-wrap">
+    <div style="display:flex; gap:20px; align-items:flex-end; padding:10px 0;">
+      <div>
+        <div style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-dim); margin-bottom:6px;">Linear β</div>
+        <div class="schedule-bars">
+          <div class="bar" style="height:8%"></div><div class="bar" style="height:15%"></div><div class="bar" style="height:22%"></div><div class="bar" style="height:30%"></div><div class="bar" style="height:38%"></div><div class="bar" style="height:46%"></div><div class="bar" style="height:54%"></div><div class="bar" style="height:61%"></div><div class="bar" style="height:69%"></div><div class="bar" style="height:77%"></div><div class="bar" style="height:84%"></div><div class="bar" style="height:92%"></div><div class="bar" style="height:100%"></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-dim); margin-bottom:6px;">Cosine β (smoother)</div>
+        <div class="schedule-bars">
+          <div class="bar" style="height:2%; background: linear-gradient(180deg,#64ffda,#a78bfa)"></div><div class="bar" style="height:4%; background: linear-gradient(180deg,#64ffda,#a78bfa)"></div><div class="bar" style="height:9%; background: linear-gradient(180deg,#64ffda,#a78bfa)"></div><div class="bar" style="height:18%; background: linear-gradient(180deg,#64ffda,#a78bfa)"></div><div class="bar" style="height:32%; background: linear-gradient(180deg,#64ffda,#a78bfa)"></div><div class="bar" style="height:50%; background: linear-gradient(180deg,#64ffda,#a78bfa)"></div><div class="bar" style="height:68%; background: linear-gradient(180deg,#64ffda,#a78bfa)"></div><div class="bar" style="height:82%; background: linear-gradient(180deg,#64ffda,#a78bfa)"></div><div class="bar" style="height:91%; background: linear-gradient(180deg,#64ffda,#a78bfa)"></div><div class="bar" style="height:96%; background: linear-gradient(180deg,#64ffda,#a78bfa)"></div><div class="bar" style="height:99%; background: linear-gradient(180deg,#64ffda,#a78bfa)"></div><div class="bar" style="height:100%; background: linear-gradient(180deg,#64ffda,#a78bfa)"></div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Figure 3 — Linear schedule adds noise fast early; cosine is more gradual, preserving structure longer.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SECTION 4 -->
+<!-- ══════════════════════════════════ -->
+<div class="section" id="s4">
+  <div class="section-label">Section 04</div>
+  <h2>The Reparameterization Trick</h2>
+
+  <p>Here's where the most beautiful and important math comes in. Instead of applying 1000 noising steps one by one, there's a <strong>shortcut formula</strong> that lets us jump straight from <code>x₀</code> to <em>any timestep</em> <code>xₜ</code> in one shot!</p>
+
+  <h3>Step 1 — Define αₜ (alpha)</h3>
+
+  <div class="math-block">
+    <span class="eq">αₜ = 1 − βₜ</span>
+    <div class="eq-label">Alpha at timestep t</div>
+  </div>
+
+  <h3>Step 2 — Define ᾱₜ (alpha-bar) — the cumulative product</h3>
+
+  <div class="math-block">
+    <span class="eq">ᾱₜ = α₁ · α₂ · α₃ · … · αₜ = ∏ᵢ₌₁ᵗ αᵢ</span>
+    <div class="eq-label">Cumulative product of alphas</div>
+    <ul class="explain">
+      <li>ᾱₜ starts near 1 (t=0, no noise) and decays toward 0 (t=T, pure noise)</li>
+      <li>It captures the cumulative "how much original signal is left"</li>
+    </ul>
+  </div>
+
+  <h3>Step 3 — The One-Shot Noising Formula (THE KEY EQUATION)</h3>
+
+  <div class="math-block">
+    <span class="eq">q(xₜ | x₀) = 𝒩(xₜ ;  √ᾱₜ · x₀ ,  (1 − ᾱₜ) · I)</span>
+    <div class="eq-label">Forward process — any timestep directly</div>
+    <ul class="explain">
+      <li><code>√ᾱₜ · x₀</code> — the original image scaled down; as t grows, ᾱₜ → 0, signal disappears</li>
+      <li><code>(1 − ᾱₜ) · I</code> — the noise component grows as signal shrinks</li>
+    </ul>
+  </div>
+
+  <p>In practice we write this as:</p>
+
+  <div class="math-block">
+    <span class="eq">xₜ = √ᾱₜ · x₀  +  √(1 − ᾱₜ) · ε</span>
+    <div class="eq-label">Sampling xₜ from x₀ in one step</div>
+    <ul class="explain">
+      <li><code>ε ~ 𝒩(0, I)</code> — standard Gaussian noise, sampled fresh</li>
+      <li>This is the <strong>reparameterization trick</strong>: instead of sampling from a complex distribution, sample ε from simple 𝒩(0,I) and transform it</li>
+    </ul>
+  </div>
+
+  <h3>Where did this come from? (Derivation Sketch)</h3>
+
+  <p>We apply one step twice and use the fact that <em>a linear combination of Gaussians is Gaussian</em>:</p>
+
+  <div class="math-block">
+    <span class="eq">x₁ = √α₁ · x₀ + √(1−α₁) · ε₁</span>
+    <span class="eq">x₂ = √α₂ · x₁ + √(1−α₂) · ε₂</span>
+    <span class="eq">    = √α₂ · (√α₁ · x₀ + √(1−α₁) · ε₁) + √(1−α₂) · ε₂</span>
+    <span class="eq">    = √(α₁α₂) · x₀  +  [√(α₂(1−α₁)) · ε₁  +  √(1−α₂) · ε₂]</span>
+    <span class="eq">    = √ᾱ₂ · x₀  +  √(1 − ᾱ₂) · ε   ✅</span>
+    <div class="eq-label">The two noise terms merge into one because Var(aε₁ + bε₂) = a² + b²</div>
+  </div>
+
+  <div class="callout warning">
+    The variances of two independent Gaussians <em>add</em>: Var(aε₁ + bε₂) = a²·Var(ε₁) + b²·Var(ε₂). With unit Gaussians: a² + b². Here: α₂(1−α₁) + (1−α₂) = 1 − α₁α₂ = 1 − ᾱ₂. This is why ᾱₜ = ∏αᵢ works so perfectly!
+  </div>
+
+  <!-- Alpha-bar decay visualization -->
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 500 180" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="abar" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#64ffda"/>
+          <stop offset="100%" stop-color="#ff6b9d"/>
+        </linearGradient>
+      </defs>
+      <!-- grid lines -->
+      <line x1="50" y1="20" x2="50" y2="150" stroke="#272b35" stroke-width="1"/>
+      <line x1="50" y1="150" x2="470" y2="150" stroke="#272b35" stroke-width="1"/>
+      <line x1="50" y1="50" x2="470" y2="50" stroke="#272b35" stroke-width="0.5" stroke-dasharray="3,3"/>
+      <line x1="50" y1="100" x2="470" y2="100" stroke="#272b35" stroke-width="0.5" stroke-dasharray="3,3"/>
+      <!-- ᾱₜ decay curve (exponential decay) -->
+      <path d="M 50 22 C 120 25 160 40 200 70 C 240 100 280 128 320 140 C 360 148 410 150 470 150" fill="none" stroke="url(#abar)" stroke-width="2.5"/>
+      <!-- √ᾱₜ curve -->
+      <path d="M 50 22 C 100 30 140 50 180 75 C 230 108 280 135 340 146 C 390 152 430 151 470 150" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <!-- labels -->
+      <text x="55" y="18" font-family="DM Mono,monospace" font-size="11" fill="#64ffda">1.0</text>
+      <text x="55" y="55" font-family="DM Mono,monospace" font-size="10" fill="#4a5568">0.5</text>
+      <text x="55" y="105" font-family="DM Mono,monospace" font-size="10" fill="#4a5568">0.1</text>
+      <text x="55" y="154" font-family="DM Mono,monospace" font-size="10" fill="#4a5568">≈0</text>
+      <text x="460" y="145" font-family="DM Mono,monospace" font-size="11" fill="#8892a4">T</text>
+      <text x="200" y="85" font-family="DM Mono,monospace" font-size="11" fill="#64ffda">ᾱₜ (signal left)</text>
+      <text x="300" y="118" font-family="DM Mono,monospace" font-size="11" fill="#a78bfa">√ᾱₜ (scale factor)</text>
+    </svg>
+    <div class="caption">Figure 4 — ᾱₜ decays from 1 (full signal) to ≈0 (pure noise) as t → T.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SECTION 5 -->
+<!-- ══════════════════════════════════ -->
+<div class="section" id="s5">
+  <div class="section-label">Section 05</div>
+  <h2>The Reverse Process (Denoising)</h2>
+
+  <p>The magic is going <strong>backwards</strong>. Starting from pure noise <code>xT ~ 𝒩(0, I)</code>, we want to reverse each step and recover something that looks like a real image.</p>
+
+  <!-- Reverse process diagram -->
+  <div class="diagram-wrap">
+    <div class="rev-process">
+      <div class="fwd-step">
+        <div class="pixel-box n0">🖼️</div>
+        <div class="label">x₀<br>Clean!</div>
+      </div>
+      <div class="arrow-rev">←</div>
+      <div class="fwd-step">
+        <div class="pixel-box n1">🌁</div>
+        <div class="label">x₁<br>Almost</div>
+      </div>
+      <div class="arrow-rev">←</div>
+      <div class="fwd-step">
+        <div class="pixel-box n2">🌫️</div>
+        <div class="label">x₂<br>Getting there</div>
+      </div>
+      <div class="arrow-rev">←</div>
+      <div class="fwd-step">
+        <div class="pixel-box n3">💭</div>
+        <div class="label">x₃<br>Noisy</div>
+      </div>
+      <div class="arrow-rev">←</div>
+      <div class="fwd-step">
+        <div class="pixel-box n4">❄️</div>
+        <div class="label">x₄<br>Very noisy</div>
+      </div>
+      <div class="arrow-rev">←</div>
+      <div class="fwd-step">
+        <div class="pixel-box n5">📺</div>
+        <div class="label">xT<br>Pure noise</div>
+      </div>
+    </div>
+    <div class="caption">Figure 5 — The reverse process p_θ(xₜ₋₁ | xₜ) iteratively denoises the image.</div>
+  </div>
+
+  <h3>Why can't we just invert the forward process directly?</h3>
+
+  <div class="callout warning">
+    The <strong>true reverse</strong> <code>q(xₜ₋₁ | xₜ)</code> involves Bayes' theorem and requires knowing all possible original images to compute — which is intractable! We use a neural network to <em>approximate</em> it instead.
+  </div>
+
+  <h3>The True Reverse (with Bayes)</h3>
+
+  <div class="math-block">
+    <span class="eq">q(xₜ₋₁ | xₜ, x₀) = 𝒩(xₜ₋₁ ; μ̃ₜ(xₜ, x₀) , β̃ₜ · I)</span>
+    <div class="eq-label">Posterior (tractable when conditioned on x₀)</div>
+    <ul class="explain">
+      <li>This IS computable IF we know <code>x₀</code>. But at inference time we don't have x₀!</li>
+      <li>Solution: predict x₀ (or equivalently, predict ε) with a neural network</li>
+    </ul>
+  </div>
+
+  <p>Where the posterior mean <code>μ̃ₜ</code> is:</p>
+
+  <div class="math-block">
+    <span class="eq">μ̃ₜ = (√ᾱₜ₋₁ · βₜ · x₀ + √αₜ · (1 − ᾱₜ₋₁) · xₜ) / (1 − ᾱₜ)</span>
+    <div class="eq-label">Posterior mean — derived via Bayes' theorem on Gaussians</div>
+    <ul class="explain">
+      <li>It's a weighted average between "what x₀ says" and "what xₜ says"</li>
+      <li>As t decreases, x₀'s contribution grows (we're close to the original)</li>
+    </ul>
+  </div>
+
+  <h3>The Learned Reverse: p_θ</h3>
+
+  <p>Our neural network parameterizes the reverse as:</p>
+
+  <div class="math-block">
+    <span class="eq">p_θ(xₜ₋₁ | xₜ) = 𝒩(xₜ₋₁ ; μ_θ(xₜ, t) , Σ_θ(xₜ, t))</span>
+    <div class="eq-label">Learned reverse distribution</div>
+    <ul class="explain">
+      <li><code>θ</code> — neural network parameters (weights)</li>
+      <li><code>μ_θ</code> — network predicts the mean of where to step to</li>
+      <li><code>Σ_θ</code> — often fixed to βₜ·I to simplify (DDPM paper)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SECTION 6 -->
+<!-- ══════════════════════════════════ -->
+<div class="section" id="s6">
+  <div class="section-label">Section 06</div>
+  <h2>The Neural Network's Job (ε-Prediction)</h2>
+
+  <p>The key insight from the DDPM paper (Ho et al., 2020): instead of predicting the <em>mean</em> <code>μ_θ</code> directly, it's better to train the network to <strong>predict the noise ε</strong> that was added.</p>
+
+  <div class="callout analogy">
+    Imagine a blurred photo. Instead of predicting "what the clean photo looks like", you predict "what was smeared/blurred" — the noise. Subtract the predicted blur → get the clean photo. It's the same result but this objective is easier to train!
+  </div>
+
+  <h3>The Substitution</h3>
+
+  <p>Recall: <code>xₜ = √ᾱₜ · x₀ + √(1−ᾱₜ) · ε</code>. Solve for x₀:</p>
+
+  <div class="math-block">
+    <span class="eq">x₀ = (xₜ − √(1 − ᾱₜ) · ε) / √ᾱₜ</span>
+    <div class="eq-label">Express x₀ in terms of ε and xₜ</div>
+  </div>
+
+  <p>Substitute into μ̃ₜ, and the posterior mean becomes:</p>
+
+  <div class="math-block">
+    <span class="eq">μ_θ(xₜ, t) = (1/√αₜ) · (xₜ − (βₜ / √(1 − ᾱₜ)) · ε_θ(xₜ, t))</span>
+    <div class="eq-label">Predicted mean parameterized via noise prediction</div>
+    <ul class="explain">
+      <li><code>ε_θ(xₜ, t)</code> — the neural network, takes noisy image + timestep, outputs predicted noise</li>
+      <li>The formula says: take xₜ and subtract the predicted noise (scaled appropriately)</li>
+    </ul>
+  </div>
+
+  <!-- U-Net diagram -->
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="unet1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#4895ef" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#4895ef" stop-opacity="0.3"/>
+        </linearGradient>
+        <linearGradient id="unet2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#64ffda" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#64ffda" stop-opacity="0.3"/>
+        </linearGradient>
+      </defs>
+      <!-- Encoder blocks (left side, shrinking) -->
+      <rect x="20" y="40" width="60" height="140" rx="6" fill="url(#unet1)" stroke="#4895ef" stroke-width="1"/>
+      <rect x="90" y="60" width="50" height="100" rx="6" fill="url(#unet1)" stroke="#4895ef" stroke-width="1"/>
+      <rect x="150" y="80" width="40" height="60" rx="6" fill="url(#unet1)" stroke="#4895ef" stroke-width="1"/>
+      <!-- Bottleneck -->
+      <rect x="200" y="90" width="100" height="40" rx="6" fill="#1c1f27" stroke="#a78bfa" stroke-width="2"/>
+      <text x="250" y="114" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" fill="#a78bfa">bottleneck</text>
+      <!-- Decoder blocks (right side, growing) -->
+      <rect x="310" y="80" width="40" height="60" rx="6" fill="url(#unet2)" stroke="#64ffda" stroke-width="1"/>
+      <rect x="360" y="60" width="50" height="100" rx="6" fill="url(#unet2)" stroke="#64ffda" stroke-width="1"/>
+      <rect x="420" y="40" width="60" height="140" rx="6" fill="url(#unet2)" stroke="#64ffda" stroke-width="1"/>
+      <!-- Skip connections -->
+      <path d="M 80 70 Q 250 30 420 70" fill="none" stroke="#ffd166" stroke-width="1.2" stroke-dasharray="4,3"/>
+      <path d="M 140 80 Q 250 50 360 80" fill="none" stroke="#ffd166" stroke-width="1.2" stroke-dasharray="4,3"/>
+      <path d="M 190 90 Q 250 65 310 90" fill="none" stroke="#ffd166" stroke-width="1" stroke-dasharray="4,3"/>
+      <!-- Input / Output labels -->
+      <text x="50" y="35" text-anchor="middle" font-family="DM Mono,monospace" font-size="10" fill="#8892a4">xₜ input</text>
+      <text x="450" y="35" text-anchor="middle" font-family="DM Mono,monospace" font-size="10" fill="#64ffda">ε predicted</text>
+      <!-- timestep t -->
+      <rect x="195" y="160" width="110" height="24" rx="12" fill="#1c1f27" stroke="#ff6b9d" stroke-width="1"/>
+      <text x="250" y="176" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" fill="#ff6b9d">+ timestep t embed</text>
+      <!-- Legend -->
+      <rect x="20" y="200" width="10" height="10" fill="#4895ef" rx="2"/>
+      <text x="36" y="210" font-family="DM Mono,monospace" font-size="10" fill="#8892a4">Encoder</text>
+      <rect x="120" y="200" width="10" height="10" fill="#64ffda" rx="2"/>
+      <text x="136" y="210" font-family="DM Mono,monospace" font-size="10" fill="#8892a4">Decoder</text>
+      <line x1="220" y1="204" x2="230" y2="204" stroke="#ffd166" stroke-dasharray="3,2" stroke-width="1.5"/>
+      <text x="236" y="210" font-family="DM Mono,monospace" font-size="10" fill="#8892a4">Skip connections</text>
+    </svg>
+    <div class="caption">Figure 6 — U-Net architecture: encoder compresses, decoder expands, skip connections preserve detail. Timestep t is injected as an embedding.</div>
+  </div>
+
+  <h3>Why U-Net?</h3>
+  <p>The network takes a noisy image <code>xₜ</code> and a scalar timestep <code>t</code>, and outputs a noise map of the <em>same spatial size</em>. U-Net's encoder-decoder with skip connections is perfect for this because it can capture both local details (skip connections) and global context (bottleneck).</p>
+
+  <div class="callout intuition">
+    The timestep embedding tells the network "how noisy is this image right now?" This is critical — removing noise at t=900 (very noisy) is very different from t=50 (almost clean). The network needs to know which regime it's in.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SECTION 7 -->
+<!-- ══════════════════════════════════ -->
+<div class="section" id="s7">
+  <div class="section-label">Section 07</div>
+  <h2>The Loss Function — What We Optimize</h2>
+
+  <h3>Step 1 — The Full Objective (ELBO)</h3>
+
+  <p>Diffusion models are trained by maximizing the log-likelihood of data. Using the Evidence Lower BOund (ELBO) from variational inference:</p>
+
+  <div class="math-block">
+    <span class="eq">L = 𝔼[− log p_θ(x₀)] ≤ 𝔼[Σₜ KL(q(xₜ₋₁|xₜ,x₀) ‖ p_θ(xₜ₋₁|xₜ))]</span>
+    <div class="eq-label">ELBO — derived via Jensen's inequality on log p(x)</div>
+    <ul class="explain">
+      <li>This is a sum of KL divergences: how different is our learned reverse from the true posterior?</li>
+      <li>Minimizing this = maximizing the data likelihood</li>
+    </ul>
+  </div>
+
+  <h3>Step 2 — KL of Gaussians simplifies to MSE</h3>
+
+  <p>The KL divergence between two Gaussians with the <em>same variance</em> simplifies to a squared distance of means:</p>
+
+  <div class="math-block">
+    <span class="eq">KL(𝒩(μ₁, σ²) ‖ 𝒩(μ₂, σ²)) = (1/(2σ²)) · ‖μ₁ − μ₂‖²</span>
+    <div class="eq-label">KL divergence between same-variance Gaussians</div>
+  </div>
+
+  <h3>Step 3 — The Simple DDPM Loss</h3>
+
+  <p>After substituting the ε-parameterization, all the scaling constants simplify and we get the elegant final loss:</p>
+
+  <div class="math-block">
+    <span class="eq" style="font-size:clamp(14px,3.5vw,20px); color:#64ffda;">L_simple = 𝔼[t, x₀, ε] [ ‖ε − ε_θ(√ᾱₜ·x₀ + √(1−ᾱₜ)·ε , t)‖² ]</span>
+    <div class="eq-label">⭐ The DDPM training objective — just MSE on noise prediction!</div>
+    <ul class="explain">
+      <li>Sample a real image <code>x₀</code></li>
+      <li>Sample a random timestep <code>t</code></li>
+      <li>Sample noise <code>ε ~ 𝒩(0,I)</code></li>
+      <li>Build noisy image: <code>xₜ = √ᾱₜ·x₀ + √(1−ᾱₜ)·ε</code></li>
+      <li>Ask network to predict ε; penalize the difference (MSE)</li>
+      <li>That's it! Deceptively simple.</li>
+    </ul>
+  </div>
+
+  <div class="callout warning">
+    The DDPM paper showed that dropping the weighting terms from the full ELBO and using this simple MSE loss leads to <strong>better image quality</strong> in practice. Sometimes the simplified objective trains better than the "correct" one — empirically more useful signal.
+  </div>
+
+  <!-- Training loop diagram -->
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 500 260" xmlns="http://www.w3.org/2000/svg">
+      <!-- boxes -->
+      <rect x="10" y="100" width="100" height="60" rx="8" fill="#13151a" stroke="#272b35" stroke-width="1.5"/>
+      <text x="60" y="126" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" fill="#64ffda">Sample x₀</text>
+      <text x="60" y="142" text-anchor="middle" font-family="DM Mono,monospace" font-size="10" fill="#8892a4">real image</text>
+
+      <rect x="130" y="100" width="100" height="60" rx="8" fill="#13151a" stroke="#272b35" stroke-width="1.5"/>
+      <text x="180" y="126" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" fill="#ffd166">Sample t, ε</text>
+      <text x="180" y="142" text-anchor="middle" font-family="DM Mono,monospace" font-size="10" fill="#8892a4">random t & noise</text>
+
+      <rect x="250" y="100" width="100" height="60" rx="8" fill="#13151a" stroke="#272b35" stroke-width="1.5"/>
+      <text x="300" y="119" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" fill="#ff6b9d">Build xₜ</text>
+      <text x="300" y="135" text-anchor="middle" font-family="DM Mono,monospace" font-size="10" fill="#8892a4">√ᾱₜ·x₀ +</text>
+      <text x="300" y="151" text-anchor="middle" font-family="DM Mono,monospace" font-size="10" fill="#8892a4">√(1−ᾱₜ)·ε</text>
+
+      <rect x="370" y="100" width="120" height="60" rx="8" fill="#13151a" stroke="#272b35" stroke-width="1.5"/>
+      <text x="430" y="119" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" fill="#a78bfa">U-Net predicts ε̂</text>
+      <text x="430" y="135" text-anchor="middle" font-family="DM Mono,monospace" font-size="10" fill="#8892a4">ε_θ(xₜ, t)</text>
+      <text x="430" y="151" text-anchor="middle" font-family="DM Mono,monospace" font-size="10" fill="#8892a4">→ MSE vs ε</text>
+
+      <!-- arrows -->
+      <line x1="110" y1="130" x2="128" y2="130" stroke="#4a5568" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="230" y1="130" x2="248" y2="130" stroke="#4a5568" stroke-width="1.5" marker-end="url(#arr)"/>
+      <line x1="350" y1="130" x2="368" y2="130" stroke="#4a5568" stroke-width="1.5" marker-end="url(#arr)"/>
+      <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4a5568"/></marker></defs>
+
+      <!-- MSE Loss -->
+      <rect x="150" y="200" width="200" height="45" rx="8" fill="#0f1e1a" stroke="#64ffda" stroke-width="1.5"/>
+      <text x="250" y="221" text-anchor="middle" font-family="DM Mono,monospace" font-size="12" fill="#64ffda">L = ‖ε − ε̂‖²</text>
+      <text x="250" y="238" text-anchor="middle" font-family="DM Mono,monospace" font-size="10" fill="#8892a4">Backprop → update θ</text>
+
+      <!-- connecting loss -->
+      <line x1="430" y1="160" x2="430" y2="222" stroke="#272b35" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="430" y1="222" x2="352" y2="222" stroke="#272b35" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- title -->
+      <text x="250" y="30" text-anchor="middle" font-family="Syne,sans-serif" font-size="14" font-weight="700" fill="#fff">Training Loop (one iteration)</text>
+    </svg>
+    <div class="caption">Figure 7 — Training loop: sample image, choose random t, corrupt it, predict noise, compute MSE loss, update weights.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SECTION 8 -->
+<!-- ══════════════════════════════════ -->
+<div class="section" id="s8">
+  <div class="section-label">Section 08</div>
+  <h2>Sampling — Generating New Images</h2>
+
+  <p>At <em>inference</em> time, no real image is given. We start from pure noise and iteratively denoise:</p>
+
+  <div class="step-grid">
+    <div class="step-box">
+      <div class="step-num">Step 1</div>
+      <h4>Sample initial noise</h4>
+      <p><code>xT ~ 𝒩(0, I)</code> — pure random Gaussian noise the size of an image.</p>
+    </div>
+    <div class="step-box">
+      <div class="step-num">Step 2</div>
+      <h4>For t = T down to 1:</h4>
+      <p>Predict noise: <code>ε̂ = ε_θ(xₜ, t)</code>. Compute mean. Sample <code>z ~ 𝒩(0,I)</code> (add stochasticity). Step backwards.</p>
+    </div>
+    <div class="step-box">
+      <div class="step-num">Step 3</div>
+      <h4>Return x₀</h4>
+      <p>After T steps, <code>x₀</code> is the generated image!</p>
+    </div>
+  </div>
+
+  <h3>The DDPM Sampling Formula</h3>
+
+  <div class="math-block">
+    <span class="eq">xₜ₋₁ = (1/√αₜ) · (xₜ − (βₜ/√(1−ᾱₜ)) · ε_θ(xₜ,t))  +  σₜ · z</span>
+    <div class="eq-label">DDPM reverse sampling step</div>
+    <ul class="explain">
+      <li><code>1/√αₜ</code> — undo the signal scaling</li>
+      <li><code>(βₜ/√(1−ᾱₜ)) · ε_θ</code> — subtract the predicted noise</li>
+      <li><code>σₜ · z</code> — add a tiny bit of fresh noise (σₜ = √βₜ or √β̃ₜ); this is what makes it stochastic/diverse</li>
+      <li>At the last step (t=1), set z=0 — don't add noise to the final image!</li>
+    </ul>
+  </div>
+
+  <div class="callout warning">
+    Why add noise <code>σₜ·z</code> back in? Without it, every run would produce the <em>exact same image</em> from the same noise seed. The stochasticity matches the true diffusion posterior and allows diversity in generated outputs.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SECTION 9 -->
+<!-- ══════════════════════════════════ -->
+<div class="section" id="s9">
+  <div class="section-label">Section 09</div>
+  <h2>DDIM — Faster Sampling</h2>
+
+  <p>DDPM requires T=1000 steps at inference. That's <strong>slow</strong>. DDIM (Denoising Diffusion Implicit Models, Song et al. 2021) fixes this by making the reverse process <em>deterministic</em>.</p>
+
+  <div class="callout intuition">
+    DDPM: each step is like a random walk backwards (stochastic). DDIM: each step is a straight calculated jump (deterministic). Because it's deterministic and doesn't waste steps on randomness, DDIM can skip steps and still get great results.
+  </div>
+
+  <h3>The DDIM Update Rule</h3>
+
+  <div class="math-block">
+    <span class="eq">xₜ₋₁ = √ᾱₜ₋₁ · x̂₀(xₜ)  +  √(1−ᾱₜ₋₁) · ε_θ(xₜ, t)</span>
+    <div class="eq-label">DDIM deterministic sampling step</div>
+    <ul class="explain">
+      <li><code>x̂₀(xₜ) = (xₜ − √(1−ᾱₜ)·ε_θ) / √ᾱₜ</code> — estimate x₀ from xₜ</li>
+      <li>No random <code>z</code> term — fully deterministic</li>
+      <li>Can be applied with stride (only 50 or 100 steps instead of 1000)</li>
+    </ul>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Property</th><th>DDPM</th><th>DDIM</th></tr>
+      <tr><td>Stochastic?</td><td>Yes (adds noise each step)</td><td>No (deterministic)</td></tr>
+      <tr><td>Steps needed</td><td>1000</td><td>20–100</td></tr>
+      <tr><td>Same model?</td><td>Yes</td><td>Yes — same ε_θ!</td></tr>
+      <tr><td>Latent interpolation</td><td>Hard</td><td>Easy (smooth interpolation in xT space)</td></tr>
+      <tr><td>Sample quality</td><td>High</td><td>Slightly lower, but much faster</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SECTION 10 -->
+<!-- ══════════════════════════════════ -->
+<div class="section" id="s10">
+  <div class="section-label">Section 10</div>
+  <h2>Conditional Diffusion (Text → Image)</h2>
+
+  <p>How does "a photo of an astronaut on horseback" guide the model? Two main techniques:</p>
+
+  <h3>1. Classifier-Free Guidance (CFG) — The Modern Standard</h3>
+
+  <p>Train the U-Net to accept a text conditioning signal <code>c</code>, but randomly drop <code>c</code> during training (replace with null ∅) so the network learns both conditioned and unconditioned behavior.</p>
+
+  <div class="math-block">
+    <span class="eq">ε̂_guided = ε_θ(xₜ, ∅) + w · (ε_θ(xₜ, c) − ε_θ(xₜ, ∅))</span>
+    <div class="eq-label">CFG — interpolate between conditioned and unconditioned predictions</div>
+    <ul class="explain">
+      <li><code>c</code> — text embedding (from CLIP, T5, etc.)</li>
+      <li><code>∅</code> — null / empty prompt</li>
+      <li><code>w</code> — guidance scale (typically 7–12); higher = more faithful to prompt, less diverse</li>
+      <li>The formula says: go towards <code>c</code> and away from <code>∅</code> by factor w</li>
+    </ul>
+  </div>
+
+  <div class="callout analogy">
+    Think of w as "how loudly you shout the prompt". w=1 is a whisper (image barely follows). w=10 is a shout (image slavishly follows but may look unnatural). w=7 is the sweet spot.
+  </div>
+
+  <h3>2. Cross-Attention in U-Net</h3>
+
+  <p>Text is encoded as token embeddings and injected into the U-Net via cross-attention layers:</p>
+
+  <div class="math-block">
+    <span class="eq">Attention(Q, K, V) = softmax(QKᵀ / √d) · V</span>
+    <div class="eq-label">Cross-attention between image features (Q) and text tokens (K, V)</div>
+    <ul class="explain">
+      <li><code>Q</code> — queries from image features (what the image "asks for")</li>
+      <li><code>K, V</code> — keys and values from text embeddings (what text "offers")</li>
+      <li>Each pixel attends to relevant text tokens → semantic alignment!</li>
+    </ul>
+  </div>
+
+  <!-- Latent Diffusion note -->
+  <h3>Latent Diffusion (Stable Diffusion)</h3>
+
+  <p>Running diffusion in full pixel space (512×512×3) is expensive. Stable Diffusion operates in a compressed <strong>latent space</strong> (64×64×4) via a VAE encoder/decoder:</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 500 120" xmlns="http://www.w3.org/2000/svg">
+      <!-- image -->
+      <rect x="10" y="30" width="70" height="60" rx="6" fill="#1c1f27" stroke="#4895ef" stroke-width="1.5"/>
+      <text x="45" y="65" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" fill="#4895ef">Image</text>
+      <text x="45" y="78" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#4a5568">512×512×3</text>
+      <!-- encoder -->
+      <polygon points="90,30 130,45 130,75 90,90" fill="#13151a" stroke="#ffd166" stroke-width="1.5"/>
+      <text x="111" y="64" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#ffd166">VAE Enc</text>
+      <!-- latent -->
+      <rect x="138" y="42" width="60" height="36" rx="6" fill="#1c1f27" stroke="#a78bfa" stroke-width="2"/>
+      <text x="168" y="63" text-anchor="middle" font-family="DM Mono,monospace" font-size="10" fill="#a78bfa">Latent z</text>
+      <text x="168" y="75" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#4a5568">64×64×4</text>
+      <!-- diffusion -->
+      <rect x="210" y="35" width="90" height="50" rx="6" fill="#0f1e1a" stroke="#64ffda" stroke-width="1.5"/>
+      <text x="255" y="57" text-anchor="middle" font-family="DM Mono,monospace" font-size="10" fill="#64ffda">Diffusion</text>
+      <text x="255" y="71" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#8892a4">U-Net + text</text>
+      <!-- decoder -->
+      <polygon points="310,45 350,30 350,90 310,75" fill="#13151a" stroke="#ffd166" stroke-width="1.5"/>
+      <text x="331" y="64" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#ffd166">VAE Dec</text>
+      <!-- output -->
+      <rect x="358" y="30" width="70" height="60" rx="6" fill="#1c1f27" stroke="#64ffda" stroke-width="1.5"/>
+      <text x="393" y="65" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" fill="#64ffda">Output</text>
+      <text x="393" y="78" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#4a5568">512×512×3</text>
+      <!-- arrows -->
+      <line x1="80" y1="60" x2="90" y2="60" stroke="#4a5568" stroke-width="1.5"/>
+      <line x1="130" y1="60" x2="138" y2="60" stroke="#4a5568" stroke-width="1.5"/>
+      <line x1="198" y1="60" x2="210" y2="60" stroke="#4a5568" stroke-width="1.5"/>
+      <line x1="300" y1="60" x2="310" y2="60" stroke="#4a5568" stroke-width="1.5"/>
+      <line x1="350" y1="60" x2="358" y2="60" stroke="#4a5568" stroke-width="1.5"/>
+    </svg>
+    <div class="caption">Figure 8 — Latent Diffusion: compress to latent space with VAE, run diffusion there (4× cheaper!), decode back to pixels.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SECTION 11 — INTERVIEW Qs -->
+<!-- ══════════════════════════════════ -->
+<div class="section" id="s11">
+  <div class="section-label">Section 11</div>
+  <h2>⭐ Famous Interview Questions</h2>
+
+  <p>Click each question to reveal the answer.</p>
+
+  <div class="iq-grid">
+    <div class="iq">
+      <details>
+        <summary><div class="iq-q">What is the core idea behind diffusion models? <span class="toggle">▾</span></div></summary>
+        <div class="iq-a">Diffusion models define a <strong>forward process</strong> that gradually adds Gaussian noise to data over T steps until it becomes pure noise, then train a neural network to learn the <strong>reverse process</strong> — iteratively denoising to generate new data. Generation works by sampling random noise and running the learned reverse chain.</div>
+      </details>
+    </div>
+
+    <div class="iq">
+      <details>
+        <summary><div class="iq-q">What does the neural network predict in DDPM, and why? <span class="toggle">▾</span></div></summary>
+        <div class="iq-a">The network predicts the <strong>noise ε</strong> that was added (not x₀ directly). The authors found empirically that predicting ε leads to better image quality than predicting x₀ or the reverse mean μ directly. Conceptually: knowing what was added is equivalent to knowing the clean image (they're linked by xₜ = √ᾱₜ·x₀ + √(1−ᾱₜ)·ε), but the noise prediction objective has more stable gradients.</div>
+      </details>
+    </div>
+
+    <div class="iq">
+      <details>
+        <summary><div class="iq-q">What is the role of ᾱₜ (alpha-bar)? <span class="toggle">▾</span></div></summary>
+        <div class="iq-a">ᾱₜ = ∏αᵢ (cumulative product of 1−βᵢ) controls <strong>how much of the original signal remains at timestep t</strong>. At t=0, ᾱₜ≈1 (nearly clean). At t=T, ᾱₜ≈0 (pure noise). Crucially, ᾱₜ allows us to sample xₜ from x₀ in a single step: <strong>xₜ = √ᾱₜ·x₀ + √(1−ᾱₜ)·ε</strong>, bypassing the need to simulate all T intermediate steps during training.</div>
+      </details>
+    </div>
+
+    <div class="iq">
+      <details>
+        <summary><div class="iq-q">What is Classifier-Free Guidance (CFG) and why is w important? <span class="toggle">▾</span></div></summary>
+        <div class="iq-a">CFG trains a single model to do both conditional and unconditional generation (by randomly dropping conditioning during training). At sampling time: <strong>ε̂ = ε_θ(xₜ, ∅) + w·(ε_θ(xₜ, c) − ε_θ(xₜ, ∅))</strong>. The scale <strong>w (guidance scale)</strong> controls the trade-off: <strong>w=1</strong> = no guidance boost; <strong>w>1</strong> = stronger adherence to prompt at the cost of diversity. Typical range: 7–12 for text-to-image.</div>
+      </details>
+    </div>
+
+    <div class="iq">
+      <details>
+        <summary><div class="iq-q">How does DDIM differ from DDPM? What's the tradeoff? <span class="toggle">▾</span></div></summary>
+        <div class="iq-a">DDPM is <strong>stochastic</strong> (adds noise at each step); DDIM is <strong>deterministic</strong> (no stochastic term). DDIM's determinism allows skipping timesteps — achieving comparable quality in 20–50 steps vs DDPM's 1000. Tradeoff: DDIM can slightly reduce diversity and sample quality but dramatically improves <strong>inference speed</strong>. Both use the same trained model — DDIM is just a different sampler.</div>
+      </details>
+    </div>
+
+    <div class="iq">
+      <details>
+        <summary><div class="iq-q">Why is the forward process fixed (not learned)? <span class="toggle">▾</span></div></summary>
+        <div class="iq-a">The forward process is a predefined <strong>Markov chain</strong> with known Gaussian transitions. It's fixed because: (1) it has a closed-form posterior q(xₜ|x₀), making training tractable; (2) it converges to 𝒩(0,I) by design; (3) there's no need to learn it — the complexity is in the reverse. Fixing the forward process means the only learned component is the denoiser.</div>
+      </details>
+    </div>
+
+    <div class="iq">
+      <details>
+        <summary><div class="iq-q">What is the training objective for DDPM, intuitively? <span class="toggle">▾</span></div></summary>
+        <div class="iq-a">Minimize the <strong>mean squared error</strong> between the true noise ε and the predicted noise ε_θ: <strong>L = E[‖ε − ε_θ(xₜ, t)‖²]</strong>. Intuitively, pick a real image, corrupt it with known noise at a random timestep, then train the network to identify what noise was added. Over millions of training steps, the network learns the statistical structure of images by learning to denoise them.</div>
+      </details>
+    </div>
+
+    <div class="iq">
+      <details>
+        <summary><div class="iq-q">What is the reparameterization trick and why is it useful? <span class="toggle">▾</span></div></summary>
+        <div class="iq-a">Instead of sampling from a complex distribution directly, express the sample as a <strong>deterministic function of a simple distribution</strong> plus a random variable: z = μ + σ·ε, ε~𝒩(0,I). This is useful because: (1) gradients can flow through μ and σ (deterministic part) for backprop; (2) in diffusion, it gives the direct sampling formula xₜ = √ᾱₜ·x₀ + √(1−ᾱₜ)·ε, bypassing step-by-step simulation during training.</div>
+      </details>
+    </div>
+
+    <div class="iq">
+      <details>
+        <summary><div class="iq-q">How does Stable Diffusion differ from standard DDPM? <span class="toggle">▾</span></div></summary>
+        <div class="iq-a">Stable Diffusion (Rombach et al.) runs diffusion in a <strong>compressed latent space</strong> (via a pretrained VAE) instead of pixel space. This reduces the spatial dimensions ~8× (e.g. 512→64), making training and inference dramatically cheaper. Text conditioning is added via <strong>cross-attention</strong> layers in the U-Net using CLIP text embeddings. At generation, the output latent is decoded back to pixels by the VAE decoder.</div>
+      </details>
+    </div>
+
+    <div class="iq">
+      <details>
+        <summary><div class="iq-q">What is the noise schedule and why does it matter? <span class="toggle">▾</span></div></summary>
+        <div class="iq-a">The noise schedule {β₁, ..., βT} determines <strong>how quickly signal is destroyed</strong>. Too fast (aggressive linear) → the network must deal with badly corrupted images early and small details are lost. Too slow → T steps aren't enough to reach pure noise. Improved cosine schedule (Nichol & Dhariwal, 2021) keeps ᾱₜ decaying slowly in mid-range timesteps, giving the network more "useful" noisy images to train on and improving sample quality.</div>
+      </details>
+    </div>
+
+    <div class="iq">
+      <details>
+        <summary><div class="iq-q">Compare diffusion models vs GANs vs VAEs. <span class="toggle">▾</span></div></summary>
+        <div class="iq-a">
+          <strong>GANs</strong>: fast sampling (1 forward pass), high sharpness, but training instability, mode collapse, no likelihood.<br>
+          <strong>VAEs</strong>: stable training, explicit likelihood, but blurry outputs (Gaussian decoder assumption).<br>
+          <strong>Diffusion</strong>: state-of-the-art quality, diversity, and mode coverage; stable training; explicit likelihood via ELBO. <strong>Downside</strong>: slow sampling (1000 steps), high compute. DDIM mitigates the speed issue.
+        </div>
+      </details>
+    </div>
+
+    <div class="iq">
+      <details>
+        <summary><div class="iq-q">What is score matching and how does it relate to diffusion? <span class="toggle">▾</span></div></summary>
+        <div class="iq-a">Score matching learns the <strong>score function</strong> ∇_x log p(x) — the gradient of log data density. Song et al. showed that predicting noise ε in DDPM is <strong>equivalent</strong> to estimating the score: ε_θ ≈ −√(1−ᾱₜ)·∇_xₜ log q(xₜ). This connection means diffusion models implicitly do score-based generative modeling, and sampling is like gradient ascent on a time-varying log-density landscape (Langevin dynamics).</div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div style="margin-top:60px; padding-top:32px; border-top:1px solid var(--border); text-align:center;">
+  <div style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-dim); letter-spacing:1px;">
+    DDPM (Ho et al., 2020) · DDIM (Song et al., 2021) · LDM (Rombach et al., 2022) · CFG (Ho & Salimans, 2022)
+  </div>
+  <div style="font-family:'DM Mono',monospace; font-size:11px; color:var(--text-dim); margin-top:8px;">
+    Study notes · Diffusion Models · Beginner Friendly
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<button class="btt" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ TOP</button>
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    document.getElementById('progress').style.width = pct + '%';
+    document.getElementById('btt').classList.toggle('show', h.scrollTop > 400);
+  });
+</script>
+</body>
+</html>
