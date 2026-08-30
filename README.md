@@ -15,6 +15,8 @@ It is designed to help students access all the necessary academic resources in o
 
 5. CN – Computer Networks
 
+For OS: https://github.com/kinza7124/Operating-Systems
+For COAL: https://github.com/kinza7124/Computer-Organization-and-Assembly-Language
 For CN Lab do visit: https://net-lab-pro.vercel.app/
 
 **🎯 Purpose**
