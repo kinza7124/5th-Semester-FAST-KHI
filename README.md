@@ -19,6 +19,10 @@ It is designed to help students access all the necessary academic resources in o
 
 7. SE - Software Engineering
 
+8. RS - Recommender System
+
+9. OOP - Object Oriented Programming
+
 For OS: https://github.com/kinza7124/Operating-Systems
 
 For COAL: https://github.com/kinza7124/Computer-Organization-and-Assembly-Language
