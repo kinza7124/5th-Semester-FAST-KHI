@@ -1,4 +1,4 @@
-# 📚 FAST-NUCES KHI CS 5th Semester Resources
+# 📚 FAST-NUCES KHI CS 5th-6th-7th Semester Resources
 
 This repository contains a comprehensive collection of study materials for the 5th Semester courses offered at the FAST-NUCES Karachi (KHICS) Department.
 It is designed to help students access all the necessary academic resources in one place, including slides, notes, quizzes, past papers, exam papers, and lab materials.
